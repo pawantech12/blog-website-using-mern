@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import technology from "../img/technology.webp";
-
+import newsletter1 from "../img/1-newsletter.webp";
+import newsletter2 from "../img/2-newsletter.webp";
 import travel from "../img/travel.webp";
 import web from "../img/web.webp";
 import blog1 from "../img/blog1.webp";
@@ -13,6 +14,7 @@ import {
   FaFacebookF,
   FaInstagram,
   FaLinkedin,
+  FaPlay,
   FaRegHeart,
 } from "react-icons/fa";
 import { CgArrowLongLeft, CgArrowLongRight } from "react-icons/cg";
@@ -565,16 +567,174 @@ export const Home = () => {
             style={{ transform: `translateX(-${(catcurrent * 95) / 5}%)` }}
           >
             {CategoryData.map((item, index) => (
-              <div
-                key={index}
-                className=" w-[16.8%] flex-shrink-0  "
-                // style={{ width: "" }}
-              >
-                <figure>
-                  <img src={item.catImg} alt="" className="h-36 rounded-xl" />
-                </figure>
+              <div key={index} className="relative w-[16.8%] flex-shrink-0">
+                <Link>
+                  <figure className="relative">
+                    <img
+                      src={item.catImg}
+                      alt=""
+                      className="h-36 w-full rounded-xl object-cover"
+                    />
+                    {/* Gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[rgba(0,0,0,0.8)] via-transparent to-transparent rounded-xl"></div>
+                    {/* Text overlay */}
+                    <figcaption className="absolute bottom-[10%] left-0 right-0 text-white text-center p-2 font-semibold text-lg">
+                      {item.name}
+                    </figcaption>
+                  </figure>
+                </Link>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+      <section className="px-20 py-20 bg-[#FAFAFA]">
+        <div className="flex items-center gap-5 relative bg-white rounded-xl h-56 px-20">
+          <h4 className="text-2xl font-semibold text-neutral-700 w-1/4">
+            Subscribe For Newsletter
+          </h4>
+          <form action="" className="flex items-center gap-5 w-2/3">
+            <input
+              type="text"
+              placeholder="Enter your email"
+              className="h-14 px-5 rounded-lg border outline-none border-gray-200 w-2/3"
+            />
+            <button
+              type="submit"
+              className="bg-orange-400 px-5 text-white hover:bg-orange-500 transition-all ease-in-out duration-200 py-[14px] font-medium text-[17px] rounded-lg"
+            >
+              Subscribe Now
+            </button>
+          </form>
+          <img
+            src={newsletter1}
+            alt=""
+            className="absolute bottom-0 left-[20%]"
+          />
+          <img
+            src={newsletter2}
+            alt=""
+            className="absolute bottom-0 right-[2%]"
+          />
+        </div>
+      </section>
+      <section className="px-20 py-20">
+        <h4 className="text-3xl font-semibold text-neutral-800">
+          Featured Video
+        </h4>
+        <div className="flex gap-5 mt-7">
+          <div className="w-[38%] flex flex-col gap-10">
+            {[1, 2].map((item, index) => {
+              return (
+                <div key={index} className="flex flex-col cursor-pointer gap-3">
+                  <div className="w-full relative">
+                    <figure>
+                      <img src={blog1} alt="" className="rounded-xl" />
+                    </figure>
+                    <span className="absolute top-[35%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[44%] text-white bg-orange-300 p-4 rounded-full text-xl border-2 border-white">
+                      <FaPlay />
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                        Food
+                      </span>
+                      <span className="flex gap-1 items-center">
+                        <LuCalendarDays />
+                        15 June 2021
+                      </span>
+                      <div className="text-xl flex gap-2 items-center">
+                        <button>
+                          <LuBookmarkMinus />
+                        </button>
+                        <button>
+                          <FaRegHeart />
+                        </button>
+                      </div>
+                    </div>
+                    <h5 className="text-2xl font-medium ">
+                      <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
+                        Customize your WooCommerce store with countless Web
+                      </Link>
+                    </h5>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="w-[30%] grid grid-cols-1 grid-rows-3 gap-3">
+            {[1, 2, 3].map((item, index) => {
+              return (
+                <div key={index} className="flex flex-col cursor-pointer gap-3">
+                  <div className="w-full relative">
+                    <figure>
+                      <img
+                        src={blog1}
+                        alt=""
+                        className="rounded-xl object-cover h-32 w-full"
+                      />
+                    </figure>
+                    <span className="absolute top-[25%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[44%] text-white bg-orange-300 p-4 rounded-full text-xl border-2 border-white">
+                      <FaPlay />
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center gap-3">
+                      <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                        Food
+                      </span>
+                      <span className="flex gap-1 items-center">
+                        <LuCalendarDays />
+                        15 June 2021
+                      </span>
+                      <div className="text-xl flex gap-2 items-center">
+                        <button>
+                          <LuBookmarkMinus />
+                        </button>
+                        <button>
+                          <FaRegHeart />
+                        </button>
+                      </div>
+                    </div>
+                    <h5 className="text-lg font-medium ">
+                      <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
+                        Customize your WooCommerce store with countless Web
+                      </Link>
+                    </h5>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <div className="w-[30%] bg-[#FAFAFA] rounded-xl px-4 py-3">
+            <h4 className="text-2xl font-semibold text-neutral-800">
+              Latest Post
+            </h4>
+            <div className="flex flex-col gap-3">
+              {[1, 2, 3, 4, 5].map((item, index) => {
+                return (
+                  <div key={index} className="flex gap-3">
+                    <figure className="w-1/3 h-full">
+                      <img
+                        src={blog1}
+                        alt=""
+                        className="w-full h-full object-cover rounded-md"
+                      />
+                    </figure>
+                    <div className="w-3/5">
+                      <h5 className="text-[15px] font-medium">
+                        Customize your WooCommerce store with countless Web
+                      </h5>
+                      <span className="flex gap-1 text-xs text-zinc-600 font-medium items-center">
+                        <LuCalendarDays className="w-4 h-4" />
+                        15 June 2021
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </section>
