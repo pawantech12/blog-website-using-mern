@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import technology from "../img/technology.webp";
 import newsletter1 from "../img/1-newsletter.webp";
