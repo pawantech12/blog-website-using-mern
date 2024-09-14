@@ -6,6 +6,7 @@ export default {
       colors: {
         "custom-black": "#22262A",
         "custom-lightBlack": "#2D3135",
+        "custom-light-orange": "#FFEBDF",
       },
     },
   },

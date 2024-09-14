@@ -10,9 +10,9 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <footer className="bg-custom-black p-20">
-      <div>
+      <div className="flex justify-evenly">
         {/* top content  */}
-        <div>
+        <div className="w-1/4 flex flex-col gap-5">
           <figure>
             <img src={LogoWhite} alt="Bunzo blog logo" />
           </figure>
@@ -62,25 +62,65 @@ const Footer = () => {
             </button>
           </form>
         </div>
-        <div>
+        <div className="flex justify-evenly gap-10">
           {/* links list */}
           <div>
             <h4 className="text-xl font-medium text-white">Company</h4>
-            <ul className="text-white">
-              <li>
+            <ul className="text-white mt-5 text-base flex flex-col gap-2">
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
                 <Link>About Us</Link>
               </li>
-              <li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
                 <Link>Contact Us</Link>
               </li>
-              <li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
                 <Link>Local Print Ads</Link>
               </li>
-              <li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
                 <Link>FAQ&apos;s</Link>
               </li>
-              <li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
                 <Link>Careers</Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xl font-medium text-white">Quick Links</h4>
+            <ul className="text-white mt-5 text-base flex flex-col gap-2">
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Privacy Policy</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Discussion</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Terms & conditions</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Customer Support</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Course FAQ&apos;s</Link>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="text-xl font-medium text-white">Category</h4>
+            <ul className="text-white mt-5 text-base  flex flex-col gap-2">
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Lifestyle</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Healthy</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Restaurant</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Travel tips</Link>
+              </li>
+              <li className="hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link>Marketing</Link>
               </li>
             </ul>
           </div>

@@ -46,12 +46,18 @@ export const Navbar = () => {
           <nav>
             <ul className="flex gap-9 items-center">
               <li>
-                <Link className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link
+                  className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200"
+                  to="/"
+                >
                   Home
                 </Link>
               </li>
               <li>
-                <Link className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link
+                  className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200"
+                  to="/about-us"
+                >
                   About
                 </Link>
               </li>
