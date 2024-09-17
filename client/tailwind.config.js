@@ -5,8 +5,11 @@ export default {
     extend: {
       colors: {
         "custom-black": "#22262A",
-        "custom-lightBlack": "#2D3135",
+        "custom-light-black": "#2D3135",
+        "custom-orange": "#FFC4A0",
         "custom-light-orange": "#FFEBDF",
+        "custom-exlight-orange": "#FAFAFA",
+        "custom-light-blue": "#EDF0F8",
       },
     },
   },

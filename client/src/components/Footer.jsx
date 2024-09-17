@@ -1,16 +1,18 @@
 import {
   FaFacebookF,
+  FaHeart,
   FaInstagram,
   FaLinkedinIn,
   FaTwitter,
 } from "react-icons/fa";
 import LogoWhite from "../img/logo-white.webp";
 import { Link } from "react-router-dom";
+import { BsArrowRight } from "react-icons/bs";
 
 const Footer = () => {
   return (
-    <footer className="bg-custom-black p-20">
-      <div className="flex justify-evenly">
+    <footer className="">
+      <div className="flex justify-evenly bg-custom-black p-20">
         {/* top content  */}
         <div className="w-1/4 flex flex-col gap-5">
           <figure>
@@ -44,14 +46,14 @@ const Footer = () => {
               type="text"
               name="name"
               id="name"
-              className="bg-custom-lightBlack text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
+              className="bg-custom-light-black text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
               placeholder="Your Name"
             />
             <input
               type="email"
               name="email"
               id="email"
-              className="bg-custom-lightBlack text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
+              className="bg-custom-light-black text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
               placeholder="Your Email Address"
             />
             <button
@@ -126,7 +128,15 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div>{/* bottom content  */}</div>
+      <div className="bg-custom-light-black text-white text-center py-5 flex justify-between px-5">
+        <p className="flex items-center text-[15px] font-medium">
+          © 2024 <Link className="mx-2 text-orange-400">Bunzo</Link> . Made with{" "}
+          <FaHeart className="mx-2 text-red-500" /> by Pawan Kumavat
+        </p>
+        <button className="bg-orange-300 hover:bg-orange-400 text-custom-black hover:text-white flex items-center gap-2 text-[15px] transition-all ease-in-out duration-200 py-3 font-medium px-3 rounded-lg">
+          Share your thinking <BsArrowRight />
+        </button>
+      </div>
     </footer>
   );
 };
