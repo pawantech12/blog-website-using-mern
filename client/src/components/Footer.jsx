@@ -23,16 +23,16 @@ const Footer = () => {
             the industry&apos;s since the when unknown.
           </p>
           <ul className="flex items-center gap-3 text-sm text-white">
-            <li className="bg-custom-lightBlack p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+            <li className="bg-custom-light-black p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
               <FaFacebookF />
             </li>
-            <li className="bg-custom-lightBlack p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+            <li className="bg-custom-light-black p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
               <FaTwitter />
             </li>
-            <li className="bg-custom-lightBlack p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+            <li className="bg-custom-light-black p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
               <FaInstagram />
             </li>
-            <li className="bg-custom-lightBlack p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+            <li className="bg-custom-light-black p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
               <FaLinkedinIn />
             </li>
           </ul>
