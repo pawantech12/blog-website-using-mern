@@ -24,7 +24,9 @@ export const Navbar = () => {
               <FiSearch />
             </button>
             <button className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md">
-              <LuUser2 />
+              <Link to="/register">
+                <LuUser2 />
+              </Link>
             </button>
           </div>
         </div>
@@ -62,7 +64,10 @@ export const Navbar = () => {
                 </Link>
               </li>
               <li>
-                <Link className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200">
+                <Link
+                  className="text-lg font-medium text-neutral-600 hover:text-orange-300 transition-all ease-in-out duration-200"
+                  to="/category"
+                >
                   Category
                 </Link>
               </li>

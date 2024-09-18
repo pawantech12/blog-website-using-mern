@@ -6,6 +6,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./pages/Home.jsx";
 import AboutUs from "./pages/AboutUs.jsx";
 import Contact from "./pages/Contact.jsx";
+import Category from "./pages/Category.jsx";
+import CategoryPosts from "./pages/CategoryPosts.jsx";
+import Register from "./pages/Register.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -18,6 +21,18 @@ const router = createBrowserRouter([
   {
     path: "/contact-us",
     element: <App element={<Contact />} />,
+  },
+  {
+    path: "/category",
+    element: <App element={<Category />} />,
+  },
+  {
+    path: "/category/:categoryId",
+    element: <App element={<CategoryPosts />} />,
+  },
+  {
+    path: "/register",
+    element: <App element={<Register />} />,
   },
 ]);
 
