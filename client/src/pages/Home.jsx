@@ -64,9 +64,9 @@ export const Home = () => {
   };
   return (
     <>
-      <section className="p-16 bg-zinc-100 flex gap-12">
-        <div className="flex gap-10">
-          <div className="flex flex-col gap-4 justify-between">
+      <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-10">
+          <div className="flex flex-row md:flex-col gap-4 justify-between">
             <figure>
               <Link>
                 <img src={technology} alt="" className="rounded-xl" />
@@ -88,15 +88,15 @@ export const Home = () => {
               </Link>
             </figure>
           </div>
-          <div>
+          <div className="w-full md:w-auto">
             <figure className="p-3 bg-white rounded-xl">
               <Link>
-                <img src={hero1} alt="" className=" rounded-xl" />
+                <img src={hero1} alt="" className="rounded-xl" />
               </Link>
             </figure>
           </div>
         </div>
-        <div className="w-1/4 flex flex-col justify-around">
+        <div className="w-full md:w-1/4 flex flex-col justify-around">
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
               <span className="bg-yellow-200 px-5 py-2 font-medium text-neutral-600 rounded-xl">
@@ -104,7 +104,7 @@ export const Home = () => {
               </span>
               <span className="text-zinc-500">By Hasan</span>
             </div>
-            <h3 className="text-2xl font-semibold">
+            <h3 className="text-xl md:text-2xl font-semibold">
               <Link>Make your store stand out from the others by...</Link>
             </h3>
             <p className="text-gray-500">
@@ -137,7 +137,7 @@ export const Home = () => {
               </span>
               <span className="text-zinc-500">By Hasan</span>
             </div>
-            <h3 className="text-2xl font-semibold">
+            <h3 className="text-xl md:text-2xl font-semibold">
               <Link to="/blog-post/2">
                 Make your store stand out from the others by...
               </Link>
@@ -167,241 +167,55 @@ export const Home = () => {
           </div>
         </div>
       </section>
-      <section className="p-16">
+
+      <section className="p-4 md:p-16">
         <h4 className="text-2xl font-semibold text-neutral-700">
           Trending Articles
         </h4>
-        <div className="grid grid-cols-2 mt-8 gap-8 gap-x-12">
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 mt-8 gap-8">
+          {[...Array(6)].map((_, index) => (
+            <div key={index} className="flex gap-6">
+              <div className="w-full md:w-3/5">
+                <figure>
+                  <img src={blog1} alt="" className="rounded-xl w-full" />
+                </figure>
               </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
+              <div className="flex flex-col gap-2 w-full">
+                <div className="flex items-center gap-3">
+                  <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                    Food
+                  </span>
+                  <span className="text-zinc-500">By Hasan</span>
                 </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
-              </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
+                <h5 className="text-xl font-medium ">
+                  <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
+                    Customize your WooCommerce store with countless Web
+                  </Link>
+                </h5>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="flex gap-1 items-center">
+                      <LuCalendarDays />
+                      15 June 2021
+                    </span>{" "}
+                    <GoDotFill className="w-2 h-2" />
+                    <span>14 min read</span>
+                  </div>
+                  <div className="text-xl flex gap-2 items-center">
+                    <button>
+                      <LuBookmarkMinus />
+                    </button>
+                    <button>
+                      <FaRegHeart />
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
-              </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
-              </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
-              </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="flex gap-6">
-            <div className="w-3/5">
-              <figure>
-                <img src={blog1} alt="" className="rounded-xl" />
-              </figure>
-            </div>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                  Food
-                </span>
-                <span className="text-zinc-500">By Hasan</span>
-              </div>
-              <h5 className="text-xl font-medium ">
-                <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                  Customize your WooCommerce store with countless Web
-                </Link>
-              </h5>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    15 June 2021
-                  </span>{" "}
-                  <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
-                  </button>
-                  <button>
-                    <FaRegHeart />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
       </section>
+
       <section className="px-16 py-20">
         <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
           <h4 className="text-2xl font-medium text-neutral-700">

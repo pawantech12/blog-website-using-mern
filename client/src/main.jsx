@@ -11,6 +11,8 @@ import CategoryPosts from "./pages/CategoryPosts.jsx";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import BlogDetails from "./pages/BlogDetails.jsx";
+import Dashboard from "./pages/admin/Dashboard.jsx";
+import AdminHome from "./pages/admin/pages/AdminHome.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -43,6 +45,10 @@ const router = createBrowserRouter([
   {
     path: "/blog-post/:blogId",
     element: <App element={<BlogDetails />} />,
+  },
+  {
+    path: "/dashboard",
+    element: <App element={<Dashboard element={<AdminHome />} />} />,
   },
 ]);
 
