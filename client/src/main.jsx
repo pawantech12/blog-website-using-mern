@@ -13,6 +13,7 @@ import Login from "./pages/Login.jsx";
 import BlogDetails from "./pages/BlogDetails.jsx";
 import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminHome from "./pages/admin/pages/AdminHome.jsx";
+import PostList from "./pages/admin/pages/PostList.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <App element={<Dashboard element={<AdminHome />} />} />,
+  },
+  {
+    path: "/dashboard/post-list",
+    element: <App element={<Dashboard element={<PostList />} />} />,
   },
 ]);
 
