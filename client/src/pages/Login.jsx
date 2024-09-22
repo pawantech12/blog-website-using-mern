@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
-const Register = () => {
+const Login = () => {
   const {
     register,
     handleSubmit,
@@ -23,34 +23,12 @@ const Register = () => {
             Welcome to Bunzo
           </h2>
           <p className="text-center text-gray-500 font-medium">
-            Register to create your first account and start exploring blog posts
+            Login to your account and start exploring blog posts
           </p>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
-          {/* Name Input */}
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="name"
-              className="block text-sm font-semibold text-custom-light-black"
-            >
-              Full Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              {...register("name", { required: "Name is required" })}
-              className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Username"
-            />
-            {errors.name && (
-              <span className="text-[13px] mt-1 font-medium text-gray-500">
-                {errors.name.message}
-              </span>
-            )}
-          </div>
-
           {/* Email Input */}
           <div className="flex flex-col gap-1">
             <label
@@ -94,36 +72,13 @@ const Register = () => {
               </span>
             )}
           </div>
-          {/*Confirm Password Input */}
-          <div className="flex flex-col gap-1">
-            <label
-              htmlFor="password"
-              className="block text-sm font-semibold text-custom-light-black"
-            >
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              id="cpassword"
-              {...register("cpassword", {
-                required: "Confirm Password is required",
-              })}
-              className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Confirm Password"
-            />
-            {errors.cpassword && (
-              <span className="text-[13px] mt-1 font-medium text-gray-500">
-                {errors.cpassword.message}
-              </span>
-            )}
-          </div>
 
           {/* Sign Up Button */}
           <button
             type="submit"
             className="w-full bg-custom-light-black/90 text-white py-3 rounded-md text-lg font-medium hover:bg-custom-black transition-all ease-in-out duration-200"
           >
-            Sign Up
+            Log In
           </button>
         </form>
 
@@ -131,7 +86,7 @@ const Register = () => {
         <div className="flex items-center justify-center my-5">
           <span className="bg-gray-200 h-px flex-1"></span>
           <span className="px-4 text-neutral-900 font-medium">
-            or Register with
+            or Login with
           </span>
           <span className="bg-gray-200 h-px flex-1"></span>
         </div>
@@ -149,9 +104,9 @@ const Register = () => {
         </div>
 
         <p className="text-center mt-5 font-medium ">
-          Already Have an Account?{" "}
-          <Link to="/login" className="text-orange-400">
-            Login
+          Don&apos;t Have an Account?{" "}
+          <Link to="/register" className="text-orange-400">
+            Sign Up
           </Link>
         </p>
       </div>
@@ -159,4 +114,4 @@ const Register = () => {
   );
 };
 
-export default Register;
+export default Login;

@@ -138,7 +138,9 @@ export const Home = () => {
               <span className="text-zinc-500">By Hasan</span>
             </div>
             <h3 className="text-2xl font-semibold">
-              <Link>Make your store stand out from the others by...</Link>
+              <Link to="/blog-post/2">
+                Make your store stand out from the others by...
+              </Link>
             </h3>
             <p className="text-gray-500">
               Contrary to popular belief, Lorem Ipsum is not simply random text.

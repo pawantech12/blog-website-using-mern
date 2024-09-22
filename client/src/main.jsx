@@ -9,6 +9,8 @@ import Contact from "./pages/Contact.jsx";
 import Category from "./pages/Category.jsx";
 import CategoryPosts from "./pages/CategoryPosts.jsx";
 import Register from "./pages/Register.jsx";
+import Login from "./pages/Login.jsx";
+import BlogDetails from "./pages/BlogDetails.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -33,6 +35,14 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <App element={<Register />} />,
+  },
+  {
+    path: "/login",
+    element: <App element={<Login />} />,
+  },
+  {
+    path: "/blog-post/:blogId",
+    element: <App element={<BlogDetails />} />,
   },
 ]);
 
