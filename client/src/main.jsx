@@ -15,6 +15,8 @@ import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminHome from "./pages/admin/pages/AdminHome.jsx";
 import PostList from "./pages/admin/pages/PostList.jsx";
 import CreateBlogPost from "./pages/admin/pages/CreateBlogPost.jsx";
+import Profile from "./pages/admin/pages/profile.jsx";
+import { AuthProvider } from "./store/Authentication.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -60,10 +62,16 @@ const router = createBrowserRouter([
     path: "/dashboard/create-post",
     element: <App element={<Dashboard element={<CreateBlogPost />} />} />,
   },
+  {
+    path: "/dashboard/user-profile",
+    element: <App element={<Dashboard element={<Profile />} />} />,
+  },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );

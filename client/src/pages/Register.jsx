@@ -1,17 +1,51 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
+import axios from "axios";
 const Register = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+  const [apiError, setApiError] = useState(""); // for handling API error messages
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const onSubmit = (data) => {
+  const navigate = useNavigate();
+
+  const onSubmit = async (data) => {
     console.log(data);
+    const { password, cpassword } = data;
+    // Check if passwords match
+    if (password !== cpassword) {
+      setApiError("Passwords do not match!");
+      return;
+    }
+    setIsSubmitting(true);
+    setApiError(""); // Reset error message
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/api/register`,
+        data
+      );
+      console.log(response);
+
+      if (response.status === 201) {
+        console.log("Registration successful:", response);
+        navigate("/login");
+        // Redirect or show success message
+      } else {
+        setApiError(response.data.msg || "Failed to register");
+      }
+    } catch (error) {
+      setApiError(error);
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -26,6 +60,11 @@ const Register = () => {
             Register to create your first account and start exploring blog posts
           </p>
         </div>
+        {apiError && (
+          <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
+            <p>{apiError}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
@@ -121,9 +160,10 @@ const Register = () => {
           {/* Sign Up Button */}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-custom-light-black/90 text-white py-3 rounded-md text-lg font-medium hover:bg-custom-black transition-all ease-in-out duration-200"
           >
-            Sign Up
+            {isSubmitting ? "Registering..." : "Register"}
           </button>
         </form>
 

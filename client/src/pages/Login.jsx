@@ -1,17 +1,50 @@
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
+import axios from "axios";
+import { useAuth } from "../store/Authentication";
 const Login = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-
-  const onSubmit = (data) => {
+  const [apiError, setApiError] = useState(""); // for handling API error messages
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { storeTokenInLS } = useAuth();
+  const onSubmit = async (data) => {
     console.log(data);
+    setIsSubmitting(true);
+    setApiError(""); // Reset error message
+
+    try {
+      const response = await axios.post(
+        `http://localhost:3000/api/login`,
+        data
+      );
+      console.log(response);
+
+      if (response.status === 200) {
+        console.log("Login successful:", response);
+        storeTokenInLS(response.data.token);
+        navigate("/dashboard");
+        // Redirect or show success message
+      } else {
+        setApiError(response.data.msg || "Failed to login");
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "An error occurred. Please try again.";
+      setApiError(errorMessage);
+      console.log(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -26,6 +59,11 @@ const Login = () => {
             Login to your account and start exploring blog posts
           </p>
         </div>
+        {apiError && (
+          <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
+            <p>{apiError}</p>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
@@ -76,9 +114,10 @@ const Login = () => {
           {/* Sign Up Button */}
           <button
             type="submit"
+            disabled={isSubmitting}
             className="w-full bg-custom-light-black/90 text-white py-3 rounded-md text-lg font-medium hover:bg-custom-black transition-all ease-in-out duration-200"
           >
-            Log In
+            {isSubmitting ? "Submitting..." : "Login"}
           </button>
         </form>
 

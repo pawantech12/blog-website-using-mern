@@ -7,15 +7,37 @@ import {
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
+  FaRegUser,
   FaTwitter,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../store/Authentication";
 
+import { RiDashboardHorizontalLine, RiLogoutBoxRLine } from "react-icons/ri";
 export const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
+  const { user, token, logout } = useAuth();
+  const navigate = useNavigate();
+  console.log(user);
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
+
+  const toggleDropdown = () => {
+    setDropdownVisible(!dropdownVisible);
+  };
+
+  const toggleProfileDropdown = () => {
+    setProfileDropdownVisible(!profileDropdownVisible);
+  };
+
   const handleSearchClick = () => {
     setIsSearchOpen(!isSearchOpen);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
   };
 
   return (
@@ -35,11 +57,59 @@ export const Navbar = () => {
             >
               <FiSearch />
             </button>
-            <button className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md">
-              <Link to="/register">
-                <LuUser2 />
-              </Link>
-            </button>
+            {token ? (
+              <div className="relative">
+                <div
+                  onClick={toggleProfileDropdown}
+                  className="w-14 h-14 rounded-full bg-gray-200 cursor-pointer flex items-center justify-center"
+                >
+                  <img
+                    src={
+                      user?.profileImg ||
+                      "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                    }
+                    alt="User Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                </div>
+                {profileDropdownVisible && (
+                  <ul className="absolute top-full right-0 py-4 z-10 px-3 text-sm mt-2 w-44 bg-white shadow-lg rounded-md">
+                    <li className="hover:text-violet-400 py-2 transition-all ease-in-out duration-300">
+                      <Link
+                        to="/dashboard"
+                        className="flex items-center gap-2 font-medium"
+                      >
+                        <RiDashboardHorizontalLine className="w-5 h-5 text-zinc-500" />
+                        Dashboard
+                      </Link>
+                    </li>
+
+                    <li className="hover:text-violet-400 py-2 transition-all ease-in-out duration-300">
+                      <Link
+                        to="/dashboard/profile"
+                        className="flex items-center gap-2 font-medium"
+                      >
+                        <FaRegUser className="w-5 h-5 text-zinc-500" />
+                        Profile
+                      </Link>
+                    </li>
+                    <li
+                      onClick={handleLogout}
+                      className="hover:text-violet-400 flex items-center gap-2 font-medium py-2 transition-all ease-in-out duration-300 cursor-pointer"
+                    >
+                      <RiLogoutBoxRLine className="w-5 h-5 text-zinc-500" />
+                      Logout
+                    </li>
+                  </ul>
+                )}
+              </div>
+            ) : (
+              <button className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md">
+                <Link to="/register">
+                  <LuUser2 />
+                </Link>
+              </button>
+            )}
           </div>
         </div>
 
