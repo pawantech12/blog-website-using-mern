@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import office1 from "../img/office-01.webp";
 import { MdOutlinePhoneInTalk } from "react-icons/md";
@@ -11,8 +11,39 @@ import {
   FaTwitter,
 } from "react-icons/fa";
 import { BsArrowRight } from "react-icons/bs";
+import { useForm } from "react-hook-form";
+import axios from "axios";
 
 const Contact = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+  const [apiError, setApiError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
+
+  const onSubmit = async (data) => {
+    setIsSubmitting(true);
+    setApiError("");
+    setSuccessMessage("");
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/contact",
+        data
+      );
+      console.log(response.data.message); // Handle success response
+      setSuccessMessage("Your message has been sent successfully!");
+    } catch (error) {
+      console.error(error);
+      setApiError("Failed to send message. Please try again later.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <section className="">
@@ -85,40 +116,66 @@ const Contact = () => {
           <h4 className="text-4xl text-custom-black font-semibold">
             Get In Touch
           </h4>
-          <form action="" className="flex flex-col gap-4 mt-[2rem]">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-4 mt-[2rem]"
+          >
+            {/* Display API Errors and Success Messages */}
+            {apiError && <p className="text-red-500">{apiError}</p>}
+            {successMessage && (
+              <p className="text-green-500">{successMessage}</p>
+            )}
+            {/* Name Input */}
             <input
               type="text"
-              name="name"
-              id="name"
+              {...register("name", { required: "Name is required" })}
               placeholder="Name"
               className="bg-custom-exlight-orange px-6 py-1 border border-custom-light-orange rounded-lg h-12 placeholder:text-custom-black/80 placeholder:text-sm placeholder:font-medium focus:border-custom-orange outline-none transition-all ease-in-out duration-200"
             />
+            {errors.name && (
+              <span className="text-red-500">{errors.name.message}</span>
+            )}
+
+            {/* Email Input */}
             <input
-              type="text"
-              name="email"
-              id="email"
+              type="email"
+              {...register("email", { required: "Email is required" })}
               placeholder="Email"
               className="bg-custom-exlight-orange px-6 py-1 border border-custom-light-orange rounded-lg h-12 placeholder:text-custom-black/80 placeholder:text-sm placeholder:font-medium focus:border-custom-orange outline-none transition-all ease-in-out duration-200"
             />
+            {errors.email && (
+              <span className="text-red-500">{errors.email.message}</span>
+            )}
+
+            {/* Phone Input */}
             <input
               type="text"
-              name="phone"
-              id="phone"
+              {...register("phone", { required: "Phone number is required" })}
               placeholder="Phone"
               className="bg-custom-exlight-orange px-6 py-1 border border-custom-light-orange rounded-lg h-12 placeholder:text-custom-black/80 placeholder:text-sm placeholder:font-medium focus:border-custom-orange outline-none transition-all ease-in-out duration-200"
             />
+            {errors.phone && (
+              <span className="text-red-500">{errors.phone.message}</span>
+            )}
+
+            {/* Message Textarea */}
             <textarea
-              name="message"
-              id="message"
+              {...register("message", { required: "Message is required" })}
               placeholder="Message"
               rows="8"
               className="bg-custom-exlight-orange px-6 py-2 border border-custom-light-orange rounded-lg placeholder:text-custom-black/80 placeholder:text-sm placeholder:font-medium focus:border-custom-orange outline-none transition-all ease-in-out duration-200"
             ></textarea>
+            {errors.message && (
+              <span className="text-red-500">{errors.message.message}</span>
+            )}
+
+            {/* Submit Button */}
             <button
               type="submit"
+              disabled={isSubmitting}
               className="bg-orange-300 hover:bg-orange-400 text-custom-black hover:text-white flex items-center gap-2 text-[15px] transition-all ease-in-out duration-200 py-4 font-medium px-6 rounded-lg w-fit"
             >
-              Send Message <BsArrowRight />
+              {isSubmitting ? "Sending..." : "Send Message"} <BsArrowRight />
             </button>
           </form>
         </div>
