@@ -1,20 +1,38 @@
 const Blog = require("../models/blog.model");
 const User = require("../models/user.model");
+const cloudinary = require("../config/cloudinary");
 // Create a new blog post
 const createBlogPost = async (req, res) => {
   try {
-    const { title, content, category, coverImage, isDraft, isFeatured } =
-      req.body;
-    const userId = req.user.userId; // Assuming you're getting user ID from JWT token
-    // console.log(userId);
-    const blog = await Blog.findOne({
-      title,
-      author: userId,
-    });
-    if (blog) {
+    const { title, content, category, isDraft, isFeatured } = req.body;
+    const userId = req.user.userId; // Assuming JWT user authentication
+
+    let coverImageUrl = "";
+    const blogExists = await Blog.findOne({ title, author: userId });
+    if (blogExists) {
       return res.status(400).json({
         success: false,
         message: "Blog post already exists",
+      });
+    }
+
+    // Upload image to Cloudinary if a file is provided
+    if (req.file) {
+      // Use a Promise to handle the upload
+      coverImageUrl = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "blog_images" },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              return reject(new Error("Image upload failed"));
+            }
+            resolve(result.secure_url);
+          }
+        );
+
+        // End the stream with the file buffer
+        stream.end(req.file.buffer);
       });
     }
 
@@ -22,7 +40,7 @@ const createBlogPost = async (req, res) => {
       title,
       content,
       category,
-      coverImage,
+      coverImage: coverImageUrl,
       author: userId,
       isDraft,
       isFeatured,
@@ -36,6 +54,7 @@ const createBlogPost = async (req, res) => {
       blog: newBlog,
     });
   } catch (error) {
+    console.error("Error creating blog post:", error); // Log the error for debugging
     res.status(500).json({
       success: false,
       message: "Failed to create blog post",

@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
+import { useAuth } from "../../../store/Authentication";
 
-const Table = ({ blogs, handleDelete, handleEdit }) => {
+const Table = ({ blogs, handleDelete, handleEdit, isDeleting }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const entriesPerPage = 5;
 
@@ -10,6 +11,8 @@ const Table = ({ blogs, handleDelete, handleEdit }) => {
 
   // Define the max page buttons to show in the pagination (e.g., 5)
   const maxVisiblePages = 5;
+  const { user } = useAuth();
+  console.log("blog user", user);
 
   // Get current blogs for the page
   const currentBlogs = blogs.slice(
@@ -71,31 +74,32 @@ const Table = ({ blogs, handleDelete, handleEdit }) => {
           {currentBlogs.map((blog, index) => (
             <tr key={index} className="hover:bg-gray-50">
               <td className="p-4 border-b">{blog.title}</td>
-              <td className="p-4 border-b">{blog.author}</td>
-              <td className="p-4 border-b">{blog.publishedDate}</td>
+              <td className="p-4 border-b">{user.user.name}</td>
+              <td className="p-4 border-b">
+                {blog.publishedDate.split("T")[0]}
+              </td>
               <td className="p-4 border-b">{blog.category}</td>
               <td className="p-4 border-b">
                 <span
                   className={`${
-                    blog.status === "Published"
+                    blog.isDraft === false
                       ? "text-emerald-500 bg-emerald-100 px-2 py-2 font-medium rounded-md text-sm"
-                      : blog.status === "Draft"
-                      ? "text-gray-500 bg-gray-100 px-2 py-2 font-medium rounded-md text-sm"
-                      : "text-red-500 bg-red-100 px-2 py-2 font-medium rounded-md text-sm"
+                      : "text-gray-500 bg-gray-100 px-2 py-2 font-medium rounded-md text-sm"
                   }`}
                 >
-                  {blog.status}
+                  {blog.isDraft === false ? "Published" : "Draft"}
                 </span>
               </td>
               <td className="p-4 border-b flex space-x-4">
                 <button
-                  onClick={() => handleDelete(blog.id)}
+                  disabled={isDeleting}
+                  onClick={() => handleDelete(blog._id)}
                   className="text-red-500 hover:text-red-700 bg-red-100 px-2 py-2 font-medium rounded-md text-sm"
                 >
                   <FaTrash />
                 </button>
                 <button
-                  onClick={() => handleEdit(blog.id)}
+                  onClick={() => handleEdit(blog._id)}
                   className="text-emerald-500 hover:text-emerald-700 bg-emerald-100 px-2 py-2 font-medium rounded-md"
                 >
                   <FaEdit />

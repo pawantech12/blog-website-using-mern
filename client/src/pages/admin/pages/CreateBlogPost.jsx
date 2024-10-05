@@ -13,9 +13,25 @@ const CreateBlogPost = () => {
   } = useForm();
   const [postBody, setPostBody] = useState("");
   const [apiError, setApiError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file); // Read the file as a data URL
+    } else {
+      setImagePreview(null); // Clear the preview if no file is selected
+    }
+  };
   const { token } = useAuth();
+  console.log("token", token);
 
   const onSubmit = async (data) => {
     data.content = postBody; // Add post body from the TinyMCE editor
@@ -23,30 +39,47 @@ const CreateBlogPost = () => {
     setIsSubmitting(true);
     setApiError("");
     setSuccessMessage("");
-
+    // Create a FormData object to handle file upload
+    const formData = new FormData();
+    formData.append("title", data.title);
+    formData.append("content", data.content);
+    formData.append("category", data.category);
+    formData.append("isDraft", data.isDraft);
+    formData.append("isFeatured", data.isFeatured);
+    formData.append("coverImage", data.coverImage[0]); // Assuming it's a FileList
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/blog/create-blog",
+        "http://localhost:3000/blog/create-blog",
+        formData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
           },
-          data,
         }
       );
       console.log(response);
 
-      if (response.status === 201) {
+      if (response.data.success === true) {
         console.log("Blog Post created successfully:", response);
         // Redirect or show success message
         setSuccessMessage(response.data.message);
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 3000);
       } else {
         setApiError(response.data.message);
+        setTimeout(() => {
+          setApiError("");
+        }, 3000);
       }
       console.log(response.data.message); // Handle success response
     } catch (error) {
       console.error(error);
-      setApiError("An error occurred. Please try again later.");
+      setApiError(error.response.data.message);
+      setTimeout(() => {
+        setApiError("");
+      }, 3000);
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -62,9 +95,29 @@ const CreateBlogPost = () => {
       <h1 className="text-2xl font-semibold text-custom-black mb-6">
         Create Blog Post
       </h1>
+      {successMessage && (
+        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative font-medium">
+          <span className="block sm:inline">{successMessage}</span>
+        </div>
+      )}
+      {apiError && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-medium">
+          <span className="block sm:inline">{apiError}</span>
+        </div>
+      )}
+      {/* Image Preview */}
+      {imagePreview && (
+        <div className="mt-2">
+          <img
+            src={imagePreview}
+            alt="Image Preview"
+            className="w-full h-96 object-contain rounded-lg border"
+          />
+        </div>
+      )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 rounded-lg border border-gray-200 p-6 px-8"
+        className="space-y-6 rounded-lg border border-gray-200 p-6 px-8 mt-5"
       >
         {/* Post Title */}
         <div>
@@ -177,6 +230,7 @@ const CreateBlogPost = () => {
             <input
               type="file"
               {...register("coverImage", { required: true })}
+              onChange={handleImageChange}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {errors.coverImage && (
@@ -221,11 +275,6 @@ const CreateBlogPost = () => {
             {isSubmitting ? "Creating..." : "Create Post"}
           </button>
         </div>
-
-        {apiError && <div className="text-red-500">{apiError}</div>}
-        {successMessage && (
-          <div className="text-green-500">{successMessage}</div>
-        )}
       </form>
     </div>
   );

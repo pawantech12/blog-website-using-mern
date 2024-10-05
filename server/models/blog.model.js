@@ -24,6 +24,10 @@ const blogSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    publishedDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );
