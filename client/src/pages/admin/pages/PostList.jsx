@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import SearchFilter from "../components/SearchFilter";
 import Table from "../components/Table";
 import { FaPlus } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -15,6 +15,10 @@ const PostList = () => {
   const { token } = useAuth();
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  if (!token) {
+    navigate("/login");
+  }
 
   useEffect(() => {
     const fetchBlogs = async () => {
@@ -27,6 +31,9 @@ const PostList = () => {
             },
           }
         );
+        if (response.data.success === false) {
+          console.log("Failed to fetch blogs", response);
+        }
 
         setBlogs(response.data.blogs);
       } catch (err) {
@@ -37,7 +44,7 @@ const PostList = () => {
     };
 
     fetchBlogs();
-  }, []);
+  }, [token]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [blogToDelete, setBlogToDelete] = useState(null); // Track which blog is to be deleted
@@ -46,6 +53,10 @@ const PostList = () => {
   const handleDelete = (id) => {
     setIsModalOpen(true); // Open modal for confirmation
     setBlogToDelete(id); // Set the blog id to be deleted
+  };
+  const handleEdit = (id) => {
+    console.log("Edit blog with id:", id);
+    navigate(`/dashboard/update-post/${id}`);
   };
 
   const confirmDelete = async () => {
@@ -121,6 +132,7 @@ const PostList = () => {
           <Table
             blogs={filteredBlogs}
             handleDelete={handleDelete}
+            handleEdit={handleEdit}
             isDeleting={isDeleting}
           />
         </div>

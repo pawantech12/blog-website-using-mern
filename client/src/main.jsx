@@ -17,6 +17,7 @@ import PostList from "./pages/admin/pages/PostList.jsx";
 import CreateBlogPost from "./pages/admin/pages/CreateBlogPost.jsx";
 import Profile from "./pages/admin/pages/profile.jsx";
 import { AuthProvider } from "./store/Authentication.jsx";
+import UpdateBlogPost from "./pages/admin/pages/UpdateBlogPost.jsx";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -61,6 +62,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/create-post",
     element: <App element={<Dashboard element={<CreateBlogPost />} />} />,
+  },
+  {
+    path: "/dashboard/update-post/:blogId",
+    element: <App element={<Dashboard element={<UpdateBlogPost />} />} />,
   },
   {
     path: "/dashboard/user-profile",

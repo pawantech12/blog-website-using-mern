@@ -74,7 +74,7 @@ const Table = ({ blogs, handleDelete, handleEdit, isDeleting }) => {
           {currentBlogs.map((blog, index) => (
             <tr key={index} className="hover:bg-gray-50">
               <td className="p-4 border-b">{blog.title}</td>
-              <td className="p-4 border-b">{user.user.name}</td>
+              <td className="p-4 border-b">{user?.user?.name}</td>
               <td className="p-4 border-b">
                 {blog.publishedDate.split("T")[0]}
               </td>
