@@ -1,19 +1,18 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Editor } from "@tinymce/tinymce-react";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const UpdateBlogPost = () => {
   const { blogId } = useParams(); // Get blog post ID from URL params
-  console.log("blog id ", blogId);
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
+
   const [postBody, setPostBody] = useState("");
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -22,6 +21,8 @@ const UpdateBlogPost = () => {
   const [blogData, setBlogData] = useState({});
 
   const { token } = useAuth();
+  const editorRef = useRef(null); // Create a ref for TinyMCE
+  const navigate = useNavigate();
 
   // Fetch existing blog post data when component mounts
   useEffect(() => {
@@ -37,21 +38,24 @@ const UpdateBlogPost = () => {
         );
 
         const blogData = response.data.blog;
-        console.log("response update", response);
-
         setImagePreview(blogData.coverImage); // Set image preview if there was an existing image
         setBlogData(blogData);
+        setPostBody(blogData.content); // Set the blog post content
+
+        // Dynamically set TinyMCE content once the blog data is loaded
+        if (editorRef.current) {
+          editorRef.current.setContent(blogData.content);
+        }
       } catch (error) {
         console.error("Failed to fetch blog post:", error);
       }
     };
 
     fetchBlogPost();
-  }, [blogId, blogData, token]);
+  }, [blogId, token]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -69,7 +73,6 @@ const UpdateBlogPost = () => {
     setApiError("");
     setSuccessMessage("");
 
-    // Create FormData object to handle file upload
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("content", data.content);
@@ -93,8 +96,13 @@ const UpdateBlogPost = () => {
       );
 
       if (response.data.success) {
+        console.log("Blog post updated succesfully", response);
+
         setSuccessMessage(response.data.message);
         setTimeout(() => setSuccessMessage(""), 3000);
+        setTimeout(() => {
+          navigate(`/dashboard/post-list`);
+        }, 3000);
       } else {
         setApiError(response.data.message);
         setTimeout(() => setApiError(""), 3000);
@@ -110,7 +118,7 @@ const UpdateBlogPost = () => {
   };
 
   const handleEditorChange = (content) => {
-    setPostBody(content);
+    setPostBody(content); // Update post body when the editor content changes
   };
 
   return (
@@ -149,14 +157,11 @@ const UpdateBlogPost = () => {
           </label>
           <input
             type="text"
-            {...register("title", { required: true })}
+            {...register("title")}
             placeholder="Enter post title"
             defaultValue={blogData.title}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
           />
-          {errors.title && (
-            <span className="text-red-500">This field is required</span>
-          )}
         </div>
 
         {/* Post Body (TinyMCE Editor) */}
@@ -166,7 +171,7 @@ const UpdateBlogPost = () => {
           </label>
           <Editor
             apiKey="niogdjwfejq20ihmep2n3quecbaqvke4kmkolr9sn3x2ubcm"
-            value={postBody}
+            initialValue={postBody}
             onEditorChange={handleEditorChange}
             init={{
               plugins: [
@@ -209,6 +214,7 @@ const UpdateBlogPost = () => {
               toolbar:
                 "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
             }}
+            onInit={(evt, editor) => (editorRef.current = editor)}
           />
         </div>
 
@@ -219,7 +225,7 @@ const UpdateBlogPost = () => {
               Post Category
             </label>
             <select
-              {...register("category", { required: true })}
+              {...register("category")}
               className="w-full border border-gray-200 rounded-md py-3 px-4 appearance-none text-base outline-none"
             >
               <option value="">Select category</option>
@@ -228,9 +234,6 @@ const UpdateBlogPost = () => {
               <option value="education">Education</option>
               <option value="business">Business</option>
             </select>
-            {errors.category && (
-              <span className="text-red-500">This field is required</span>
-            )}
           </div>
 
           {/* Post Cover Image */}
@@ -240,13 +243,10 @@ const UpdateBlogPost = () => {
             </label>
             <input
               type="file"
-              {...register("coverImage", { required: true })}
+              {...register("coverImage")}
               onChange={handleImageChange}
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
-            {errors.coverImage && (
-              <span className="text-red-500">This field is required</span>
-            )}
           </div>
         </div>
 

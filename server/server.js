@@ -17,10 +17,12 @@ const PORT = process.env.PORT || 5000;
 // importing routes
 const authenticationRouter = require("./routers/authentication.router.js");
 const blogRouter = require("./routers/blog.router.js");
+const categoryRouter = require("./routers/category.router.js");
 const contactRouter = require("./routers/contact.router.js");
 app.use("/api", authenticationRouter);
 app.use("/api", contactRouter);
 app.use("/blog", blogRouter);
+app.use("/blog", categoryRouter);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

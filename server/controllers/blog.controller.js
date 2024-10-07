@@ -111,20 +111,55 @@ const getBlogById = async (req, res) => {
 const updateBlogPost = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const { title, content, category, coverImage } = req.body;
+    const { title, content, category, isDraft, isFeatured } = req.body;
 
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
-      { title, content, category, coverImage },
-      { new: true }
-    );
+    let coverImageUrl = "";
 
-    if (!updatedBlog) {
+    // Find the existing blog post
+    const existingBlog = await Blog.findById(blogId);
+    if (!existingBlog) {
       return res.status(404).json({
         success: false,
         message: "Blog post not found",
       });
     }
+
+    // Check if a new image is provided in the request
+    if (req.file) {
+      // Upload the new image to Cloudinary
+      coverImageUrl = await new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "blog_images" },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error:", error);
+              return reject(new Error("Image upload failed"));
+            }
+            resolve(result.secure_url);
+          }
+        );
+
+        // End the stream with the file buffer
+        stream.end(req.file.buffer);
+      });
+    } else {
+      // If no new image is uploaded, keep the existing one
+      coverImageUrl = existingBlog.coverImage;
+    }
+
+    // Update the blog post in the database
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      blogId,
+      {
+        title,
+        content,
+        category,
+        coverImage: coverImageUrl,
+        isDraft,
+        isFeatured,
+      },
+      { new: true }
+    );
 
     res.status(200).json({
       success: true,
@@ -132,6 +167,7 @@ const updateBlogPost = async (req, res) => {
       blog: updatedBlog,
     });
   } catch (error) {
+    console.error("Error updating blog post:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update blog post",

@@ -86,11 +86,11 @@ export const Navbar = () => {
 
                     <li className="hover:text-violet-400 py-2 transition-all ease-in-out duration-300">
                       <Link
-                        to="/dashboard/profile"
+                        to="/dashboard/post-list"
                         className="flex items-center gap-2 font-medium"
                       >
                         <FaRegUser className="w-5 h-5 text-zinc-500" />
-                        Profile
+                        Post List
                       </Link>
                     </li>
                     <li
