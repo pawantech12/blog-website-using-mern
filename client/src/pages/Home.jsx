@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import technology from "../img/technology.webp";
 import newsletter1 from "../img/1-newsletter.webp";
@@ -27,11 +27,29 @@ import BlogData from "../data/BlogData";
 import { FiTwitter } from "react-icons/fi";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import CategoryData from "../data/CategoryData";
+import axios from "axios";
 export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [catcurrent, setCatCurrent] = useState(0);
-  const itemsPerPage = 1;
+  const [categories, setCategories] = useState([]);
 
+  const itemsPerPage = 1;
+  // Fetch categories from the backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/blog/get-categories"
+        );
+        console.log("Categories:", response);
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   const nextSlide = () => {
     setCurrent((prev) =>
       prev === Math.ceil(BlogData.length / itemsPerPage) - 1 ? 0 : prev + 1
@@ -396,12 +414,12 @@ export const Home = () => {
             className="flex transition-transform w-full duration-500 ease-in-out gap-6 "
             style={{ transform: `translateX(-${(catcurrent * 95) / 5}%)` }}
           >
-            {CategoryData.map((item, index) => (
+            {categories.map((item, index) => (
               <div key={index} className="relative w-[16.8%] flex-shrink-0">
                 <Link>
                   <figure className="relative">
                     <img
-                      src={item.catImg}
+                      src={item.imageUrl}
                       alt=""
                       className="h-36 w-full rounded-xl object-cover"
                     />

@@ -1,6 +1,11 @@
 const cloudinary = require("../config/cloudinary");
 const Category = require("../models/category.model");
-
+const Blog = require("../models/blog.model");
+const crypto = require("crypto");
+// Helper function to compute hash of image buffer
+const computeImageHash = (buffer) => {
+  return crypto.createHash("md5").update(buffer).digest("hex");
+};
 // Create a new category
 const createCategory = async (req, res) => {
   try {
@@ -13,12 +18,25 @@ const createCategory = async (req, res) => {
       });
     }
 
-    // Handle image upload to Cloudinary
     let imageUrl = "";
+    let publicId = "";
 
     if (req.file) {
-      // Use a Promise to handle the upload
-      imageUrl = await new Promise((resolve, reject) => {
+      // Compute hash of the image buffer
+      const imageBuffer = req.file.buffer;
+      const imageHash = computeImageHash(imageBuffer);
+
+      // Check if the image with the same hash already exists in the database
+      const existingCategory = await Category.findOne({ imageHash });
+      if (existingCategory) {
+        return res.status(400).json({
+          success: false,
+          message: "Category with the same image already exists",
+        });
+      }
+
+      // Upload image to Cloudinary and get the public_id and secure_url
+      const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
           { folder: "category_images" },
           (error, result) => {
@@ -26,28 +44,36 @@ const createCategory = async (req, res) => {
               console.error("Cloudinary upload error:", error);
               return reject(new Error("Image upload failed"));
             }
-            resolve(result.secure_url);
+            resolve(result);
           }
         );
+        stream.end(imageBuffer); // Upload the image buffer
+      });
 
-        // End the stream with the file buffer
-        stream.end(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+      publicId = uploadResult.public_id;
+
+      // Save the new category with the image hash
+      const newCategory = new Category({
+        name,
+        imageUrl: imageUrl,
+        imageHash: imageHash, // Save the computed hash
+        publicId: publicId,
+      });
+
+      await newCategory.save();
+
+      res.status(201).json({
+        success: true,
+        message: "Category created successfully",
+        category: newCategory,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
       });
     }
-
-    // Create a new category document
-    const newCategory = new Category({
-      name,
-      imageUrl: imageUrl,
-    });
-
-    await newCategory.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Category created successfully",
-      category: newCategory,
-    });
   } catch (error) {
     console.error("Error creating category:", error.message);
     res.status(500).json({
@@ -57,14 +83,28 @@ const createCategory = async (req, res) => {
     });
   }
 };
-
-// Get all categories
+// Get all categories with blog post count
 const getCategories = async (req, res) => {
   try {
     const categories = await Category.find(); // Fetch all categories
+
+    // For each category, count the blog posts associated with it
+    const categoriesWithPostCount = await Promise.all(
+      categories.map(async (category) => {
+        const blogPostCount = await Blog.countDocuments({
+          category: category._id, // Count blog posts where the category matches
+        });
+
+        return {
+          ...category._doc, // Spread category details
+          blogPostCount, // Add blog post count to the category object
+        };
+      })
+    );
+
     res.status(200).json({
       success: true,
-      categories,
+      categories: categoriesWithPostCount,
     });
   } catch (error) {
     res.status(500).json({
@@ -74,7 +114,6 @@ const getCategories = async (req, res) => {
     });
   }
 };
-
 // Delete a category
 const deleteCategory = async (req, res) => {
   try {
@@ -89,11 +128,17 @@ const deleteCategory = async (req, res) => {
       });
     }
 
+    // Delete image from Cloudinary
+    if (deletedCategory.publicId) {
+      await cloudinary.uploader.destroy(deletedCategory.publicId);
+    }
+
     res.status(200).json({
       success: true,
       message: "Category deleted successfully",
     });
   } catch (error) {
+    console.error("Error deleting category:", error.message);
     res.status(500).json({
       success: false,
       message: "Failed to delete category",

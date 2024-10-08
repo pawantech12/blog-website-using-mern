@@ -10,19 +10,17 @@ const CategoryPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [isAddModal, setIsAddModal] = useState(false); // Track if it's the add modal
   const { token } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState(null);
+
+  const [successMessage, setSuccessMessage] = useState(null);
 
   // Fetch categories from the backend
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-categories",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "multipart/form-data",
-            },
-          }
+          "http://localhost:3000/blog/get-categories"
         );
         console.log("Categories:", response);
         setCategories(response.data.categories);
@@ -32,16 +30,18 @@ const CategoryPage = () => {
     };
 
     fetchCategories();
-  }, [token]);
+  }, []);
 
   // Show the confirmation modal for delete
   const confirmDelete = (category) => {
     setSelectedCategory(category);
+    setIsAddModal(false); // Ensure add modal is not shown
     setShowModal(true); // Show confirmation modal
   };
 
   // Function to delete the category
   const deleteCategory = async () => {
+    setLoading(true);
     try {
       const response = await axios.delete(
         `http://localhost:3000/blog/delete-category/${selectedCategory._id}`,
@@ -56,9 +56,20 @@ const CategoryPage = () => {
       setCategories(
         categories.filter((cat) => cat._id !== selectedCategory._id)
       ); // Update the UI after deletion
+
+      setSuccessMessage(response.data.message);
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
       setShowModal(false); // Close the modal
+      setLoading(false);
     } catch (error) {
       console.error("Error deleting category:", error);
+      setApiError(error.response.data.message);
+      setTimeout(() => {
+        setApiError(null);
+      }, 3000);
+      setLoading(false);
     }
   };
 
@@ -68,14 +79,10 @@ const CategoryPage = () => {
   // Function to handle form submission for creating a category
   const onSubmit = async (data) => {
     console.log("data", data);
-
+    setLoading(true);
     const formData = new FormData();
     formData.append("name", data.name);
     formData.append("imageUrl", data.imageUrl[0]); // Assuming the input name is "image"
-    // Log each entry in the FormData for debugging
-    for (const [key, value] of formData.entries()) {
-      console.log(key, value); // This will show the name and the File object
-    }
 
     try {
       const response = await axios.post(
@@ -90,13 +97,23 @@ const CategoryPage = () => {
       );
       console.log("Category created:", response);
       setCategories([...categories, response.data.category]); // Add the new category to the list
+      setSuccessMessage(response.data.message);
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 3000);
       reset(); // Reset the form
       setShowModal(false); // Close the modal
+      setIsAddModal(false); // Reset after adding category
+      setLoading(false);
     } catch (error) {
       console.error("Error creating category:", error);
+      setApiError(error.response.data.message);
+      setTimeout(() => {
+        setApiError(null);
+      }, 3000);
+      setLoading(false);
     }
   };
-
   return (
     <div className="container mx-auto px-4 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -106,11 +123,29 @@ const CategoryPage = () => {
             setIsAddModal(true);
             setShowModal(true); // Open the modal for adding a category
           }}
-          className="flex items-center bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+          className="flex items-center bg-orange-400 text-white px-4 py-2 rounded-lg hover:bg-orange-500"
         >
-          <AiOutlinePlus className="mr-2" /> Add Category
+          <AiOutlinePlus className="mr-2 w-5 h-5" /> Add Category
         </button>
       </div>
+
+      {successMessage && (
+        <div
+          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <span className="block sm:inline">{successMessage}</span>
+        </div>
+      )}
+
+      {apiError && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
+        >
+          <span className="block sm:inline">{apiError}</span>
+        </div>
+      )}
 
       <div className="bg-white shadow rounded-lg p-4">
         {categories.length > 0 ? (
@@ -145,10 +180,10 @@ const CategoryPage = () => {
                   </td>
                   <td className="py-4 px-4 border-b border-gray-200">
                     <button
-                      className="flex items-center text-red-500 hover:text-red-600"
+                      className="flex items-center bg-red-500 hover:bg-red-600 p-2 rounded-md"
                       onClick={() => confirmDelete(category)}
                     >
-                      <AiOutlineDelete className="mr-1" /> Delete
+                      <AiOutlineDelete className="w-5 h-5 text-white" />
                     </button>
                   </td>
                 </tr>
@@ -163,13 +198,13 @@ const CategoryPage = () => {
       {/* Confirmation Modal for Deletion */}
       {showModal && !isAddModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
             <h2 className="text-xl font-semibold mb-4">Delete Category</h2>
-            <p className="mb-4">
+            <p className="mb-4 ">
               Are you sure you want to delete the category{" "}
               <strong>{selectedCategory?.name}</strong>?
             </p>
-            <div className="flex justify-end space-x-4">
+            <div className="flex justify-center items-center gap-3">
               <button
                 className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
                 onClick={() => setShowModal(false)} // Close the modal without deleting
@@ -178,9 +213,10 @@ const CategoryPage = () => {
               </button>
               <button
                 className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                disabled={loading}
                 onClick={deleteCategory} // Confirm and delete the category
               >
-                Delete
+                {loading ? "Deleting..." : "Delete"}
               </button>
             </div>
           </div>
@@ -198,7 +234,7 @@ const CategoryPage = () => {
                 <input
                   type="text"
                   {...register("name", { required: true })}
-                  className="mt-1 block w-full border border-gray-300 rounded-lg p-2"
+                  className="mt-1 block w-full border border-gray-300 rounded-lg p-2 outline-none"
                   required
                 />
               </div>
@@ -222,9 +258,10 @@ const CategoryPage = () => {
                 </button>
                 <button
                   type="submit"
-                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  disabled={loading}
+                  className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
                 >
-                  Create Category
+                  {loading ? "Creating..." : "Create"}
                 </button>
               </div>
             </form>

@@ -16,7 +16,7 @@ router
   .route("/create-category")
   .post(authenticateToken, upload.single("imageUrl"), createCategory);
 
-router.route("/get-categories").get(authenticateToken, getCategories);
+router.route("/get-categories").get(getCategories);
 router.route("/delete-category/:id").delete(authenticateToken, deleteCategory);
 
 module.exports = router;
