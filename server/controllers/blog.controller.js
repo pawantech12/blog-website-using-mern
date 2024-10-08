@@ -1,63 +1,240 @@
 const Blog = require("../models/blog.model");
 const User = require("../models/user.model");
+const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
+const crypto = require("crypto");
+
+// Helper function to compute hash of image buffer
+const computeImageHash = (buffer) => {
+  return crypto.createHash("md5").update(buffer).digest("hex");
+};
+
+// Helper function to delete an image from Cloudinary
+const deleteImageFromCloudinary = async (publicId) => {
+  try {
+    await cloudinary.uploader.destroy(publicId);
+  } catch (error) {
+    console.error("Cloudinary deletion error:", error);
+  }
+};
+
+// Helper function to upload an image to Cloudinary
+const uploadImageToCloudinary = async (file) => {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      { folder: "blog_images" },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary upload error:", error);
+          return reject(new Error("Image upload failed"));
+        }
+        resolve(result);
+      }
+    );
+    stream.end(file.buffer);
+  });
+};
+
 // Create a new blog post
 const createBlogPost = async (req, res) => {
   try {
-    const { title, content, category, isDraft, isFeatured } = req.body;
-    const userId = req.user.userId; // Assuming JWT user authentication
+    const {
+      title,
+      content,
+      category: categoryName,
+      isDraft,
+      isFeatured,
+    } = req.body;
+    const userId = req.user.userId;
 
-    let coverImageUrl = "";
+    // Check for existing blog post with the same title by the same user
     const blogExists = await Blog.findOne({ title, author: userId });
     if (blogExists) {
       return res.status(400).json({
         success: false,
-        message: "Blog post already exists",
+        message: "Blog post with this title already exists",
       });
     }
 
-    // Upload image to Cloudinary if a file is provided
+    // Find the category by name
+    const category = await Category.findOne({ name: categoryName });
+    if (!category) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category" });
+    }
+
+    let coverImageUrl = "";
+    let publicId = "";
+
+    // Check if an image is provided
     if (req.file) {
-      // Use a Promise to handle the upload
-      coverImageUrl = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "blog_images" },
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary upload error:", error);
-              return reject(new Error("Image upload failed"));
-            }
-            resolve(result.secure_url);
-          }
-        );
+      // Compute hash of the image buffer
+      const imageBuffer = req.file.buffer;
+      const imageHash = computeImageHash(imageBuffer);
 
-        // End the stream with the file buffer
-        stream.end(req.file.buffer);
+      // Check if the image with the same hash already exists in the database
+      const existingBlogImage = await Blog.findOne({ imageHash });
+      if (existingBlogImage) {
+        return res.status(400).json({
+          success: false,
+          message: "Blog post with the same image already exists",
+        });
+      }
+
+      // Upload the image to Cloudinary
+      const uploadResult = await uploadImageToCloudinary(req.file);
+      coverImageUrl = uploadResult.secure_url;
+      publicId = uploadResult.public_id;
+
+      // Save the image hash for future duplicate checks
+      const newBlog = new Blog({
+        title,
+        content,
+        category: category._id,
+        coverImage: coverImageUrl,
+        imageHash, // Save the computed hash
+        coverImagePublicId: publicId,
+        author: userId,
+        isDraft,
+        isFeatured,
+      });
+
+      await newBlog.save();
+
+      return res.status(201).json({
+        success: true,
+        message: "Blog post created successfully",
+        blog: newBlog,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Image is required",
       });
     }
-
-    const newBlog = new Blog({
-      title,
-      content,
-      category,
-      coverImage: coverImageUrl,
-      author: userId,
-      isDraft,
-      isFeatured,
-    });
-
-    await newBlog.save();
-
-    res.status(201).json({
-      success: true,
-      message: "Blog post created successfully",
-      blog: newBlog,
-    });
   } catch (error) {
-    console.error("Error creating blog post:", error); // Log the error for debugging
+    console.error("Error creating blog post:", error);
     res.status(500).json({
       success: false,
       message: "Failed to create blog post",
+      error: error.message,
+    });
+  }
+};
+
+// Update a blog post
+const updateBlogPost = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const { title, content, category, isDraft, isFeatured } = req.body;
+
+    // Find the existing blog post
+    const existingBlog = await Blog.findById(blogId);
+    if (!existingBlog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog post not found",
+      });
+    }
+
+    let coverImageUrl = existingBlog.coverImage;
+    let publicId = existingBlog.coverImagePublicId;
+    let imageHash = existingBlog.coverImageHash;
+
+    // Check if a new image is provided
+    if (req.file) {
+      // Compute hash of the image buffer
+      const imageBuffer = req.file.buffer;
+      const newImageHash = computeImageHash(imageBuffer);
+
+      // Check for existing blog post with the same image hash
+      const duplicateImage = await Blog.findOne({
+        coverImageHash: newImageHash,
+        author: existingBlog.author,
+      });
+      if (!duplicateImage) {
+        // Delete the existing image from Cloudinary
+        if (publicId) {
+          await deleteImageFromCloudinary(publicId);
+        }
+
+        // Upload the new image to Cloudinary
+        const uploadResult = await uploadImageToCloudinary(req.file);
+        coverImageUrl = uploadResult.secure_url;
+        publicId = uploadResult.public_id;
+        imageHash = newImageHash; // Update the hash
+      } else {
+        return res.status(400).json({
+          success: false,
+          message: "Blog post with the same image already exists",
+        });
+      }
+    }
+
+    // Update the blog post in the database
+    const updatedBlog = await Blog.findByIdAndUpdate(
+      blogId,
+      {
+        title,
+        content,
+        category,
+        coverImage: coverImageUrl,
+        coverImagePublicId: publicId,
+        coverImageHash: imageHash, // Save the updated image hash
+        isDraft,
+        isFeatured,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Blog post updated successfully",
+      blog: updatedBlog,
+    });
+  } catch (error) {
+    console.error("Error updating blog post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update blog post",
+      error: error.message,
+    });
+  }
+};
+
+// Delete a blog post
+const deleteBlogPost = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+
+    // Find the blog post to be deleted
+    const blogToDelete = await Blog.findById(blogId);
+
+    if (!blogToDelete) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog post not found",
+      });
+    }
+
+    // Delete the cover image from Cloudinary
+    if (blogToDelete.coverImagePublicId) {
+      await deleteImageFromCloudinary(blogToDelete.coverImagePublicId);
+    }
+
+    // Delete the blog post from the database
+    await Blog.findByIdAndDelete(blogId);
+
+    res.status(200).json({
+      success: true,
+      message: "Blog post deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting blog post:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete blog post",
       error: error.message,
     });
   }
@@ -102,102 +279,6 @@ const getBlogById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to fetch blog post",
-      error: error.message,
-    });
-  }
-};
-
-// Update a blog post
-const updateBlogPost = async (req, res) => {
-  try {
-    const blogId = req.params.id;
-    const { title, content, category, isDraft, isFeatured } = req.body;
-
-    let coverImageUrl = "";
-
-    // Find the existing blog post
-    const existingBlog = await Blog.findById(blogId);
-    if (!existingBlog) {
-      return res.status(404).json({
-        success: false,
-        message: "Blog post not found",
-      });
-    }
-
-    // Check if a new image is provided in the request
-    if (req.file) {
-      // Upload the new image to Cloudinary
-      coverImageUrl = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "blog_images" },
-          (error, result) => {
-            if (error) {
-              console.error("Cloudinary upload error:", error);
-              return reject(new Error("Image upload failed"));
-            }
-            resolve(result.secure_url);
-          }
-        );
-
-        // End the stream with the file buffer
-        stream.end(req.file.buffer);
-      });
-    } else {
-      // If no new image is uploaded, keep the existing one
-      coverImageUrl = existingBlog.coverImage;
-    }
-
-    // Update the blog post in the database
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
-      {
-        title,
-        content,
-        category,
-        coverImage: coverImageUrl,
-        isDraft,
-        isFeatured,
-      },
-      { new: true }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: "Blog post updated successfully",
-      blog: updatedBlog,
-    });
-  } catch (error) {
-    console.error("Error updating blog post:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update blog post",
-      error: error.message,
-    });
-  }
-};
-
-// Delete a blog post
-const deleteBlogPost = async (req, res) => {
-  try {
-    const blogId = req.params.id;
-
-    const deletedBlog = await Blog.findByIdAndDelete(blogId);
-
-    if (!deletedBlog) {
-      return res.status(404).json({
-        success: false,
-        message: "Blog post not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Blog post deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete blog post",
       error: error.message,
     });
   }

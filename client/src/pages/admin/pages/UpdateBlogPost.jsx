@@ -11,6 +11,7 @@ const UpdateBlogPost = () => {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm();
 
   const [postBody, setPostBody] = useState("");
@@ -19,6 +20,25 @@ const UpdateBlogPost = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [blogData, setBlogData] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [defaultCategory, setDefaultCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+  // Fetch categories from the backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/blog/get-categories"
+        );
+        console.log("Categories:", response);
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const { token } = useAuth();
   const editorRef = useRef(null); // Create a ref for TinyMCE
@@ -46,13 +66,25 @@ const UpdateBlogPost = () => {
         if (editorRef.current) {
           editorRef.current.setContent(blogData.content);
         }
+        // Set default category name based on catId from blog data
+        const dCategory = categories.find(
+          (category) => category._id === blogData.category
+        );
+        if (dCategory) {
+          setDefaultCategory(dCategory.name); // Set the default category name
+        }
+        console.log("default category", defaultCategory);
       } catch (error) {
         console.error("Failed to fetch blog post:", error);
       }
     };
 
     fetchBlogPost();
-  }, [blogId, token]);
+  }, [blogId, categories, defaultCategory, token]);
+  // Update the selectedCategory state when defaultCategory changes
+  useEffect(() => {
+    setSelectedCategory(defaultCategory);
+  }, [defaultCategory]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -119,6 +151,10 @@ const UpdateBlogPost = () => {
 
   const handleEditorChange = (content) => {
     setPostBody(content); // Update post body when the editor content changes
+  };
+  // Handle change to update selected category
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
   };
 
   return (
@@ -188,28 +224,6 @@ const UpdateBlogPost = () => {
                 "table",
                 "visualblocks",
                 "wordcount",
-                "checklist",
-                "mediaembed",
-                "casechange",
-                "export",
-                "formatpainter",
-                "pageembed",
-                "a11ychecker",
-                "tinymcespellchecker",
-                "permanentpen",
-                "powerpaste",
-                "advtable",
-                "advcode",
-                "editimage",
-                "advtemplate",
-                "mentions",
-                "tableofcontents",
-                "footnotes",
-                "mergetags",
-                "autocorrect",
-                "typography",
-                "inlinecss",
-                "markdown",
               ],
               toolbar:
                 "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
@@ -226,13 +240,16 @@ const UpdateBlogPost = () => {
             </label>
             <select
               {...register("category")}
+              value={defaultCategory}
+              onChange={handleCategoryChange}
               className="w-full border border-gray-200 rounded-md py-3 px-4 appearance-none text-base outline-none"
             >
-              <option value="">Select category</option>
-              <option value="technology">Technology</option>
-              <option value="lifestyle">Lifestyle</option>
-              <option value="education">Education</option>
-              <option value="business">Business</option>
+              <option value="">Select Category</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           </div>
 

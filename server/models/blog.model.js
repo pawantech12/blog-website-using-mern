@@ -10,7 +10,13 @@ const blogSchema = new mongoose.Schema(
       required: true,
     },
     coverImage: {
-      type: String,
+      type: String, // URL of the image
+    },
+    imageHash: {
+      type: String, // This will store the etag (hash) of the image
+    },
+    coverImagePublicId: {
+      type: String, // Cloudinary public_id to delete/replace images easily
     },
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -32,6 +38,7 @@ const blogSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
 const Blog = new mongoose.model("Blog", blogSchema);
 
 module.exports = Blog;

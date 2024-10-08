@@ -12,6 +12,8 @@ const PostList = () => {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [sortBy, setSortBy] = useState(""); // Changed from category to sortBy
+
   const { token } = useAuth();
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -93,19 +95,29 @@ const PostList = () => {
     }
   };
 
-  // Filtered Blogs based on Search Term and Category
-  const filteredBlogs = blogs.filter(
-    (blog) =>
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filterCategory === "" || blog.category === filterCategory)
-  );
+  // Filtered Blogs based on Search Term
+  const filteredBlogs = blogs
+    .filter((blog) =>
+      blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === "latest") {
+        return new Date(b.createdAt) - new Date(a.createdAt); // Sort by latest
+      } else if (sortBy === "oldest") {
+        return new Date(a.createdAt) - new Date(b.createdAt); // Sort by oldest
+      }
+      return 0;
+    });
   return (
     <>
       <section className="mt-[2rem]">
         <div className="flex justify-between items-center">
           <h4 className="text-2xl font-semibold">Blog Post List</h4>
           <button className="bg-orange-400 text-white text-sm font-semibold px-3 py-2 rounded-md ">
-            <Link className="flex items-center gap-1">
+            <Link
+              className="flex items-center gap-1"
+              to={"/dashboard/create-post"}
+            >
               {" "}
               <FaPlus />
               Add a Post
@@ -126,8 +138,8 @@ const PostList = () => {
           <SearchFilter
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
           />
           <Table
             blogs={filteredBlogs}

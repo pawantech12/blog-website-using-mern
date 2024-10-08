@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Editor } from "@tinymce/tinymce-react";
 import { FaChevronDown } from "react-icons/fa";
@@ -10,12 +10,31 @@ const CreateBlogPost = () => {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm();
   const [postBody, setPostBody] = useState("");
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
+  const [categories, setCategories] = useState([]);
+
+  // Fetch categories from the backend
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/blog/get-categories"
+        );
+        console.log("Categories:", response);
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -64,6 +83,8 @@ const CreateBlogPost = () => {
         console.log("Blog Post created successfully:", response);
         // Redirect or show success message
         setSuccessMessage(response.data.message);
+        reset();
+        setImagePreview(null);
         setTimeout(() => {
           setSuccessMessage("");
         }, 3000);
@@ -159,32 +180,6 @@ const CreateBlogPost = () => {
                 "table",
                 "visualblocks",
                 "wordcount",
-                // Your account includes a free trial of TinyMCE premium features
-                // Try the most popular premium features until Oct 8, 2024:
-                "checklist",
-                "mediaembed",
-                "casechange",
-                "export",
-                "formatpainter",
-                "pageembed",
-                "a11ychecker",
-                "tinymcespellchecker",
-                "permanentpen",
-                "powerpaste",
-                "advtable",
-                "advcode",
-                "editimage",
-                "advtemplate",
-                "ai",
-                "mentions",
-                "tinycomments",
-                "tableofcontents",
-                "footnotes",
-                "mergetags",
-                "autocorrect",
-                "typography",
-                "inlinecss",
-                "markdown",
               ],
               toolbar:
                 "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
@@ -212,10 +207,11 @@ const CreateBlogPost = () => {
               className="w-full border border-gray-200 rounded-md py-3 px-4 appearance-none text-base outline-none"
             >
               <option value="">Select category</option>
-              <option value="technology">Technology</option>
-              <option value="lifestyle">Lifestyle</option>
-              <option value="education">Education</option>
-              <option value="business">Business</option>
+              {categories.map((category) => (
+                <option key={category._id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
             </select>
             {errors.category && (
               <span className="text-red-500">This field is required</span>
