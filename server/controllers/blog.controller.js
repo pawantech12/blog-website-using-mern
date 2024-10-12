@@ -317,6 +317,7 @@ const getAllBlogsByUserId = async (req, res) => {
     });
   }
 };
+
 const getBlogsFromFollowing = async (req, res) => {
   try {
     const userId = req.user.userId; // This is the currently logged-in user ID
@@ -337,7 +338,9 @@ const getBlogsFromFollowing = async (req, res) => {
     // Fetch blogs written by the users being followed
     const blogs = await Blog.find({
       author: { $in: followingUserIds },
-    }).populate("author");
+    })
+      .populate("author")
+      .populate("category", "name");
 
     if (!blogs || blogs.length === 0) {
       return res.status(404).json({

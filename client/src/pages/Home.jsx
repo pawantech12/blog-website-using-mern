@@ -24,8 +24,8 @@ import {
   FaYoutube,
 } from "react-icons/fa";
 import { CgArrowLongLeft, CgArrowLongRight } from "react-icons/cg";
-import BlogData from "../data/BlogData";
 import { FiTwitter } from "react-icons/fi";
+import defaultProfileImage from "../img/default-user.jpg";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import CategoryData from "../data/CategoryData";
 import axios from "axios";
@@ -68,6 +68,9 @@ export const Home = () => {
         if (response.data.success) {
           setFollowingBlogs(response.data.blogs); // Assuming `setBlogs` is a state setter to display blogs in your component
           setFollowingUsers(response.data.followingUsers);
+
+          console.log("Following blogs:", followingBlogs);
+          console.log("Following users:", followingUsers);
         } else {
           console.log("No blogs found from following users.");
         }
@@ -96,7 +99,9 @@ export const Home = () => {
   }, []);
   const nextSlide = () => {
     setCurrent((prev) =>
-      prev === Math.ceil(BlogData.length / itemsPerPage) - 1 ? 0 : prev + 1
+      prev === Math.ceil(followingUsers.length / itemsPerPage) - 1
+        ? 0
+        : prev + 1
     );
   };
   const nextCatSlide = () => {
@@ -107,7 +112,9 @@ export const Home = () => {
 
   const prevSlide = () => {
     setCurrent((prev) =>
-      prev === 0 ? Math.ceil(BlogData.length / itemsPerPage) - 1 : prev - 1
+      prev === 0
+        ? Math.ceil(followingUsers.length / itemsPerPage) - 1
+        : prev - 1
     );
   };
   const prevCatSlide = () => {
@@ -287,162 +294,169 @@ export const Home = () => {
           )}
         </div>
       </section>
-
-      {followingUsers.length > 0 && (
-        <section className="px-16 py-20">
-          <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
-            <h4 className="text-2xl font-medium text-neutral-700">
-              From Following
-            </h4>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={prevSlide}
-                className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
-              >
-                <CgArrowLongLeft />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
-              >
-                <CgArrowLongRight />
-              </button>
-            </div>
-          </div>
-          <div className="w-full mx-auto overflow-hidden mt-5">
-            <div
-              className="flex transition-transform w-full duration-500 ease-in-out gap-6"
-              style={{ transform: `translateX(-${current * 100}%)` }}
+      <section className="px-16 py-20">
+        <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
+          <h4 className="text-2xl font-medium text-neutral-700">
+            From Following
+          </h4>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={prevSlide}
+              className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
             >
-              {followingUsers.map((user) =>
-                user.blogs.map((blog, index) => (
-                  <div
-                    key={index}
-                    className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200"
-                    style={{ width: "98.33%" }}
-                  >
-                    <div className="grid grid-cols-2 gap-7 w-[70%]">
-                      <div className="flex flex-col cursor-pointer gap-3">
-                        <div className="w-full">
-                          <figure>
-                            <img
-                              src={blog.coverImage}
-                              alt=""
-                              className="rounded-xl"
-                            />
-                          </figure>
-                        </div>
-                        <div className="flex flex-col gap-2">
-                          <div className="flex items-center gap-3">
-                            <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                              {blog.category}{" "}
-                              {/* assuming you have category as string */}
-                            </span>
-                            <span className="text-zinc-500">
-                              By {user.name}
-                            </span>
+              <CgArrowLongLeft />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
+            >
+              <CgArrowLongRight />
+            </button>
+          </div>
+        </div>
+
+        <div className="w-full mx-auto overflow-hidden mt-5">
+          <div
+            className="flex transition-transform w-full duration-500 ease-in-out gap-6"
+            style={{ transform: `translateX(-${current * 100}%)` }}
+          >
+            {followingUsers &&
+              followingUsers.map((user, index) => (
+                <div
+                  key={index}
+                  className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200"
+                  style={{ width: "98.33%" }}
+                >
+                  <div className="grid grid-cols-2 gap-7 w-[70%]">
+                    {followingBlogs
+                      ?.filter((blog) => blog.author._id === user._id)
+                      .map((blog, index) => (
+                        <div
+                          key={index}
+                          className="flex flex-col cursor-pointer gap-3"
+                        >
+                          <div className="w-full h-48">
+                            <figure className="w-full h-full">
+                              <img
+                                src={blog.coverImage}
+                                alt={blog.title}
+                                className="rounded-xl w-full h-full object-cover"
+                              />
+                            </figure>
                           </div>
-                          <h5 className="text-xl font-medium ">
-                            <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                              {blog.title}
-                            </Link>
-                          </h5>
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-2 text-sm">
-                              <span className="flex gap-1 items-center">
-                                <LuCalendarDays />
-                                {new Date(
-                                  blog.publishedDate
-                                ).toLocaleDateString()}{" "}
-                                {/* format date */}
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-3">
+                              <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                                {blog.category.name}
                               </span>
-                              <GoDotFill className="w-2 h-2" />
-                              <span>{blog.readingTime} min read</span>{" "}
-                              {/* assuming readingTime is a property */}
+                              <span className="text-zinc-500">
+                                {blog.author.name}
+                              </span>
                             </div>
-                            <div className="text-xl flex gap-2 items-center">
-                              <button>
-                                <LuBookmarkMinus />
-                              </button>
-                              <button>
-                                <FaRegHeart />
-                              </button>
+                            <h5 className="text-xl font-medium">
+                              <Link
+                                to={`/blog-post/${blog._id}`}
+                                className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                              >
+                                {blog?.title?.length > 60
+                                  ? blog?.title?.slice(0, 50) + "..."
+                                  : blog?.title}
+                              </Link>
+                            </h5>
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center gap-2 text-sm">
+                                <span className="flex gap-1 items-center">
+                                  <LuCalendarDays />
+                                  {new Date(
+                                    blog.publishedDate
+                                  ).toLocaleDateString()}
+                                </span>
+                                <GoDotFill className="w-2 h-2" />
+                                <span>
+                                  {Math.ceil(
+                                    blog.content.split(" ").length / 200
+                                  )}{" "}
+                                  min read
+                                </span>
+                              </div>
+                              <div className="text-xl flex gap-2 items-center">
+                                <button>
+                                  <LuBookmarkMinus />
+                                </button>
+                                <button>
+                                  <FaRegHeart />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                      <div className="w-[28%] flex flex-col justify-between gap-6">
-                        <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
-                          <figure className="border border-gray-200 rounded-full p-2">
-                            <img
-                              src={user.profileImg}
-                              alt="profile Img"
-                              className="rounded-full"
-                            />
-                          </figure>
-                          <h4 className="text-lg mt-5 font-semibold text-neutral-800">
-                            {user.name}
-                          </h4>
-                          <span className="text-[15px] text-zinc-500">
-                            {user.headline}
-                          </span>
-                          <p className="text-zinc-600 mt-4 text-[15px]">
-                            {user.summary}
-                          </p>
-                          <ul className="flex items-center gap-2 mt-4">
-                            <li>
-                              <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                                <Link>
-                                  <FaFacebookF className="w-3 h-3" />
-                                </Link>
-                              </button>
-                            </li>
-                            <li>
-                              <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                                <Link>
-                                  <FaInstagram />
-                                </Link>
-                              </button>
-                            </li>
-                            <li>
-                              <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                                <Link>
-                                  <FiTwitter />
-                                </Link>
-                              </button>
-                            </li>
-                            <li>
-                              <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                                <Link>
-                                  <FaLinkedin />
-                                </Link>
-                              </button>
-                            </li>
-                          </ul>
-                          <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
-                            <Link className="flex items-center gap-2">
-                              View Profile <HiOutlineArrowNarrowRight />
-                            </Link>
+                      ))}
+                  </div>
+
+                  <div className="w-[28%] flex flex-col justify-between gap-6">
+                    <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
+                      <figure className="border border-gray-200 rounded-full p-2">
+                        <img
+                          src={user.profileImg || defaultProfileImage}
+                          alt="Profile"
+                          className="rounded-full w-20 h-20 object-cover"
+                        />
+                      </figure>
+                      <h4 className="text-lg mt-5 font-semibold text-neutral-800">
+                        {user.name}
+                      </h4>
+                      <span className="text-[15px] text-zinc-500">
+                        {user.headline}
+                      </span>
+                      <p className="text-zinc-600 mt-4 text-[15px]">
+                        {user.summary}
+                      </p>
+                      <ul className="flex items-center gap-2 mt-4">
+                        <li>
+                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                            <FaFacebookF className="w-3 h-3" />
                           </button>
-                        </div>
-                        <div>
-                          <figure>
-                            <img
-                              src="https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
-                              alt=""
-                              className="w-full"
-                            />
-                          </figure>
-                        </div>
-                      </div>
+                        </li>
+                        <li>
+                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                            <FaInstagram />
+                          </button>
+                        </li>
+                        <li>
+                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                            <FiTwitter />
+                          </button>
+                        </li>
+                        <li>
+                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                            <FaLinkedin />
+                          </button>
+                        </li>
+                      </ul>
+                      <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
+                        <Link
+                          className="flex items-center gap-2"
+                          to={`/user/profile/${user._id}`}
+                        >
+                          View Profile <HiOutlineArrowNarrowRight />
+                        </Link>
+                      </button>
+                    </div>
+                    <div>
+                      <figure>
+                        <img
+                          src="https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
+                          alt=""
+                          className="w-full"
+                        />
+                      </figure>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+                </div>
+              ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
       <section className="flex gap-2 px-20 py-20 bg-[#FAFAFA]">
         <div className="w-1/4">

@@ -4,6 +4,8 @@ const {
   login,
   getUserData,
   getUserDataById,
+  followUserById,
+  unfollowUserById,
 } = require("../controllers/authentication.controller");
 const {
   authenticateToken,
@@ -15,5 +17,7 @@ router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/user").get(authenticateToken, getUserData);
 router.route("/user/:id").get(getUserDataById);
+router.route("/follow/:id").put(authenticateToken, followUserById);
+router.route("/unfollow/:id").put(authenticateToken, unfollowUserById);
 
 module.exports = router;

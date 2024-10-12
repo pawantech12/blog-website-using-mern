@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema({
       ref: "User", // users that this user follows
     },
   ],
+  followers: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User", // users that follow this user
+    },
+  ],
   createdAt: { type: Date, default: Date.now },
 });
 
