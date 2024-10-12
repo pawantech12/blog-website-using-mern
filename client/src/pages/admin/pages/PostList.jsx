@@ -8,7 +8,6 @@ import { useAuth } from "../../../store/Authentication";
 import ConfirmationModal from "../components/ConfirmationModal";
 const PostList = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");

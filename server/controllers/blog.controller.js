@@ -127,7 +127,13 @@ const createBlogPost = async (req, res) => {
 const updateBlogPost = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const { title, content, category, isDraft, isFeatured } = req.body;
+    const {
+      title,
+      content,
+      category: categoryName,
+      isDraft,
+      isFeatured,
+    } = req.body;
 
     // Find the existing blog post
     const existingBlog = await Blog.findById(blogId);
@@ -136,6 +142,14 @@ const updateBlogPost = async (req, res) => {
         success: false,
         message: "Blog post not found",
       });
+    }
+
+    // Find the category by name
+    const category = await Category.findOne({ name: categoryName });
+    if (!category) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid category" });
     }
 
     let coverImageUrl = existingBlog.coverImage;
@@ -178,7 +192,7 @@ const updateBlogPost = async (req, res) => {
       {
         title,
         content,
-        category,
+        category: category._id,
         coverImage: coverImageUrl,
         coverImagePublicId: publicId,
         coverImageHash: imageHash, // Save the updated image hash
@@ -258,11 +272,101 @@ const getAllBlogs = async (req, res) => {
   }
 };
 
+const getAllUserBlogs = async (req, res) => {
+  try {
+    const blogs = await Blog.find()
+      .populate("category", "name")
+      .populate("author", "name");
+    if (!blogs) {
+      return res.status(404).json({
+        success: false,
+        message: "Blogs not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch blog posts",
+      error: error.message,
+    });
+  }
+};
+const getAllBlogsByUserId = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const blogs = await Blog.find({ author: userId });
+    if (!blogs) {
+      return res.status(404).json({
+        success: false,
+        message: "Blogs not found",
+      });
+    }
+    res.status(200).json({
+      success: true,
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch blog posts",
+      error: error.message,
+    });
+  }
+};
+const getBlogsFromFollowing = async (req, res) => {
+  try {
+    const userId = req.user.userId; // This is the currently logged-in user ID
+
+    // Find the current user and populate the 'following' field with their data
+    const currentUser = await User.findById(userId).populate("following");
+
+    if (!currentUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // Get the IDs of the users being followed
+    const followingUserIds = currentUser.following.map((user) => user._id);
+
+    // Fetch blogs written by the users being followed
+    const blogs = await Blog.find({
+      author: { $in: followingUserIds },
+    }).populate("author");
+
+    if (!blogs || blogs.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No blogs found from following users",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      followingUsers: currentUser.following,
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch blogs",
+      error: error.message,
+    });
+  }
+};
+
 // Get a single blog post by ID
 const getBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(blogId)
+      .populate("author")
+      .populate("category");
 
     if (!blog) {
       return res.status(404).json({
@@ -369,6 +473,9 @@ const unsaveBlogPost = async (req, res) => {
 module.exports = {
   createBlogPost,
   getAllBlogs,
+  getAllUserBlogs,
+  getAllBlogsByUserId,
+  getBlogsFromFollowing,
   getBlogById,
   updateBlogPost,
   deleteBlogPost,

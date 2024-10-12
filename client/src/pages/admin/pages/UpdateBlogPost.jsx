@@ -21,8 +21,7 @@ const UpdateBlogPost = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [blogData, setBlogData] = useState({});
   const [categories, setCategories] = useState([]);
-  const [defaultCategory, setDefaultCategory] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState(defaultCategory);
+  const [selectedCategory, setSelectedCategory] = useState("");
   // Fetch categories from the backend
   useEffect(() => {
     const fetchCategories = async () => {
@@ -71,20 +70,16 @@ const UpdateBlogPost = () => {
           (category) => category._id === blogData.category
         );
         if (dCategory) {
-          setDefaultCategory(dCategory.name); // Set the default category name
+          setSelectedCategory(dCategory.name); // Set the default category name
         }
-        console.log("default category", defaultCategory);
+        console.log("default category", selectedCategory);
       } catch (error) {
         console.error("Failed to fetch blog post:", error);
       }
     };
 
     fetchBlogPost();
-  }, [blogId, categories, defaultCategory, token]);
-  // Update the selectedCategory state when defaultCategory changes
-  useEffect(() => {
-    setSelectedCategory(defaultCategory);
-  }, [defaultCategory]);
+  }, [blogId, categories, token]);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -240,7 +235,7 @@ const UpdateBlogPost = () => {
             </label>
             <select
               {...register("category")}
-              value={defaultCategory}
+              value={selectedCategory}
               onChange={handleCategoryChange}
               className="w-full border border-gray-200 rounded-md py-3 px-4 appearance-none text-base outline-none"
             >
@@ -274,6 +269,7 @@ const UpdateBlogPost = () => {
             {...register("isFeatured")}
             id="isFeatured"
             className="mr-2"
+            defaultChecked={blogData.isFeatured}
           />
           <label htmlFor="isFeatured" className="text-gray-700">
             Make this post featured?
@@ -285,6 +281,7 @@ const UpdateBlogPost = () => {
             {...register("isDraft")}
             id="isDraft"
             className="mr-2"
+            defaultChecked={blogData.isDraft}
           />
           <label htmlFor="isDraft" className="text-gray-700">
             Save this post as Draft?

@@ -15,7 +15,7 @@ import Dashboard from "./pages/admin/Dashboard.jsx";
 import AdminHome from "./pages/admin/pages/AdminHome.jsx";
 import PostList from "./pages/admin/pages/PostList.jsx";
 import CreateBlogPost from "./pages/admin/pages/CreateBlogPost.jsx";
-import Profile from "./pages/admin/pages/profile.jsx";
+import Profile from "./pages/Profile.jsx";
 import { AuthProvider } from "./store/Authentication.jsx";
 import UpdateBlogPost from "./pages/admin/pages/UpdateBlogPost.jsx";
 import CategoryPage from "./pages/admin/pages/CategoryPage.jsx";
@@ -73,8 +73,8 @@ const router = createBrowserRouter([
     element: <App element={<Dashboard element={<UpdateBlogPost />} />} />,
   },
   {
-    path: "/dashboard/user-profile",
-    element: <App element={<Dashboard element={<Profile />} />} />,
+    path: "/user/profile/:userId",
+    element: <App element={<Profile />} />,
   },
 ]);
 

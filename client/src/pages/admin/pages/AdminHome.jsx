@@ -1,31 +1,118 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { BsBarChartLineFill } from "react-icons/bs";
-import { FaFileAlt, FaHeart } from "react-icons/fa";
+import { FaFileAlt, FaHeart, FaPlus } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import Table from "../components/Table";
 
 import SearchFilter from "../components/SearchFilter";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import initialBlogs from "../../../data/BlogSample";
+import ConfirmationModal from "../components/ConfirmationModal";
+import axios from "axios";
+import { useAuth } from "../../../store/Authentication";
 const AdminHome = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterCategory, setFilterCategory] = useState("");
   const [blogs, setBlogs] = useState(initialBlogs);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [sortBy, setSortBy] = useState(""); // Changed from category to sortBy
+
+  const { token } = useAuth();
+  const [apiError, setApiError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const navigate = useNavigate();
+  if (!token) {
+    navigate("/login");
+  }
+
+  useEffect(() => {
+    setLoading(true);
+    const fetchBlogs = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/blog/get-blogs",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (response.data.success === false) {
+          console.log("Failed to fetch blogs", response);
+        }
+
+        setBlogs(response.data.blogs);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch blogs");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBlogs();
+  }, [token]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [blogToDelete, setBlogToDelete] = useState(null); // Track which blog is to be deleted
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = (id) => {
-    setBlogs(blogs.filter((blog) => blog.id !== id));
+    setIsModalOpen(true); // Open modal for confirmation
+    setBlogToDelete(id); // Set the blog id to be deleted
   };
-
   const handleEdit = (id) => {
     console.log("Edit blog with id:", id);
+    navigate(`/dashboard/update-post/${id}`);
   };
 
-  // Filtered Blogs based on Search Term and Category
-  const filteredBlogs = blogs.filter(
-    (blog) =>
-      blog.title.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filterCategory === "" || blog.category === filterCategory)
-  );
+  const confirmDelete = async () => {
+    setIsDeleting(true);
+    try {
+      // Make the API call to delete the blog post
+      const response = await axios.delete(
+        `http://localhost:3000/blog/delete-blog/${blogToDelete}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // Add your token if necessary
+          },
+        }
+      );
+
+      if (response.data.success === true) {
+        setBlogs(blogs.filter((blog) => blog._id !== blogToDelete)); // Update state to remove the blog
+        setSuccessMessage(response.data.message);
+        setTimeout(() => {
+          setSuccessMessage("");
+        }, 3000);
+      }
+      setIsDeleting(false);
+
+      setIsModalOpen(false); // Close modal after deletion
+    } catch (error) {
+      console.error("Failed to delete the blog post:", error);
+      setIsDeleting(false);
+      setApiError(error.response.data.message);
+      setTimeout(() => {
+        setApiError("");
+      }, 3000);
+    }
+  };
+
+  // Filtered Blogs based on Search Term
+  const filteredBlogs = blogs
+    .filter((blog) =>
+      blog.title.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (sortBy === "latest") {
+        return new Date(b.createdAt) - new Date(a.createdAt); // Sort by latest
+      } else if (sortBy === "oldest") {
+        return new Date(a.createdAt) - new Date(b.createdAt); // Sort by oldest
+      }
+      return 0;
+    });
   return (
     <>
       <section className="grid grid-cols-4 gap-8 my-[3rem]">
@@ -72,23 +159,42 @@ const AdminHome = () => {
       </section>
       <section>
         <div className="max-w-7xl mx-auto bg-white p-6 border border-gray-200 rounded-lg my-[3rem]">
+          {successMessage && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4">
+              <p className="text-sm">{successMessage}</p>
+            </div>
+          )}
+          {apiError && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
+              <p className="text-sm">{apiError}</p>
+            </div>
+          )}
           <div className="flex justify-between items-center">
             <h4 className="text-xl font-semibold">Blog List</h4>
             <button className="bg-orange-400 text-white text-sm font-semibold px-3 py-2 rounded-md">
-              Add Blog
+              <Link
+                className="flex items-center gap-1"
+                to={"/dashboard/create-post"}
+              >
+                {" "}
+                <FaPlus />
+                Add a Post
+              </Link>
             </button>
           </div>
           <hr className="mt-4" />
           <SearchFilter
             searchTerm={searchTerm}
             setSearchTerm={setSearchTerm}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
           />
           <Table
             blogs={filteredBlogs}
             handleDelete={handleDelete}
             handleEdit={handleEdit}
+            isDeleting={isDeleting}
+            loading={loading}
           />
         </div>
       </section>
@@ -154,6 +260,12 @@ const AdminHome = () => {
           </Link>
         </div>
       </section>
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </>
   );
 };

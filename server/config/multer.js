@@ -9,6 +9,7 @@ const upload = multer({
     const ext = path.extname(file.originalname).toLowerCase();
     if (
       ext !== ".jpg" &&
+      ext !== ".jfif" &&
       ext !== ".jpeg" &&
       ext !== ".png" &&
       ext !== ".webp"

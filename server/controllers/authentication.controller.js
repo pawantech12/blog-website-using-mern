@@ -76,4 +76,24 @@ const getUserData = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getUserData };
+const getUserDataById = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).populate("savedPosts");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: user,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+module.exports = { register, login, getUserData, getUserDataById };
