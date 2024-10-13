@@ -11,6 +11,7 @@ const Register = () => {
     formState: { errors },
   } = useForm();
   const [apiError, setApiError] = useState(""); // for handling API error messages
+  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
@@ -33,15 +34,19 @@ const Register = () => {
       );
       console.log(response);
 
-      if (response.status === 201) {
+      if (response.data.success) {
         console.log("Registration successful:", response);
-        navigate("/login");
+        setSuccessMessage(response.data.message);
+        setTimeout(() => {
+          navigate("/login");
+          setSuccessMessage("");
+        }, 3000);
         // Redirect or show success message
       } else {
-        setApiError(response.data.msg || "Failed to register");
+        setApiError(response.data.message || "Failed to register");
       }
     } catch (error) {
-      setApiError(error);
+      setApiError(error.response.data.message || "An error occurred");
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -63,6 +68,11 @@ const Register = () => {
         {apiError && (
           <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
             <p>{apiError}</p>
+          </div>
+        )}
+        {successMessage && (
+          <div className="p-4 mb-4 text-sm text-emerald-500 bg-emerald-100 rounded-lg font-medium text-center mt-2">
+            <p>{successMessage}</p>
           </div>
         )}
 

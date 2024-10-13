@@ -276,7 +276,8 @@ const getAllUserBlogs = async (req, res) => {
   try {
     const blogs = await Blog.find()
       .populate("category", "name")
-      .populate("author", "name");
+      .populate("author", "name")
+      .sort({ createdAt: -1 });
     if (!blogs) {
       return res.status(404).json({
         success: false,

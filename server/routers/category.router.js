@@ -8,6 +8,7 @@ const {
   createCategory,
   getCategories,
   deleteCategory,
+  getAllBlogsByCategoryId,
 } = require("../controllers/category.controller");
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router
 
 router.route("/get-categories").get(getCategories);
 router.route("/delete-category/:id").delete(authenticateToken, deleteCategory);
+router.route("/get-blogs-by-category/:id").get(getAllBlogsByCategoryId);
 
 module.exports = router;

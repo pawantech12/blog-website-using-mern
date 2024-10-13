@@ -20,6 +20,7 @@ import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import defaultUser from "../img/default-user.jpg";
 import DOMPurify from "dompurify";
+import LatestPostSection from "../components/LatestPostSection";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
@@ -197,37 +198,7 @@ const BlogDetails = () => {
               </Link>
             </button>
           </div>
-          <div className="bg-[#FAFAFA] rounded-xl px-5 py-4">
-            <h4 className="text-2xl font-semibold text-neutral-800">
-              Latest Post
-            </h4>
-            <div className="flex flex-col gap-3 mt-5">
-              {[1, 2, 3, 4, 5].map((item, index) => {
-                return (
-                  <div key={index} className="flex gap-3">
-                    <figure className="w-[84px] h-[inherit]">
-                      <img
-                        src={blog1}
-                        alt=""
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    </figure>
-                    <div className="w-3/5">
-                      <h5 className="text-[15px] font-medium hover:text-orange-400 transition-all ease-in-out duration-200">
-                        <Link>
-                          Customize your WooCommerce store with countless Web
-                        </Link>
-                      </h5>
-                      <span className="flex gap-1 text-xs text-zinc-600 font-medium items-center">
-                        <LuCalendarDays className="w-4 h-4" />
-                        15 June 2021
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <LatestPostSection />
           <div className="bg-[#FAFAFA] rounded-xl px-5 py-4">
             <h4 className="text-2xl text-center font-semibold text-neutral-800">
               Stay In Touch

@@ -12,12 +12,14 @@ const Login = () => {
     formState: { errors },
   } = useForm();
   const [apiError, setApiError] = useState(""); // for handling API error messages
+  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { storeTokenInLS } = useAuth();
   const onSubmit = async (data) => {
     console.log(data);
     setIsSubmitting(true);
+    setSuccessMessage("");
     setApiError(""); // Reset error message
 
     try {
@@ -27,19 +29,20 @@ const Login = () => {
       );
       console.log(response);
 
-      if (response.status === 200) {
+      if (response.data.success) {
         console.log("Login successful:", response);
         storeTokenInLS(response.data.token);
-        navigate("/dashboard");
-        // Redirect or show success message
+        setSuccessMessage(response.data.message);
+        setTimeout(() => {
+          navigate("/dashboard");
+          setSuccessMessage("");
+        }, 3000);
       } else {
-        setApiError(response.data.msg || "Failed to login");
+        setApiError(response.data.message || "Failed to login");
       }
     } catch (error) {
       const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "An error occurred. Please try again.";
+        error.response?.data?.message || "An error occurred. Please try again.";
       setApiError(errorMessage);
       console.log(error);
     } finally {
@@ -62,6 +65,12 @@ const Login = () => {
         {apiError && (
           <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
             <p>{apiError}</p>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg font-medium text-center mt-2">
+            <p>{successMessage}</p>
           </div>
         )}
 

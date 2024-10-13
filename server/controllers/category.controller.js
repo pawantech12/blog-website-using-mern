@@ -147,8 +147,28 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+const getAllBlogsByCategoryId = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const blogs = await Blog.find({ category: categoryId })
+      .populate("author", "name")
+      .populate("category", "name");
+    res.status(200).json({
+      success: true,
+      blogs,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch blog posts",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   createCategory,
   getCategories,
   deleteCategory,
+  getAllBlogsByCategoryId,
 };

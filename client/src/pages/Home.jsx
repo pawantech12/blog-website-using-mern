@@ -30,6 +30,7 @@ import { HiOutlineArrowNarrowRight } from "react-icons/hi";
 import CategoryData from "../data/CategoryData";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
+import { useForm } from "react-hook-form";
 export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [catcurrent, setCatCurrent] = useState(0);
@@ -38,6 +39,10 @@ export const Home = () => {
   const [followingBlogs, setFollowingBlogs] = useState([]);
   const [followingUsers, setFollowingUsers] = useState([]);
   const { token } = useAuth();
+  const { register, handleSubmit, reset } = useForm();
+  const [success, setSuccess] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const itemsPerPage = 1;
   useEffect(() => {
@@ -131,52 +136,51 @@ export const Home = () => {
   const closeModal = () => {
     setIsModalOpen(false);
   };
+
+  const onSubmit = async (data) => {
+    setError("");
+    setSuccess("");
+
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/subscribe",
+        data
+      );
+
+      if (response.data.success) {
+        setSuccess(response.data.message);
+        reset(); // Reset form on successful submission
+      }
+    } catch (error) {
+      setError(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12">
         <div className="flex flex-col md:w-[78%] md:flex-row gap-6 md:gap-10">
           <div className="flex flex-row md:flex-col gap-4 justify-between w-[50%]">
             {/* Assuming you have some feature images */}
-            <figure>
-              <Link to="#">
-                <img
-                  src={blogs[0]?.coverImage}
-                  alt=""
-                  className="rounded-xl object-cover"
-                />
-              </Link>
-            </figure>
-            <figure>
-              <Link to="#">
-                <img
-                  src={blogs[1]?.coverImage}
-                  alt=""
-                  className="rounded-xl object-cover"
-                />
-              </Link>
-            </figure>
-            <figure>
-              <Link to="#">
-                <img
-                  src={blogs[2]?.coverImage}
-                  alt=""
-                  className="rounded-xl object-cover"
-                />
-              </Link>
-            </figure>
-            <figure>
-              <Link to="#">
-                <img
-                  src={blogs[3]?.coverImage}
-                  alt=""
-                  className="rounded-xl object-cover"
-                />
-              </Link>
-            </figure>
+            {[0, 1, 2, 3].map((index) => (
+              <figure key={index}>
+                <Link to={`/blog-post/${blogs[index]?._id}`}>
+                  <img
+                    src={blogs[index]?.coverImage}
+                    alt=""
+                    className="rounded-xl object-cover"
+                  />
+                </Link>
+              </figure>
+            ))}
           </div>
-          <div className="w-[50%] md:w-auto">
+          <div className="w-[50%] md:w-full h-full">
             <figure className="p-3 bg-white rounded-xl h-full">
-              <Link to="#" className="h-full">
+              <Link to={`/blog-post/${blogs[0]?._id}`} className="h-full">
                 <img
                   src={blogs[0]?.coverImage}
                   alt=""
@@ -198,7 +202,11 @@ export const Home = () => {
                 </span>
               </div>
               <h3 className="text-xl md:text-2xl font-semibold">
-                <Link to={`/blog-post/${blog._id}`}>{blog.title}</Link>
+                <Link to={`/blog-post/${blog._id}`}>
+                  {blog.title.length > 60
+                    ? blog.title.slice(0, 60) + "..."
+                    : blog.title}
+                </Link>
               </h3>
               <div
                 className="text-gray-500"
@@ -215,7 +223,9 @@ export const Home = () => {
                     {new Date(blog.publishedDate).toLocaleDateString()}
                   </span>
                   <GoDotFill className="w-2 h-2" />
-                  <span>14 min read</span>
+                  <span>
+                    {Math.ceil(blog.content.split(" ").length / 200)} min read
+                  </span>
                 </div>
                 <div className="text-xl flex gap-2 items-center">
                   <button>
@@ -294,169 +304,171 @@ export const Home = () => {
           )}
         </div>
       </section>
-      <section className="px-16 py-20">
-        <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
-          <h4 className="text-2xl font-medium text-neutral-700">
-            From Following
-          </h4>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={prevSlide}
-              className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
-            >
-              <CgArrowLongLeft />
-            </button>
-            <button
-              onClick={nextSlide}
-              className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
-            >
-              <CgArrowLongRight />
-            </button>
+      {followingUsers && followingUsers.length > 0 && (
+        <section className="px-16 py-20">
+          <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
+            <h4 className="text-2xl font-medium text-neutral-700">
+              From Following
+            </h4>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={prevSlide}
+                className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
+              >
+                <CgArrowLongLeft />
+              </button>
+              <button
+                onClick={nextSlide}
+                className="bg-[#F4F4F4] p-3 rounded-full text-zinc-600"
+              >
+                <CgArrowLongRight />
+              </button>
+            </div>
           </div>
-        </div>
 
-        <div className="w-full mx-auto overflow-hidden mt-5">
-          <div
-            className="flex transition-transform w-full duration-500 ease-in-out gap-6"
-            style={{ transform: `translateX(-${current * 100}%)` }}
-          >
-            {followingUsers &&
-              followingUsers.map((user, index) => (
-                <div
-                  key={index}
-                  className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200"
-                  style={{ width: "98.33%" }}
-                >
-                  <div className="grid grid-cols-2 gap-7 w-[70%]">
-                    {followingBlogs
-                      ?.filter((blog) => blog.author._id === user._id)
-                      .map((blog, index) => (
-                        <div
-                          key={index}
-                          className="flex flex-col cursor-pointer gap-3"
-                        >
-                          <div className="w-full h-48">
-                            <figure className="w-full h-full">
-                              <img
-                                src={blog.coverImage}
-                                alt={blog.title}
-                                className="rounded-xl w-full h-full object-cover"
-                              />
-                            </figure>
-                          </div>
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-3">
-                              <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                                {blog.category.name}
-                              </span>
-                              <span className="text-zinc-500">
-                                {blog.author.name}
-                              </span>
+          <div className="w-full mx-auto overflow-hidden mt-5">
+            <div
+              className="flex transition-transform w-full duration-500 ease-in-out gap-6"
+              style={{ transform: `translateX(-${current * 100}%)` }}
+            >
+              {followingUsers &&
+                followingUsers.map((user, index) => (
+                  <div
+                    key={index}
+                    className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200"
+                    style={{ width: "98.33%" }}
+                  >
+                    <div className="grid grid-cols-2 gap-7 w-[70%]">
+                      {followingBlogs
+                        ?.filter((blog) => blog.author._id === user._id)
+                        .map((blog, index) => (
+                          <div
+                            key={index}
+                            className="flex flex-col cursor-pointer gap-3"
+                          >
+                            <div className="w-full h-48">
+                              <figure className="w-full h-full">
+                                <img
+                                  src={blog.coverImage}
+                                  alt={blog.title}
+                                  className="rounded-xl w-full h-full object-cover"
+                                />
+                              </figure>
                             </div>
-                            <h5 className="text-xl font-medium">
-                              <Link
-                                to={`/blog-post/${blog._id}`}
-                                className="hover:text-orange-400 transition-all ease-in-out duration-200"
-                              >
-                                {blog?.title?.length > 60
-                                  ? blog?.title?.slice(0, 50) + "..."
-                                  : blog?.title}
-                              </Link>
-                            </h5>
-                            <div className="flex justify-between items-center">
-                              <div className="flex items-center gap-2 text-sm">
-                                <span className="flex gap-1 items-center">
-                                  <LuCalendarDays />
-                                  {new Date(
-                                    blog.publishedDate
-                                  ).toLocaleDateString()}
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-3">
+                                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                                  {blog.category.name}
                                 </span>
-                                <GoDotFill className="w-2 h-2" />
-                                <span>
-                                  {Math.ceil(
-                                    blog.content.split(" ").length / 200
-                                  )}{" "}
-                                  min read
+                                <span className="text-zinc-500">
+                                  {blog.author.name}
                                 </span>
                               </div>
-                              <div className="text-xl flex gap-2 items-center">
-                                <button>
-                                  <LuBookmarkMinus />
-                                </button>
-                                <button>
-                                  <FaRegHeart />
-                                </button>
+                              <h5 className="text-xl font-medium">
+                                <Link
+                                  to={`/blog-post/${blog._id}`}
+                                  className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                                >
+                                  {blog?.title?.length > 60
+                                    ? blog?.title?.slice(0, 50) + "..."
+                                    : blog?.title}
+                                </Link>
+                              </h5>
+                              <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <span className="flex gap-1 items-center">
+                                    <LuCalendarDays />
+                                    {new Date(
+                                      blog.publishedDate
+                                    ).toLocaleDateString()}
+                                  </span>
+                                  <GoDotFill className="w-2 h-2" />
+                                  <span>
+                                    {Math.ceil(
+                                      blog.content.split(" ").length / 200
+                                    )}{" "}
+                                    min read
+                                  </span>
+                                </div>
+                                <div className="text-xl flex gap-2 items-center">
+                                  <button>
+                                    <LuBookmarkMinus />
+                                  </button>
+                                  <button>
+                                    <FaRegHeart />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
-                  </div>
+                        ))}
+                    </div>
 
-                  <div className="w-[28%] flex flex-col justify-between gap-6">
-                    <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
-                      <figure className="border border-gray-200 rounded-full p-2">
-                        <img
-                          src={user.profileImg || defaultProfileImage}
-                          alt="Profile"
-                          className="rounded-full w-20 h-20 object-cover"
-                        />
-                      </figure>
-                      <h4 className="text-lg mt-5 font-semibold text-neutral-800">
-                        {user.name}
-                      </h4>
-                      <span className="text-[15px] text-zinc-500">
-                        {user.headline}
-                      </span>
-                      <p className="text-zinc-600 mt-4 text-[15px]">
-                        {user.summary}
-                      </p>
-                      <ul className="flex items-center gap-2 mt-4">
-                        <li>
-                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                            <FaFacebookF className="w-3 h-3" />
-                          </button>
-                        </li>
-                        <li>
-                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                            <FaInstagram />
-                          </button>
-                        </li>
-                        <li>
-                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                            <FiTwitter />
-                          </button>
-                        </li>
-                        <li>
-                          <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                            <FaLinkedin />
-                          </button>
-                        </li>
-                      </ul>
-                      <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
-                        <Link
-                          className="flex items-center gap-2"
-                          to={`/user/profile/${user._id}`}
-                        >
-                          View Profile <HiOutlineArrowNarrowRight />
-                        </Link>
-                      </button>
-                    </div>
-                    <div>
-                      <figure>
-                        <img
-                          src="https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
-                          alt=""
-                          className="w-full"
-                        />
-                      </figure>
+                    <div className="w-[28%] flex flex-col justify-between gap-6">
+                      <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
+                        <figure className="border border-gray-200 rounded-full p-2">
+                          <img
+                            src={user.profileImg || defaultProfileImage}
+                            alt="Profile"
+                            className="rounded-full w-20 h-20 object-cover"
+                          />
+                        </figure>
+                        <h4 className="text-lg mt-5 font-semibold text-neutral-800">
+                          {user.name}
+                        </h4>
+                        <span className="text-[15px] text-zinc-500">
+                          {user.headline}
+                        </span>
+                        <p className="text-zinc-600 mt-4 text-[15px]">
+                          {user.summary}
+                        </p>
+                        <ul className="flex items-center gap-2 mt-4">
+                          <li>
+                            <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                              <FaFacebookF className="w-3 h-3" />
+                            </button>
+                          </li>
+                          <li>
+                            <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                              <FaInstagram />
+                            </button>
+                          </li>
+                          <li>
+                            <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                              <FiTwitter />
+                            </button>
+                          </li>
+                          <li>
+                            <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                              <FaLinkedin />
+                            </button>
+                          </li>
+                        </ul>
+                        <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
+                          <Link
+                            className="flex items-center gap-2"
+                            to={`/user/profile/${user._id}`}
+                          >
+                            View Profile <HiOutlineArrowNarrowRight />
+                          </Link>
+                        </button>
+                      </div>
+                      <div>
+                        <figure>
+                          <img
+                            src="https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
+                            alt=""
+                            className="w-full"
+                          />
+                        </figure>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="flex gap-2 px-20 py-20 bg-[#FAFAFA]">
         <div className="w-1/4">
@@ -511,18 +523,23 @@ export const Home = () => {
           <h4 className="text-2xl font-semibold text-neutral-700 w-1/4">
             Subscribe For Newsletter
           </h4>
-          <form action="" className="flex items-center gap-5 w-2/3">
-            <input
-              type="text"
-              placeholder="Enter your email"
-              className="h-14 px-5 rounded-lg border outline-none border-gray-200 w-2/3"
-            />
-            <button
-              type="submit"
-              className="bg-orange-400 px-5 text-white hover:bg-orange-500 transition-all ease-in-out duration-200 py-[14px] font-medium text-[17px] rounded-lg"
-            >
-              Subscribe Now
-            </button>
+          <form onSubmit={handleSubmit(onSubmit)} className=" w-2/3">
+            <div className="flex items-center gap-5">
+              <input
+                type="text"
+                placeholder="Enter your email"
+                {...register("email", { required: "Email is required" })}
+                className="h-14 px-5 rounded-lg border outline-none border-gray-200 w-2/3"
+              />
+              <button
+                type="submit"
+                className="bg-orange-400 px-5 text-white hover:bg-orange-500 transition-all ease-in-out duration-200 py-[14px] font-medium text-[17px] rounded-lg"
+              >
+                Subscribe Now
+              </button>
+            </div>
+            {success && <p className="text-green-500">{success}</p>}
+            {error && <p className="text-red-500">{error}</p>}
           </form>
           <img
             src={newsletter1}

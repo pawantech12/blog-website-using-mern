@@ -1,7 +1,24 @@
-import React from "react";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import CategoryData from "../data/CategoryData";
+// import CategoryData from "../data/CategoryData";
 const Category = () => {
+  const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/blog/get-categories"
+        );
+        console.log("Categories:", response);
+        setCategories(response.data.categories);
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
   return (
     <>
       <section className="">
@@ -16,7 +33,7 @@ const Category = () => {
       </section>
       <section className="my-[5rem] px-24">
         <div className="flex gap-8 items-center justify-center flex-wrap">
-          {CategoryData.map((item, index) => {
+          {categories.map((item, index) => {
             return (
               <div
                 key={index}
@@ -24,19 +41,24 @@ const Category = () => {
               >
                 <figure>
                   <img
-                    src={item.catImg}
+                    src={item.imageUrl}
                     alt={`${item.name} Image`}
-                    className="rounded-lg"
+                    className="rounded-lg w-28 h-28 object-cover"
                   />
                 </figure>
                 <h4 className="font-semibold mt-2 text-lg text-custom-light-black">
                   {item.name}
                 </h4>
                 <span className="text-sm font-medium text-gray-600">
-                  15 posts
+                  {item.blogPostCount} posts
                 </span>
                 <button className="bg-custom-light-orange rounded-md px-6 py-2 font-medium text-sm mt-2 hover:bg-custom-orange  transition-all ease-in-out duration-200">
-                  <Link to={`/category/${item.id}`}>View Posts</Link>
+                  <Link
+                    to={`/category/${item._id}`}
+                    state={{ categoryName: item.name }}
+                  >
+                    View Posts
+                  </Link>
                 </button>
               </div>
             );
