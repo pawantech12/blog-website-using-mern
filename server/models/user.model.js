@@ -25,6 +25,12 @@ const userSchema = new mongoose.Schema({
       ref: "Blog",
     },
   ],
+  likedPosts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Blog", // Reference to the Blog model
+    },
+  ],
   following: [
     {
       type: mongoose.Schema.Types.ObjectId,

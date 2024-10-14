@@ -16,6 +16,7 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("allPosts");
   const [userDetails, setUserDetails] = useState({});
   const [blogs, setBlogs] = useState([]);
+  const [savedBlogs, setSavedBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [apiError, setApiError] = useState("");
@@ -33,9 +34,11 @@ const Profile = () => {
           `http://localhost:3000/api/user/${userId}`
         ); // Adjust the URL based on your API
         setUserDetails(response.data.user);
-        console.log("User details:", user);
+
+        console.log("User details:", response);
         // Check if the current user is already following this user
         setIsFollowing(response.data.user.followers.includes(currentUserId));
+        setSavedBlogs(response.data.user.savedPosts);
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
@@ -84,7 +87,7 @@ const Profile = () => {
       setLoading(false); // End loading state
     }
   };
-
+  console.log("saved posts: ", savedBlogs);
   return (
     <section className="my-[5rem] px-24">
       <div className="relative">
@@ -230,64 +233,66 @@ const Profile = () => {
             // Saved Posts Section
             <div className="grid grid-cols-3 gap-10 mt-8">
               {/* Implement Saved Posts Display Here */}
-              {user.savedPosts && user.savedPosts.length > 0 ? (
-                user.savedPosts.map((blog, index) => {
-                  <div
-                    key={index}
-                    className="flex flex-col cursor-pointer gap-3"
-                  >
-                    <div className="w-full">
-                      <figure>
-                        <img
-                          src={blog.coverImage || blog1}
-                          alt=""
-                          className="rounded-xl"
-                        />{" "}
-                        {/* Fallback to default image */}
-                      </figure>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                          {blog.category.name || "Uncategorized"}
-                        </span>
-                        <span className="text-zinc-500">
-                          By {user.name || "Author"}
-                        </span>
+              {savedBlogs && savedBlogs.length > 0 ? (
+                savedBlogs.map((blog, index) => {
+                  return (
+                    <div
+                      key={index}
+                      className="flex flex-col cursor-pointer gap-3"
+                    >
+                      <div className="w-full">
+                        <figure>
+                          <img
+                            src={blog.coverImage}
+                            alt=""
+                            className="rounded-xl"
+                          />{" "}
+                          {/* Fallback to default image */}
+                        </figure>
                       </div>
-                      <h5 className="text-xl font-medium ">
-                        <Link
-                          to={`/blog/${blog._id}`}
-                          className="hover:text-orange-400 transition-all ease-in-out duration-200"
-                        >
-                          {blog.title}
-                        </Link>
-                      </h5>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2 text-sm">
-                          <span className="flex gap-1 items-center">
-                            <LuCalendarDays />
-                            {new Date(
-                              blog.publishedDate
-                            ).toLocaleDateString() || "Date"}
-                          </span>{" "}
-                          <GoDotFill className="w-2 h-2" />
-                          <span>
-                            {Math.ceil(blog.content.length / 200)} min read
-                          </span>{" "}
-                          {/* Approximate reading time */}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-3">
+                          <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                            {blog?.category.name || "Uncategorized"}
+                          </span>
+                          <span className="text-zinc-500">
+                            By {user?.name || "Author"}
+                          </span>
                         </div>
-                        <div className="text-xl flex gap-2 items-center">
-                          <button>
-                            <LuBookmarkMinus />
-                          </button>
-                          <button>
-                            <FaRegHeart />
-                          </button>
+                        <h5 className="text-xl font-medium ">
+                          <Link
+                            to={`/blog/${blog._id}`}
+                            className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                          >
+                            {blog?.title}
+                          </Link>
+                        </h5>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="flex gap-1 items-center">
+                              <LuCalendarDays />
+                              {new Date(
+                                blog?.publishedDate
+                              ).toLocaleDateString() || "Date"}
+                            </span>{" "}
+                            <GoDotFill className="w-2 h-2" />
+                            <span>
+                              {Math.ceil(blog?.content.length / 200)} min read
+                            </span>{" "}
+                            {/* Approximate reading time */}
+                          </div>
+                          <div className="text-xl flex gap-2 items-center">
+                            <button>
+                              <LuBookmarkMinus />
+                            </button>
+                            <button>
+                              <FaRegHeart />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>;
+                  );
                 })
               ) : (
                 <p>No saved posts yet.</p>

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom"; // Ensure you import useParams
 import blog1 from "../img/blog1.webp";
-import { LuBookmarkMinus, LuCalendarDays } from "react-icons/lu";
+import { LuCalendarDays } from "react-icons/lu";
 import { GoDotFill } from "react-icons/go";
 import {
   FaBehance,
   FaDribbble,
   FaFacebookF,
+  FaHeart,
   FaInstagram,
   FaLinkedin,
   FaLinkedinIn,
@@ -21,12 +22,17 @@ import { useAuth } from "../store/Authentication";
 import defaultUser from "../img/default-user.jpg";
 import DOMPurify from "dompurify";
 import LatestPostSection from "../components/LatestPostSection";
+import { likeBlog, unLikeBlog } from "../helper/like.handler";
+import { BsBookmarkCheckFill, BsBookmarkDash } from "react-icons/bs";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
+  const [savedPosts, setSavedPosts] = useState([]);
+
   useEffect(() => {
     const fetchBlogDetails = async () => {
       try {
@@ -46,6 +52,50 @@ const BlogDetails = () => {
         setLoading(false);
       }
     };
+    const initFetch = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-liked-posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("all liked Blogs of current loggedin user: ", response);
+        if (user?.user?._id) {
+          // If user data is available, check for liked blogs
+          const likedBlogIds = response.data.blogs
+            .filter((blog) => blog.likes.includes(user.user._id))
+            .map((blog) => blog._id);
+          setLikedBlogs(likedBlogIds); // Set the liked blog IDs
+          console.log("Liked blogs on load:", likedBlogIds); // Debugging line
+        }
+      } catch (error) {
+        console.log("error occured", error);
+      }
+    };
+    const initFetchSavedBlogs = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-saved-posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setSavedPosts(response.data.savedPosts.map((post) => post._id));
+        }
+        console.log("initial saved post: ", response);
+      } catch (error) {
+        console.log("error occurred while fetching saved post: ", error);
+      }
+    };
+    initFetchSavedBlogs();
+    initFetch();
 
     fetchBlogDetails();
   }, [blogId, token]);
@@ -57,6 +107,106 @@ const BlogDetails = () => {
   if (!blog) {
     return <div>No blog found</div>; // Handle case when blog is not found
   }
+
+  // Like/Unlike handler
+  const handleLikeClick = async (blogId) => {
+    try {
+      if (!user?.user?._id || !blog) {
+        return; // Exit early if user or blogs data isn't available
+      }
+
+      const isLiked = likedBlogs.includes(blogId); // Check if the blog is already liked
+
+      // Optimistically update the UI
+      const updatedBlog =
+        blog._id === blogId
+          ? {
+              ...blog,
+              likes: isLiked
+                ? blog.likes.filter((id) => id !== user.user._id) // Remove like
+                : [...blog.likes, user.user._id], // Add like
+            }
+          : blog;
+
+      setBlog(updatedBlog); // Update blogs in state
+
+      // Update the likedBlogs state
+      const updatedLikedBlogs = isLiked
+        ? likedBlogs.filter((id) => id !== blogId) // Remove blog ID from likedBlogs
+        : [...likedBlogs, blogId]; // Add blog ID to likedBlogs
+
+      setLikedBlogs(updatedLikedBlogs);
+
+      // Make API call to update likes on the backend
+      const response = isLiked
+        ? await unLikeBlog(blogId)
+        : await likeBlog(blogId);
+
+      // Rollback on failure
+      if (!response.success) {
+        setLikedBlogs(
+          isLiked ? [...updatedLikedBlogs, blogId] : updatedLikedBlogs
+        ); // Rollback likedBlogs
+        setBlog(blog); // Rollback blogs state
+      }
+    } catch (error) {
+      console.error("Error updating likes:", error);
+    }
+  };
+
+  const handleSaveClick = async (postId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/toggle-save/${postId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("response while saving post: ", response);
+      if (response.data.success) {
+        setSavedPosts(response.data.savedPosts); // Toggle the save state on success
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+
+  const shareUrl = window.location.href; // The URL of the current blog post
+  const title = blog.title; // The title of the blog post
+
+  // Custom share URLs for different platforms
+  const shareUrls = {
+    facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+      shareUrl
+    )}`,
+    twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+      shareUrl
+    )}&text=${encodeURIComponent(title)}`,
+    linkedin: `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+      shareUrl
+    )}&title=${encodeURIComponent(title)}`,
+    instagram: `https://instagram.com`, // Instagram doesn't allow direct URL sharing
+  };
+
+  // Web Share API handler (for mobile native sharing)
+  const handleWebShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: blog.title,
+          url: shareUrl,
+        });
+        console.log("Blog shared successfully");
+      } catch (error) {
+        console.error("Error sharing the blog:", error);
+      }
+    } else {
+      console.error("Web Share API not supported.");
+    }
+  };
 
   return (
     <>
@@ -102,12 +252,21 @@ const BlogDetails = () => {
                 {/* Assuming readTime is a property */}
               </div>
               <div className="text-xl flex gap-2 items-center">
-                <button>
-                  <LuBookmarkMinus />
+                <button onClick={() => handleSaveClick(blog?._id)}>
+                  {savedPosts.includes(blog?._id) ? (
+                    <BsBookmarkCheckFill />
+                  ) : (
+                    <BsBookmarkDash />
+                  )}
                 </button>
-                <button>
-                  <FaRegHeart />
+                <button onClick={() => handleLikeClick(blog?._id)}>
+                  {likedBlogs.includes(blog._id) ? (
+                    <FaHeart className="text-red-500" />
+                  ) : (
+                    <FaRegHeart />
+                  )}
                 </button>
+                <span>{blog.likes.length}</span>
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-4">
@@ -123,19 +282,44 @@ const BlogDetails = () => {
               <div className="flex items-center gap-3 mt-3 self-end">
                 <h4 className="font-semibold text-custom-black">Share on </h4>
                 <ul className="flex items-center gap-3 text-sm ">
-                  <li className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                  {/* Facebook */}
+                  <li
+                    className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                    onClick={() => window.open(shareUrls.facebook, "_blank")}
+                  >
                     <FaFacebookF />
                   </li>
-                  <li className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                  {/* Twitter */}
+                  <li
+                    className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                    onClick={() => window.open(shareUrls.twitter, "_blank")}
+                  >
                     <FaTwitter />
                   </li>
-                  <li className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                  {/* Instagram - Note: Instagram doesn't support URL sharing */}
+                  <li
+                    className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                    onClick={() =>
+                      alert("Instagram does not support direct URL sharing.")
+                    }
+                  >
                     <FaInstagram />
                   </li>
-                  <li className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                  {/* LinkedIn */}
+                  <li
+                    className="bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                    onClick={() => window.open(shareUrls.linkedin, "_blank")}
+                  >
                     <FaLinkedinIn />
                   </li>
                 </ul>
+                {/* Web Share API Button (for native sharing on mobile) */}
+                <button
+                  className="ml-3 bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                  onClick={handleWebShare}
+                >
+                  Share
+                </button>
               </div>
             </div>
           </div>

@@ -277,6 +277,7 @@ const getAllUserBlogs = async (req, res) => {
     const blogs = await Blog.find()
       .populate("category", "name")
       .populate("author", "name")
+      .populate("likes")
       .sort({ createdAt: -1 });
     if (!blogs) {
       return res.status(404).json({
@@ -474,6 +475,95 @@ const unsaveBlogPost = async (req, res) => {
   }
 };
 
+// Controller for liking a blog post
+const likeBlog = async (req, res) => {
+  try {
+    const { blogId } = req.params;
+    const userId = req.user.userId; // Assumes user is authenticated
+
+    const blog = await Blog.findById(blogId);
+    const user = await User.findById(userId); // Fetch the user to update likedPosts
+
+    if (!blog) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Blog not found" });
+    }
+
+    // Check if the user has already liked the blog
+    if (blog.likes.includes(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Blog already liked" });
+    }
+
+    // Add userId to blog's likes
+    blog.likes.push(userId);
+    await blog.save();
+
+    // Add blogId to user's likedPosts
+    user.likedPosts.push(blogId);
+    await user.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Blog liked", likes: blog.likes });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+const unlikeBlog = async (req, res) => {
+  try {
+    const { blogId } = req.params;
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "User not authenticated" });
+    }
+
+    const blog = await Blog.findById(blogId);
+    const user = await User.findById(userId); // Fetch the user to update likedPosts
+
+    if (!blog) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Blog not found" });
+    }
+
+    // Check if the blog has the user ID in its likes
+    if (!blog.likes.includes(userId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Blog not liked yet" });
+    }
+
+    // Remove userId from blog's likes
+    blog.likes = blog.likes.filter(
+      (like) => like.toString() !== userId.toString()
+    );
+    await blog.save();
+
+    // Remove blogId from user's likedPosts
+    user.likedPosts = user.likedPosts.filter(
+      (postId) => postId.toString() !== blogId.toString()
+    );
+    await user.save();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Blog unliked", likes: blog.likes });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
 module.exports = {
   createBlogPost,
   getAllBlogs,
@@ -485,4 +575,6 @@ module.exports = {
   deleteBlogPost,
   saveBlogPost,
   unsaveBlogPost,
+  likeBlog,
+  unlikeBlog,
 };

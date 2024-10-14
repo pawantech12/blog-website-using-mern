@@ -23,6 +23,12 @@ const blogSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User", // Users who liked the blog
+      },
+    ],
     isDraft: {
       type: Boolean,
       default: false,

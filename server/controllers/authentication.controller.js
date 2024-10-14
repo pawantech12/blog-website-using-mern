@@ -215,6 +215,101 @@ const unfollowUserById = async (req, res) => {
   }
 };
 
+const fetchCurrentUserAllLikedPost = async (req, res) => {
+  const userId = req.user.userId;
+  console.log("user Id: ", userId);
+  try {
+    // Find the user by their ID and populate likedPosts with blog details
+    const user = await User.findById(userId).populate("likedPosts");
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+    console.log("user data: ", user);
+    // likedPosts already contains populated blog details
+    const likedBlogs = user.likedPosts;
+    console.log("liked blogs: ", likedBlogs);
+
+    if (!likedBlogs || likedBlogs.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No liked blogs found." });
+    }
+
+    res.status(200).json({ success: true, blogs: likedBlogs });
+  } catch (error) {
+    console.error("Error fetching liked blogs:", error);
+    res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
+const toggleSavedPost = async (req, res) => {
+  const userId = req.user.userId; // Get user ID from JWT
+  const blogId = req.params.blogId;
+  console.log("userid: ", userId);
+  console.log("blogid: ", blogId);
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    // Check if the post is already saved
+    const isPostSaved = user.savedPosts.includes(blogId);
+
+    if (isPostSaved) {
+      // Remove post from savedPosts
+      user.savedPosts = user.savedPosts.filter(
+        (id) => id.toString() !== blogId
+      );
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: "Post removed from saved posts.",
+        savedPosts: user.savedPosts,
+      });
+    } else {
+      // Add post to savedPosts
+      user.savedPosts.push(blogId);
+      await user.save();
+      return res.status(200).json({
+        success: true,
+        message: "Post saved successfully.",
+        savedPosts: user.savedPosts,
+      });
+    }
+  } catch (error) {
+    console.error("Error toggling saved post:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+const getSavedPosts = async (req, res) => {
+  const userId = req.user.userId; // Get user ID from the JWT token
+
+  try {
+    const user = await User.findById(userId).populate("savedPosts"); // Populate savedPosts with Blog data
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found." });
+    }
+
+    // Respond with saved posts
+    return res.status(200).json({
+      success: true,
+      savedPosts: user.savedPosts || [],
+    });
+  } catch (error) {
+    console.error("Error fetching saved posts:", error);
+    return res.status(500).json({ success: false, message: "Server error." });
+  }
+};
+
 module.exports = {
   register,
   login,
@@ -222,4 +317,7 @@ module.exports = {
   getUserDataById,
   followUserById,
   unfollowUserById,
+  fetchCurrentUserAllLikedPost,
+  toggleSavedPost,
+  getSavedPosts,
 };

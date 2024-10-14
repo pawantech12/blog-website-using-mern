@@ -11,11 +11,15 @@ import blog1 from "../img/blog1.webp";
 import blog from "../img/7.webp";
 import hero1 from "../img/hero-01.webp";
 import { GoDotFill } from "react-icons/go";
-import { LuBookmarkMinus, LuCalendarDays } from "react-icons/lu";
+import { LuCalendarDays } from "react-icons/lu";
+import { BsBookmarkCheckFill } from "react-icons/bs";
+import { BsBookmarkDash } from "react-icons/bs";
+
 import {
   FaBehance,
   FaDribbble,
   FaFacebookF,
+  FaHeart,
   FaInstagram,
   FaLinkedin,
   FaPlay,
@@ -31,6 +35,8 @@ import CategoryData from "../data/CategoryData";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import { useForm } from "react-hook-form";
+import { likeBlog, unLikeBlog } from "../helper/like.handler";
+import LatestPostSection from "../components/LatestPostSection";
 export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [catcurrent, setCatCurrent] = useState(0);
@@ -38,11 +44,14 @@ export const Home = () => {
   const [blogs, setBlogs] = useState([]);
   const [followingBlogs, setFollowingBlogs] = useState([]);
   const [followingUsers, setFollowingUsers] = useState([]);
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const { register, handleSubmit, reset } = useForm();
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
+  const [savedPosts, setSavedPosts] = useState([]);
 
   const itemsPerPage = 1;
   useEffect(() => {
@@ -83,9 +92,67 @@ export const Home = () => {
         console.error("Error fetching blogs from following users:", error);
       }
     };
+    // Fetch blogs and liked blogs
+    const initFetch = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-liked-posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        console.log("all liked Blogs of current loggedin user: ", response);
+        if (user?.user?._id) {
+          // If user data is available, check for liked blogs
+          const likedBlogIds = response.data.blogs
+            .filter((blog) => blog.likes.includes(user.user._id))
+            .map((blog) => blog._id);
+          setLikedBlogs(likedBlogIds); // Set the liked blog IDs
+          console.log("Liked blogs on load:", likedBlogIds); // Debugging line
+        }
+      } catch (error) {
+        console.log("error occured", error);
+      }
+    };
+
+    const initFetchSavedBlogs = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-saved-posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (response.data.success) {
+          setSavedPosts(response.data.savedPosts.map((post) => post._id));
+        }
+        console.log("initial saved post: ", response);
+      } catch (error) {
+        console.log("error occurred while fetching saved post: ", error);
+      }
+    };
+    initFetchSavedBlogs();
+    initFetch();
     fetchBlogs();
     fetchFollowingBlogs();
-  }, [token]);
+  }, [token, user]);
+  // useEffect(() => {
+  //   if (blogs?.length && user?.user?._id) {
+  //     // Get all the blog IDs the user has liked
+  //     const likedBlogIds = blogs
+  //       .filter((blog) => blog.likes.includes(user.user._id))
+  //       .map((blog) => blog._id);
+
+  //     // Update the state with the liked blog IDs
+  //     setLikedBlogs(likedBlogIds);
+  //   }
+  // }, [blogs, user]);
+
   // Fetch categories from the backend
   useEffect(() => {
     const fetchCategories = async () => {
@@ -102,6 +169,12 @@ export const Home = () => {
 
     fetchCategories();
   }, []);
+  // Filter blogs to get only featured ones
+  const featuredBlogs = blogs.filter((blog) => blog.isFeatured);
+
+  // Split featured blogs into two arrays for each column
+  const firstColumnBlogs = featuredBlogs.slice(0, 2); // First two blogs for first column
+  const secondColumnBlogs = featuredBlogs.slice(2, 5); // Next three blogs for second column
   const nextSlide = () => {
     setCurrent((prev) =>
       prev === Math.ceil(followingUsers.length / itemsPerPage) - 1
@@ -128,7 +201,9 @@ export const Home = () => {
     );
   };
   const [isModalOpen, setIsModalOpen] = useState(false);
+  console.log("user id:", user?.user._id);
 
+  console.log("liked blogs", likedBlogs);
   const openModal = () => {
     setIsModalOpen(true);
   };
@@ -160,6 +235,75 @@ export const Home = () => {
     }
   };
 
+  // Like/Unlike handler
+  const handleLikeClick = async (blogId) => {
+    try {
+      if (!user?.user?._id || !blogs) {
+        return; // Exit early if user or blogs data isn't available
+      }
+
+      const isLiked = likedBlogs.includes(blogId); // Check if the blog is already liked
+
+      // Optimistically update the UI
+      const updatedBlogs = blogs.map((blog) =>
+        blog._id === blogId
+          ? {
+              ...blog,
+              likes: isLiked
+                ? blog.likes.filter((id) => id !== user.user._id) // Remove like
+                : [...blog.likes, user.user._id], // Add like
+            }
+          : blog
+      );
+
+      setBlogs(updatedBlogs); // Update blogs in state
+
+      // Update the likedBlogs state
+      const updatedLikedBlogs = isLiked
+        ? likedBlogs.filter((id) => id !== blogId) // Remove blog ID from likedBlogs
+        : [...likedBlogs, blogId]; // Add blog ID to likedBlogs
+
+      setLikedBlogs(updatedLikedBlogs);
+
+      // Make API call to update likes on the backend
+      const response = isLiked
+        ? await unLikeBlog(blogId)
+        : await likeBlog(blogId);
+
+      // Rollback on failure
+      if (!response.success) {
+        setLikedBlogs(
+          isLiked ? [...updatedLikedBlogs, blogId] : updatedLikedBlogs
+        ); // Rollback likedBlogs
+        setBlogs(blogs); // Rollback blogs state
+      }
+    } catch (error) {
+      console.error("Error updating likes:", error);
+    }
+  };
+  const handleSaveClick = async (postId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/toggle-save/${postId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("response while saving post: ", response);
+      if (response.data.success) {
+        setSavedPosts(response.data.savedPosts); // Toggle the save state on success
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+  console.log("setsavedposts: ", savedPosts);
+
+  console.log("user details", user);
+  console.log("liked", liked);
   return (
     <>
       <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12">
@@ -228,12 +372,21 @@ export const Home = () => {
                   </span>
                 </div>
                 <div className="text-xl flex gap-2 items-center">
-                  <button>
-                    <LuBookmarkMinus />
+                  <button onClick={() => handleSaveClick(blog?._id)}>
+                    {savedPosts.includes(blog?._id) ? (
+                      <BsBookmarkCheckFill />
+                    ) : (
+                      <BsBookmarkDash />
+                    )}
                   </button>
-                  <button>
-                    <FaRegHeart />
+                  <button onClick={() => handleLikeClick(blog?._id)}>
+                    {likedBlogs.includes(blog._id) ? (
+                      <FaHeart className="text-red-500" />
+                    ) : (
+                      <FaRegHeart />
+                    )}
                   </button>
+                  <span>{blog.likes.length}</span>
                 </div>
               </div>
             </div>
@@ -288,12 +441,21 @@ export const Home = () => {
                       </span>
                     </div>
                     <div className="text-xl flex gap-2 items-center">
-                      <button>
-                        <LuBookmarkMinus />
+                      <button onClick={() => handleSaveClick(blog?._id)}>
+                        {savedPosts.includes(blog?._id) ? (
+                          <BsBookmarkCheckFill />
+                        ) : (
+                          <BsBookmarkDash />
+                        )}
                       </button>
-                      <button>
-                        <FaRegHeart />
+                      <button onClick={() => handleLikeClick(blog?._id)}>
+                        {likedBlogs.includes(blog._id) ? (
+                          <FaHeart className="text-red-500" />
+                        ) : (
+                          <FaRegHeart />
+                        )}
                       </button>
+                      <span>{blog.likes.length}</span>
                     </div>
                   </div>
                 </div>
@@ -391,12 +553,25 @@ export const Home = () => {
                                   </span>
                                 </div>
                                 <div className="text-xl flex gap-2 items-center">
-                                  <button>
-                                    <LuBookmarkMinus />
+                                  <button
+                                    onClick={() => handleSaveClick(blog?._id)}
+                                  >
+                                    {savedPosts.includes(blog?._id) ? (
+                                      <BsBookmarkCheckFill />
+                                    ) : (
+                                      <BsBookmarkDash />
+                                    )}
                                   </button>
-                                  <button>
-                                    <FaRegHeart />
+                                  <button
+                                    onClick={() => handleLikeClick(blog?._id)}
+                                  >
+                                    {likedBlogs.includes(blog._id) ? (
+                                      <FaHeart className="text-red-500" />
+                                    ) : (
+                                      <FaRegHeart />
+                                    )}
                                   </button>
+                                  <span>{blog.likes.length}</span>
                                 </div>
                               </div>
                             </div>
@@ -555,49 +730,64 @@ export const Home = () => {
       </section>
       <section className="px-20 py-20">
         <h4 className="text-3xl font-semibold text-neutral-800">
-          Featured Video
+          Featured Blogs
         </h4>
         <div className="flex gap-8 mt-7">
           <div className="w-[38%] flex flex-col gap-10">
-            {[1, 2].map((item, index) => {
+            {firstColumnBlogs.map((item, index) => {
               return (
                 <div key={index} className="flex flex-col cursor-pointer gap-3">
-                  <div className="w-full relative">
+                  <div className="w-full">
                     <figure className="h-[300px]">
                       <img
-                        src={blog1}
-                        alt=""
+                        src={item.coverImage}
+                        alt={item.title}
                         className="rounded-xl h-[inherit] object-cover"
                       />
                     </figure>
-                    <button
-                      onClick={openModal}
-                      className="absolute top-[35%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[44%] text-white bg-orange-300 p-4 rounded-full text-xl border-2 border-white"
-                    >
-                      <FaPlay />
-                    </button>
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center gap-3">
                       <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                        Food
+                        {item.category.name}
                       </span>
                       <span className="flex gap-1 items-center">
                         <LuCalendarDays />
-                        15 June 2021
+                        {new Date(item.publishedDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
                       </span>
                       <div className="text-xl flex gap-2 items-center">
-                        <button>
-                          <LuBookmarkMinus />
+                        <button onClick={() => handleSaveClick(item?._id)}>
+                          {savedPosts.includes(item?._id) ? (
+                            <BsBookmarkCheckFill />
+                          ) : (
+                            <BsBookmarkDash />
+                          )}
                         </button>
-                        <button>
-                          <FaRegHeart />
+                        <button onClick={() => handleLikeClick(item?._id)}>
+                          {likedBlogs.includes(item._id) ? (
+                            <FaHeart className="text-red-500" />
+                          ) : (
+                            <FaRegHeart />
+                          )}
                         </button>
+                        <span>{item.likes.length}</span>
                       </div>
                     </div>
                     <h5 className="text-2xl font-medium ">
-                      <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                        Customize your WooCommerce store with countless Web
+                      <Link
+                        to={`/blog-post/${item._id}`}
+                        className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                      >
+                        {item.title.length > 50
+                          ? `${item.title.slice(0, 50)}...`
+                          : item.title}
                       </Link>
                     </h5>
                   </div>
@@ -606,45 +796,60 @@ export const Home = () => {
             })}
           </div>
           <div className="w-[30%] grid grid-cols-1 grid-rows-3 gap-3">
-            {[1, 2, 3].map((item, index) => {
+            {secondColumnBlogs.map((item, index) => {
               return (
                 <div key={index} className="flex flex-col cursor-pointer gap-3">
-                  <div className="w-full relative">
+                  <div className="w-full">
                     <figure>
                       <img
-                        src={blog1}
-                        alt=""
+                        src={item.coverImage}
+                        alt={item.title}
                         className="rounded-xl object-cover h-40 w-full"
                       />
                     </figure>
-                    <button
-                      onClick={openModal}
-                      className="absolute top-[25%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[44%] text-white bg-orange-300 p-4 rounded-full text-xl border-2 border-white"
-                    >
-                      <FaPlay />
-                    </button>
                   </div>
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center gap-3">
                       <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                        Food
+                        {item.category.name}
                       </span>
                       <span className="flex gap-1 items-center">
                         <LuCalendarDays />
-                        15 June 2021
+                        {new Date(item.publishedDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }
+                        )}
                       </span>
                       <div className="text-xl flex gap-2 items-center">
-                        <button>
-                          <LuBookmarkMinus />
+                        <button onClick={() => handleSaveClick(item?._id)}>
+                          {savedPosts.includes(item?._id) ? (
+                            <BsBookmarkCheckFill />
+                          ) : (
+                            <BsBookmarkDash />
+                          )}
                         </button>
-                        <button>
-                          <FaRegHeart />
+                        <button onClick={() => handleLikeClick(item?._id)}>
+                          {likedBlogs.includes(item._id) ? (
+                            <FaHeart className="text-red-500" />
+                          ) : (
+                            <FaRegHeart />
+                          )}
                         </button>
+                        <span>{item.likes.length}</span>
                       </div>
                     </div>
                     <h5 className="text-lg font-medium ">
-                      <Link className="hover:text-orange-400 transition-all ease-in-out duration-200">
-                        Customize your WooCommerce store with countless Web
+                      <Link
+                        to={`/blog-post/${item._id}`}
+                        className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                      >
+                        {item.title.length > 50
+                          ? `${item.title.slice(0, 50)}...`
+                          : item.title}
                       </Link>
                     </h5>
                   </div>
@@ -653,37 +858,7 @@ export const Home = () => {
             })}
           </div>
           <div className="w-[30%] flex flex-col gap-8">
-            <div className="bg-[#FAFAFA] rounded-xl px-5 py-4">
-              <h4 className="text-2xl font-semibold text-neutral-800">
-                Latest Post
-              </h4>
-              <div className="flex flex-col gap-3 mt-5">
-                {[1, 2, 3, 4, 5].map((item, index) => {
-                  return (
-                    <div key={index} className="flex gap-3">
-                      <figure className="w-[84px] h-[inherit]">
-                        <img
-                          src={blog1}
-                          alt=""
-                          className="w-full h-full object-cover rounded-md"
-                        />
-                      </figure>
-                      <div className="w-3/5">
-                        <h5 className="text-[15px] font-medium hover:text-orange-400 transition-all ease-in-out duration-200">
-                          <Link>
-                            Customize your WooCommerce store with countless Web
-                          </Link>
-                        </h5>
-                        <span className="flex gap-1 text-xs text-zinc-600 font-medium items-center">
-                          <LuCalendarDays className="w-4 h-4" />
-                          15 June 2021
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+            <LatestPostSection />
             <div className="bg-[#FAFAFA] rounded-xl px-5 py-4">
               <h4 className="text-2xl text-center font-semibold text-neutral-800">
                 Stay In Touch
