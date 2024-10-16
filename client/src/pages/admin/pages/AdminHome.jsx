@@ -115,7 +115,7 @@ const AdminHome = () => {
     });
   return (
     <>
-      <section className="grid grid-cols-4 gap-8 my-[3rem]">
+      <section className="grid grid-cols-4 gap-8 my-[3rem] px-24">
         <div className="flex gap-4 items-center border border-gray-200 rounded-xl p-4">
           <figure className="bg-emerald-100 rounded-md p-4">
             <FaUserGroup className="w-10 h-10 text-emerald-500" />
@@ -157,7 +157,7 @@ const AdminHome = () => {
           </div>
         </div>
       </section>
-      <section>
+      <section className="px-24">
         <div className="max-w-7xl mx-auto bg-white p-6 border border-gray-200 rounded-lg my-[3rem]">
           {successMessage && (
             <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4">
@@ -198,7 +198,7 @@ const AdminHome = () => {
           />
         </div>
       </section>
-      <section className="my-[3rem] flex gap-5 justify-between">
+      <section className="my-[3rem] flex gap-5 justify-between px-24">
         <div className="p-6 bg-white border border-gray-200 rounded-lg w-1/2">
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Recent Comments

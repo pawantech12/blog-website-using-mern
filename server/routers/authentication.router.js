@@ -9,10 +9,12 @@ const {
   fetchCurrentUserAllLikedPost,
   toggleSavedPost,
   getSavedPosts,
+  updateUserProfileDetails,
 } = require("../controllers/authentication.controller");
 const {
   authenticateToken,
 } = require("../middlewares/authenticateToken.middleware");
+const upload = require("../config/multer");
 
 const router = express.Router();
 
@@ -27,5 +29,12 @@ router.route("/follow/:id").put(authenticateToken, followUserById);
 router.route("/unfollow/:id").put(authenticateToken, unfollowUserById);
 router.route("/toggle-save/:blogId").put(authenticateToken, toggleSavedPost);
 router.route("/get-saved-posts").get(authenticateToken, getSavedPosts);
+router
+  .route("/update-profile")
+  .put(
+    authenticateToken,
+    upload.fields([{ name: "bannerImg" }, { name: "profileImg" }]),
+    updateUserProfileDetails
+  );
 
 module.exports = router;

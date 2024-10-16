@@ -1,3 +1,4 @@
+const upload = require("../config/multer");
 const User = require("../models/user.model");
 
 const register = async (req, res) => {
@@ -65,7 +66,19 @@ const login = async (req, res) => {
 const getUserData = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate({
+      path: "savedPosts", // Populate saved posts
+      populate: [
+        {
+          path: "author",
+          select: "name",
+        },
+        {
+          path: "category",
+          select: "name",
+        },
+      ],
+    });
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -85,7 +98,20 @@ const getUserData = async (req, res) => {
 const getUserDataById = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId).populate("savedPosts");
+    const user = await User.findById(userId).populate({
+      path: "savedPosts", // Populate saved posts
+      populate: [
+        {
+          path: "author",
+          select: "name",
+        },
+        {
+          path: "category",
+          select: "name",
+        },
+      ],
+    });
+
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -232,13 +258,7 @@ const fetchCurrentUserAllLikedPost = async (req, res) => {
     const likedBlogs = user.likedPosts;
     console.log("liked blogs: ", likedBlogs);
 
-    if (!likedBlogs || likedBlogs.length === 0) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No liked blogs found." });
-    }
-
-    res.status(200).json({ success: true, blogs: likedBlogs });
+    res.status(200).json({ success: true, blogs: likedBlogs || [] });
   } catch (error) {
     console.error("Error fetching liked blogs:", error);
     res.status(500).json({ success: false, message: "Server error." });
@@ -292,7 +312,19 @@ const getSavedPosts = async (req, res) => {
   const userId = req.user.userId; // Get user ID from the JWT token
 
   try {
-    const user = await User.findById(userId).populate("savedPosts"); // Populate savedPosts with Blog data
+    const user = await User.findById(userId).populate({
+      path: "savedPosts", // Populate saved posts
+      populate: [
+        {
+          path: "author",
+          select: "name",
+        },
+        {
+          path: "category",
+          select: "name",
+        },
+      ],
+    }); // Populate savedPosts with Blog data
     if (!user) {
       return res
         .status(404)
@@ -309,6 +341,76 @@ const getSavedPosts = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error." });
   }
 };
+const updateUserProfileDetails = async (req, res) => {
+  try {
+    const userId = req.user.userId; // Assume you're getting user ID from token
+    const {
+      name,
+      username,
+      summary,
+      headline,
+      city,
+      state,
+      country,
+      dob,
+      gender,
+      age,
+    } = req.body;
+
+    // Prepare user update data
+    const updateData = {
+      name,
+      username,
+      summary,
+      headline,
+      city,
+      state,
+      country,
+      dob,
+      gender,
+      age,
+    };
+
+    // Handle image uploads
+    if (req.file) {
+      // Check if a banner image is uploaded
+      if (req.file.fieldname === "bannerImg") {
+        const result = await cloudinary.uploader.upload_stream(
+          { folder: "banner_images" }, // Specify the folder
+          (error, result) => {
+            if (error) return res.status(500).json({ error: "Upload failed" });
+            updateData.bannerImg = result.secure_url; // Save the URL
+          }
+        );
+        await upload.single("bannerImg")(req, res, () => result);
+      }
+
+      // Check if a profile image is uploaded
+      if (req.file.fieldname === "profileImg") {
+        const result = await cloudinary.uploader.upload_stream(
+          { folder: "profile_images" }, // Specify the folder
+          (error, result) => {
+            if (error) return res.status(500).json({ error: "Upload failed" });
+            updateData.profileImg = result.secure_url; // Save the URL
+          }
+        );
+        await upload.single("profileImg")(req, res, () => result);
+      }
+    }
+
+    // Update the user details in the database
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
+    return res
+      .status(200)
+      .json({ message: "Profile updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Server error" });
+  }
+};
 
 module.exports = {
   register,
@@ -320,4 +422,5 @@ module.exports = {
   fetchCurrentUserAllLikedPost,
   toggleSavedPost,
   getSavedPosts,
+  updateUserProfileDetails,
 };

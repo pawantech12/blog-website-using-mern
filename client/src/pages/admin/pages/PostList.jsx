@@ -109,7 +109,7 @@ const PostList = () => {
     });
   return (
     <>
-      <section className="mt-[2rem]">
+      <section className="mt-[2rem] px-24">
         <div className="flex justify-between items-center">
           <h4 className="text-2xl font-semibold">Blog Post List</h4>
           <button className="bg-orange-400 text-white text-sm font-semibold px-3 py-2 rounded-md ">

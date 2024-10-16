@@ -1,56 +1,55 @@
-import axios from "axios";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   FaFacebookF,
+  FaTwitter,
   FaInstagram,
   FaLinkedinIn,
-  FaRegHeart,
-  FaTwitter,
 } from "react-icons/fa";
+import { BsBookmarkCheckFill, BsBookmarkDash } from "react-icons/bs";
+import { FaRegHeart } from "react-icons/fa";
+import { LuCalendarDays } from "react-icons/lu";
+import defaultProfileImg from "../../../img/default-user.jpg"; // Replace with a default profile image path
+import blog1 from "../../../img/blog1.webp"; // Example image
+import { useAuth } from "../../../store/Authentication";
+import axios from "axios";
 import { GoDotFill } from "react-icons/go";
-import { LuBookmarkMinus, LuCalendarDays } from "react-icons/lu";
-import { Link, useParams } from "react-router-dom";
-import { useAuth } from "../store/Authentication";
-import Loader from "../components/Loader";
+import { Link } from "react-router-dom";
+import Loader from "../../../components/Loader";
 
-const Profile = () => {
+const UserProfile = () => {
+  const { token } = useAuth();
   const [activeTab, setActiveTab] = useState("allPosts");
+  const [loading, setLoading] = useState(false);
   const [userDetails, setUserDetails] = useState({});
   const [blogs, setBlogs] = useState([]);
   const [savedBlogs, setSavedBlogs] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [apiError, setApiError] = useState("");
-  const [isFollowing, setIsFollowing] = useState(false);
-
-  // Replace this with the actual user ID
-  const { userId } = useParams(); // Example: "60d4b5fbc2bfb3e72e39f2ac"
-  const { token, user } = useAuth();
-  const currentUserId = user?.user._id;
   useEffect(() => {
-    // Fetch user details
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/user/${userId}`
-        ); // Adjust the URL based on your API
+        const response = await axios.get(`http://localhost:3000/api/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }); // Adjust the URL based on your API
         setUserDetails(response.data.user);
 
         console.log("User details:", response);
-        // Check if the current user is already following this user
-        setIsFollowing(response.data.user.followers.includes(currentUserId));
+
         setSavedBlogs(response.data.user.savedPosts);
       } catch (error) {
         console.error("Error fetching user details:", error);
       }
     };
-
     // Fetch user's blogs
     const fetchUserBlogs = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/user/${userId}/blogs`
+          `http://localhost:3000/blog/get-blogs`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         ); // Adjust the URL based on your API
         if (response.data.success) {
           setBlogs(response.data.blogs);
@@ -59,45 +58,64 @@ const Profile = () => {
         console.error("Error fetching user's blogs:", error);
       }
     };
+    const initFetchSavedBlogs = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-saved-posts",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
+        if (response.data.success) {
+          setSavedBlogs(response.data.savedPosts);
+        }
+        console.log("initial saved post: ", response);
+      } catch (error) {
+        console.log("error occurred while fetching saved post: ", error);
+      }
+    };
     const fetchData = async () => {
       setLoading(true); // Set loading to true before requests
-      await Promise.all([fetchUserDetails(), fetchUserBlogs()]); // Wait for both requests
+      await Promise.all([
+        fetchUserDetails(),
+        fetchUserBlogs(),
+        initFetchSavedBlogs(),
+      ]); // Wait for both requests
       setLoading(false); // Set loading to false after both requests are complete
     };
 
     fetchData();
-  }, [userId, currentUserId, user]);
+  }, [token]);
 
-  // Function to handle follow/unfollow
-  const handleFollow = async () => {
-    setLocalLoading(true); // Set loading to true while the request is in progress
-    try {
-      const endpoint = isFollowing
-        ? `http://localhost:3000/api/unfollow/${userId}`
-        : `http://localhost:3000/api/follow/${userId}`;
-
-      const response = await axios.put(
-        endpoint,
-        {}, // empty body
-        { headers: { Authorization: `Bearer ${token}` } } // Ensure token is passed for authentication
-      );
-
-      if (response.data.success) {
-        setIsFollowing(!isFollowing); // Toggle follow state
-        setSuccessMessage(response.data.message);
-      }
-    } catch (error) {
-      console.error("Error following/unfollowing user:", error);
-      setApiError(error.response?.data?.message || "Something went wrong");
-    } finally {
-      setLocalLoading(false); // End loading state
-    }
-  };
-  console.log("saved posts: ", savedBlogs);
   if (loading) {
     return <Loader />;
   }
+  console.log("user details: ", userDetails);
+
+  const handleSaveClick = async (postId) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3000/api/toggle-save/${postId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("response while saving post: ", response);
+      if (response.data.success) {
+        setSavedBlogs(response.data.savedPosts); // Toggle the save state on success
+      }
+    } catch (error) {
+      console.error("Error saving post:", error);
+    }
+  };
+  console.log("saved blogs user profile: ", savedBlogs);
+
   return (
     <section className="my-[5rem] px-24">
       <div className="relative">
@@ -125,7 +143,43 @@ const Profile = () => {
         <p className="w-[70%] mx-auto text-custom-light-black font-medium mt-2">
           {userDetails.headline || "No Bio available."}
         </p>
-        <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-4">
+        <div className="mx-auto flex items-center justify-center gap-8 my-4">
+          <div className="flex flex-col items-center">
+            <h4 className="text-xl font-semibold text-zinc-600">
+              {blogs?.length}
+            </h4>
+            <span className="text-zinc-500 font-medium text-[15px]">Posts</span>
+          </div>
+
+          {/* Vertical line between Posts and Followers */}
+          <div className="border-l-2 h-10 border-gray-300"></div>
+
+          <div className="flex flex-col items-center">
+            <h4 className="text-xl font-semibold text-zinc-600">
+              {userDetails?.followers?.length}
+            </h4>
+            <span className="text-zinc-500 font-medium text-[15px]">
+              Followers
+            </span>
+          </div>
+
+          {/* Vertical line between Followers and Following */}
+          <div className="border-l-2 h-10 border-gray-300"></div>
+
+          <div className="flex flex-col items-center">
+            <h4 className="text-xl font-semibold text-zinc-600">
+              {userDetails?.following?.length}
+            </h4>
+            <span className="text-zinc-500 font-medium text-[15px]">
+              Following
+            </span>
+          </div>
+        </div>
+        <button className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md">
+          <Link to={`/dashboard/edit-profile`}>Edit Profile</Link>
+        </button>
+
+        <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-6">
           <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
             <FaFacebookF />
           </li>
@@ -139,15 +193,6 @@ const Profile = () => {
             <FaLinkedinIn />
           </li>
         </ul>
-        <button
-          disabled={loading}
-          className={`bg-custom-orange text-base font-medium px-6 py-2 rounded-lg mt-4 ${
-            isFollowing ? "bg-gray-400 text-white" : ""
-          }`}
-          onClick={handleFollow}
-        >
-          {localLoading ? "Processing..." : isFollowing ? "Unfollow" : "Follow"}
-        </button>
       </div>
       <hr className="mt-8" />
 
@@ -222,13 +267,14 @@ const Profile = () => {
                         </span>{" "}
                         <GoDotFill className="w-2 h-2" />
                         <span>
-                          {Math.ceil(blog.content.length / 200)} min read
+                          {Math.ceil(blog?.content.split(" ").length / 200)} min
+                          read
                         </span>{" "}
                         {/* Approximate reading time */}
                       </div>
                       <div className="text-xl flex gap-2 items-center">
                         <button>
-                          <LuBookmarkMinus />
+                          <BsBookmarkDash />
                         </button>
                         <button>
                           <FaRegHeart />
@@ -243,8 +289,12 @@ const Profile = () => {
             // Saved Posts Section
             <div className="grid grid-cols-3 gap-10 mt-8">
               {/* Implement Saved Posts Display Here */}
-              {savedBlogs && savedBlogs.length > 0 ? (
+              {savedBlogs && savedBlogs?.length > 0 ? (
                 savedBlogs.map((blog, index) => {
+                  const isSaved = savedBlogs.some(
+                    (savedBlog) => savedBlog._id === blog._id
+                  ); // Check if the blog is saved
+
                   return (
                     <div
                       key={index}
@@ -263,7 +313,7 @@ const Profile = () => {
                       <div className="flex flex-col gap-2">
                         <div className="flex items-center gap-3 justify-between">
                           <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                            {blog.category.name || "Uncategorized"}
+                            {blog?.category.name || "Uncategorized"}
                           </span>
                           <span className="text-zinc-500 text-sm">
                             By {blog?.author.name || "Author"}
@@ -287,13 +337,18 @@ const Profile = () => {
                             </span>{" "}
                             <GoDotFill className="w-2 h-2" />
                             <span>
-                              {Math.ceil(blog?.content.length / 200)} min read
+                              {Math.ceil(blog?.content.split(" ").length / 200)}{" "}
+                              min read
                             </span>{" "}
                             {/* Approximate reading time */}
                           </div>
                           <div className="text-xl flex gap-2 items-center">
-                            <button>
-                              <LuBookmarkMinus />
+                            <button onClick={() => handleSaveClick(blog?._id)}>
+                              {isSaved ? (
+                                <BsBookmarkCheckFill />
+                              ) : (
+                                <BsBookmarkDash />
+                              )}
                             </button>
                             <button>
                               <FaRegHeart />
@@ -315,4 +370,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default UserProfile;

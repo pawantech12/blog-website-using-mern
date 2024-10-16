@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import Logo from "../img/logo.webp";
 import { FiSearch } from "react-icons/fi";
-import { LuUser2 } from "react-icons/lu";
+import { LuLayoutList, LuUser2 } from "react-icons/lu";
 import { IoClose } from "react-icons/io5";
+import { BiCategory } from "react-icons/bi";
+
 import {
   FaFacebookF,
   FaInstagram,
@@ -89,10 +91,29 @@ export const Navbar = () => {
                         to="/dashboard/post-list"
                         className="flex items-center gap-2 font-medium"
                       >
-                        <FaRegUser className="w-5 h-5 text-zinc-500" />
+                        <LuLayoutList className="w-5 h-5 text-zinc-500" />
                         Post List
                       </Link>
                     </li>
+                    <li className="hover:text-violet-400 py-2 transition-all ease-in-out duration-300">
+                      <Link
+                        to="/dashboard/category"
+                        className="flex items-center gap-2 font-medium"
+                      >
+                        <BiCategory className="w-5 h-5 text-zinc-500" />
+                        Category
+                      </Link>
+                    </li>
+                    <li className="hover:text-violet-400 py-2 transition-all ease-in-out duration-300">
+                      <Link
+                        to="/dashboard/user-profile"
+                        className="flex items-center gap-2 font-medium"
+                      >
+                        <FaRegUser className="w-5 h-5 text-zinc-500" />
+                        Profile
+                      </Link>
+                    </li>
+
                     <li
                       onClick={handleLogout}
                       className="hover:text-violet-400 flex items-center gap-2 font-medium py-2 transition-all ease-in-out duration-300 cursor-pointer"

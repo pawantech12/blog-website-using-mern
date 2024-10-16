@@ -1,15 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import technology from "../img/technology.webp";
 import DOMPurify from "dompurify";
 import newsletter1 from "../img/1-newsletter.webp";
 import ReactPlayer from "react-player/youtube";
 import newsletter2 from "../img/2-newsletter.webp";
-import travel from "../img/travel.webp";
-import web from "../img/web.webp";
-import blog1 from "../img/blog1.webp";
-import blog from "../img/7.webp";
-import hero1 from "../img/hero-01.webp";
+
 import { GoDotFill } from "react-icons/go";
 import { LuCalendarDays } from "react-icons/lu";
 import { BsBookmarkCheckFill } from "react-icons/bs";
@@ -22,7 +17,6 @@ import {
   FaHeart,
   FaInstagram,
   FaLinkedin,
-  FaPlay,
   FaRegHeart,
   FaTwitter,
   FaYoutube,
@@ -37,6 +31,7 @@ import { useAuth } from "../store/Authentication";
 import { useForm } from "react-hook-form";
 import { likeBlog, unLikeBlog } from "../helper/like.handler";
 import LatestPostSection from "../components/LatestPostSection";
+import Loader from "../components/Loader";
 export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [catcurrent, setCatCurrent] = useState(0);
@@ -49,126 +44,117 @@ export const Home = () => {
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [localLoading, setLocalLoading] = useState(false);
   const [liked, setLiked] = useState(false);
   const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
   const [savedPosts, setSavedPosts] = useState([]);
 
   const itemsPerPage = 1;
   useEffect(() => {
-    // Fetching the blogs from the backend
-    const fetchBlogs = async () => {
+    const fetchAllData = async () => {
+      setLoading(true); // Start loader before fetching data
+
       try {
-        const response = await axios.get(
-          "http://localhost:3000/blog/all-blogs"
-        );
-        console.log("Blogs:", response);
-        setBlogs(response.data.blogs);
-      } catch (error) {
-        console.error("Error fetching blogs:", error);
-      }
-    };
-    const fetchFollowingBlogs = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/blog/following-blogs",
-          {
+        // Fetch all necessary data in parallel
+        const [
+          blogsResponse,
+          followingBlogsResponse,
+          likedBlogsResponse,
+          savedPostsResponse,
+          categoriesResponse,
+        ] = await Promise.all([
+          axios.get("http://localhost:3000/blog/all-blogs"),
+          axios.get("http://localhost:3000/blog/following-blogs", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
-        );
-        console.log("following user data: ", response);
+          }),
+          axios.get("http://localhost:3000/api/get-liked-posts", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get("http://localhost:3000/api/get-saved-posts", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+          axios.get("http://localhost:3000/blog/get-categories"),
+        ]);
 
-        if (response.data.success) {
-          setFollowingBlogs(response.data.blogs); // Assuming `setBlogs` is a state setter to display blogs in your component
-          setFollowingUsers(response.data.followingUsers);
-
-          console.log("Following blogs:", followingBlogs);
-          console.log("Following users:", followingUsers);
+        // Handle blogs
+        if (blogsResponse.data && blogsResponse.data.blogs) {
+          console.log("Blogs fetched:", blogsResponse.data.blogs);
+          setBlogs(blogsResponse.data.blogs);
         } else {
-          console.log("No blogs found from following users.");
+          console.warn("No blogs found");
+          setBlogs([]); // Set to an empty array if no blogs
         }
-      } catch (error) {
-        console.error("Error fetching blogs from following users:", error);
-      }
-    };
-    // Fetch blogs and liked blogs
-    const initFetch = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/get-liked-posts",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        console.log("all liked Blogs of current loggedin user: ", response);
-        if (user?.user?._id) {
-          // If user data is available, check for liked blogs
-          const likedBlogIds = response.data.blogs
-            .filter((blog) => blog.likes.includes(user.user._id))
+
+        // Handle following blogs
+        if (
+          followingBlogsResponse.data.success &&
+          followingBlogsResponse.data.blogs
+        ) {
+          console.log(
+            "Following blogs fetched:",
+            followingBlogsResponse.data.blogs
+          );
+          setFollowingBlogs(followingBlogsResponse.data.blogs);
+          setFollowingUsers(followingBlogsResponse.data.followingUsers || []);
+        } else {
+          console.warn("No following blogs found");
+          setFollowingBlogs([]);
+          setFollowingUsers([]);
+        }
+
+        // Handle liked blogs (may be empty if no blogs have likes)
+        if (likedBlogsResponse.data && likedBlogsResponse.data.blogs) {
+          const likedBlogIds = likedBlogsResponse.data.blogs
+            .filter(
+              (blog) => blog.likes && blog.likes.includes(user?.user?._id)
+            )
             .map((blog) => blog._id);
-          setLikedBlogs(likedBlogIds); // Set the liked blog IDs
-          console.log("Liked blogs on load:", likedBlogIds); // Debugging line
+          console.log("Liked blogs IDs:", likedBlogIds);
+          setLikedBlogs(likedBlogIds);
+        } else {
+          console.warn("No liked blogs found");
+          setLikedBlogs([]); // Set to an empty array if no liked blogs
+        }
+
+        // Handle saved posts
+        if (savedPostsResponse.data && savedPostsResponse.data.success) {
+          const savedPostIds = savedPostsResponse.data.savedPosts.map(
+            (post) => post._id
+          );
+          console.log("Saved post IDs:", savedPostIds);
+          setSavedPosts(savedPostIds);
+        } else {
+          console.warn("No saved posts found");
+          setSavedPosts([]); // Set to an empty array if no saved posts
+        }
+
+        // Handle categories
+        if (categoriesResponse.data && categoriesResponse.data.categories) {
+          console.log(
+            "Categories fetched:",
+            categoriesResponse.data.categories
+          );
+          setCategories(categoriesResponse.data.categories);
+        } else {
+          console.warn("No categories found");
+          setCategories([]); // Set to an empty array if no categories
         }
       } catch (error) {
-        console.log("error occured", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false); // Stop loader after all requests are complete
       }
     };
 
-    const initFetchSavedBlogs = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/get-saved-posts",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-
-        if (response.data.success) {
-          setSavedPosts(response.data.savedPosts.map((post) => post._id));
-        }
-        console.log("initial saved post: ", response);
-      } catch (error) {
-        console.log("error occurred while fetching saved post: ", error);
-      }
-    };
-    initFetchSavedBlogs();
-    initFetch();
-    fetchBlogs();
-    fetchFollowingBlogs();
+    fetchAllData();
   }, [token, user]);
-  // useEffect(() => {
-  //   if (blogs?.length && user?.user?._id) {
-  //     // Get all the blog IDs the user has liked
-  //     const likedBlogIds = blogs
-  //       .filter((blog) => blog.likes.includes(user.user._id))
-  //       .map((blog) => blog._id);
 
-  //     // Update the state with the liked blog IDs
-  //     setLikedBlogs(likedBlogIds);
-  //   }
-  // }, [blogs, user]);
-
-  // Fetch categories from the backend
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/blog/get-categories"
-        );
-        console.log("Categories:", response);
-        setCategories(response.data.categories);
-      } catch (error) {
-        console.error("Error fetching categories:", error);
-      }
-    };
-
-    fetchCategories();
-  }, []);
   // Filter blogs to get only featured ones
   const featuredBlogs = blogs.filter((blog) => blog.isFeatured);
 
@@ -237,6 +223,7 @@ export const Home = () => {
 
   // Like/Unlike handler
   const handleLikeClick = async (blogId) => {
+    setLocalLoading(true);
     try {
       if (!user?.user?._id || !blogs) {
         return; // Exit early if user or blogs data isn't available
@@ -279,9 +266,12 @@ export const Home = () => {
       }
     } catch (error) {
       console.error("Error updating likes:", error);
+    } finally {
+      setLocalLoading(false);
     }
   };
   const handleSaveClick = async (postId) => {
+    setLocalLoading(true);
     try {
       const response = await axios.put(
         `http://localhost:3000/api/toggle-save/${postId}`,
@@ -298,12 +288,18 @@ export const Home = () => {
       }
     } catch (error) {
       console.error("Error saving post:", error);
+    } finally {
+      setLocalLoading(false);
     }
   };
   console.log("setsavedposts: ", savedPosts);
+  console.log("blogs", blogs);
 
   console.log("user details", user);
   console.log("liked", liked);
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <>
       <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12">

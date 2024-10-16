@@ -153,7 +153,7 @@ const UpdateBlogPost = () => {
   };
 
   return (
-    <div className="mx-auto p-8 bg-white">
+    <div className="mx-auto p-8 bg-white px-24">
       <h1 className="text-2xl font-semibold text-custom-black mb-6">
         Update Blog Post
       </h1>
