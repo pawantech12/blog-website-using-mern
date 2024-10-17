@@ -55,30 +55,9 @@ export const Home = () => {
       setLoading(true); // Start loader before fetching data
 
       try {
-        // Fetch all necessary data in parallel
-        const [
-          blogsResponse,
-          followingBlogsResponse,
-          likedBlogsResponse,
-          savedPostsResponse,
-          categoriesResponse,
-        ] = await Promise.all([
+        // Fetch non-authenticated data
+        const [blogsResponse, categoriesResponse] = await Promise.all([
           axios.get("http://localhost:3000/blog/all-blogs"),
-          axios.get("http://localhost:3000/blog/following-blogs", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get("http://localhost:3000/api/get-liked-posts", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          axios.get("http://localhost:3000/api/get-saved-posts", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
           axios.get("http://localhost:3000/blog/get-categories"),
         ]);
 
@@ -91,49 +70,6 @@ export const Home = () => {
           setBlogs([]); // Set to an empty array if no blogs
         }
 
-        // Handle following blogs
-        if (
-          followingBlogsResponse.data.success &&
-          followingBlogsResponse.data.blogs
-        ) {
-          console.log(
-            "Following blogs fetched:",
-            followingBlogsResponse.data.blogs
-          );
-          setFollowingBlogs(followingBlogsResponse.data.blogs);
-          setFollowingUsers(followingBlogsResponse.data.followingUsers || []);
-        } else {
-          console.warn("No following blogs found");
-          setFollowingBlogs([]);
-          setFollowingUsers([]);
-        }
-
-        // Handle liked blogs (may be empty if no blogs have likes)
-        if (likedBlogsResponse.data && likedBlogsResponse.data.blogs) {
-          const likedBlogIds = likedBlogsResponse.data.blogs
-            .filter(
-              (blog) => blog.likes && blog.likes.includes(user?.user?._id)
-            )
-            .map((blog) => blog._id);
-          console.log("Liked blogs IDs:", likedBlogIds);
-          setLikedBlogs(likedBlogIds);
-        } else {
-          console.warn("No liked blogs found");
-          setLikedBlogs([]); // Set to an empty array if no liked blogs
-        }
-
-        // Handle saved posts
-        if (savedPostsResponse.data && savedPostsResponse.data.success) {
-          const savedPostIds = savedPostsResponse.data.savedPosts.map(
-            (post) => post._id
-          );
-          console.log("Saved post IDs:", savedPostIds);
-          setSavedPosts(savedPostIds);
-        } else {
-          console.warn("No saved posts found");
-          setSavedPosts([]); // Set to an empty array if no saved posts
-        }
-
         // Handle categories
         if (categoriesResponse.data && categoriesResponse.data.categories) {
           console.log(
@@ -144,6 +80,76 @@ export const Home = () => {
         } else {
           console.warn("No categories found");
           setCategories([]); // Set to an empty array if no categories
+        }
+
+        // Now fetch authenticated data in parallel
+        if (token) {
+          const [
+            followingBlogsResponse,
+            likedBlogsResponse,
+            savedPostsResponse,
+          ] = await Promise.all([
+            axios.get("http://localhost:3000/blog/following-blogs", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }),
+            axios.get("http://localhost:3000/api/get-liked-posts", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }),
+            axios.get("http://localhost:3000/api/get-saved-posts", {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }),
+          ]);
+
+          // Handle following blogs
+          if (
+            followingBlogsResponse.data.success &&
+            followingBlogsResponse.data.blogs
+          ) {
+            console.log(
+              "Following blogs fetched:",
+              followingBlogsResponse.data.blogs
+            );
+            setFollowingBlogs(followingBlogsResponse.data.blogs);
+            setFollowingUsers(followingBlogsResponse.data.followingUsers || []);
+          } else {
+            console.warn("No following blogs found");
+            setFollowingBlogs([]);
+            setFollowingUsers([]);
+          }
+
+          // Handle liked blogs (may be empty if no blogs have likes)
+          if (likedBlogsResponse.data && likedBlogsResponse.data.blogs) {
+            const likedBlogIds = likedBlogsResponse.data.blogs
+              .filter(
+                (blog) => blog.likes && blog.likes.includes(user?.user?._id)
+              )
+              .map((blog) => blog._id);
+            console.log("Liked blogs IDs:", likedBlogIds);
+            setLikedBlogs(likedBlogIds);
+          } else {
+            console.warn("No liked blogs found");
+            setLikedBlogs([]); // Set to an empty array if no liked blogs
+          }
+
+          // Handle saved posts
+          if (savedPostsResponse.data && savedPostsResponse.data.success) {
+            const savedPostIds = savedPostsResponse.data.savedPosts.map(
+              (post) => post._id
+            );
+            console.log("Saved post IDs:", savedPostIds);
+            setSavedPosts(savedPostIds);
+          } else {
+            console.warn("No saved posts found");
+            setSavedPosts([]); // Set to an empty array if no saved posts
+          }
+        } else {
+          console.warn("No token available for authenticated requests");
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -410,9 +416,11 @@ export const Home = () => {
                 <div className="flex flex-col gap-2 w-full justify-around">
                   <div className="flex items-center gap-3">
                     <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                      {blog.category.name}
+                      {blog?.category?.name}
                     </span>
-                    <span className="text-zinc-500">By {blog.author.name}</span>
+                    <span className="text-zinc-500">
+                      By {blog?.author?.name}
+                    </span>
                   </div>
                   <h5 className="text-xl font-medium">
                     <Link

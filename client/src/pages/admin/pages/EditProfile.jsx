@@ -13,18 +13,21 @@ const EditProfile = () => {
 
   const [loading, setLoading] = useState(false);
   const [userDetails, setUserDetails] = useState({});
-  const [bannerImgPreview, setBannerImgPreview] = useState(
-    userDetails.bannerImg
-  );
-  const [profileImgPreview, setProfileImgPreview] = useState(
-    userDetails.profileImg
-  );
+  const [bannerImgPreview, setBannerImgPreview] = useState("");
+  const [profileImgPreview, setProfileImgPreview] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [apiError, setApiError] = useState("");
   useEffect(() => {
     setValue("name", userDetails.name);
     setValue("username", userDetails.username);
     setValue("summary", userDetails.summary);
+    setValue("headline", userDetails.headline);
+    setValue("city", userDetails.city);
+    setValue("state", userDetails.state);
+    setValue("country", userDetails.country);
+    setValue("dob", userDetails.dob);
+    setValue("gender", userDetails.gender);
+    setValue("age", userDetails.age);
   }, [userDetails]);
 
   useEffect(() => {
@@ -36,6 +39,9 @@ const EditProfile = () => {
           },
         }); // Adjust the URL based on your API
         setUserDetails(response.data.user);
+
+        setBannerImgPreview(response.data.user.bannerImg);
+        setProfileImgPreview(response.data.user.profileImg);
 
         console.log("User details:", response);
       } catch (error) {
@@ -82,7 +88,7 @@ const EditProfile = () => {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-
+      console.log("data: ", data);
       const formData = new FormData();
       formData.append("name", data.name);
       formData.append("username", data.username);
@@ -95,12 +101,19 @@ const EditProfile = () => {
       formData.append("age", data.age);
       formData.append("headline", data.headline);
 
-      // Append images to formData if they exist
-      if (data.bannerImg[0]) {
+      // Append the banner image if it exists
+      if (data.bannerImg && data.bannerImg.length > 0) {
         formData.append("bannerImg", data.bannerImg[0]);
       }
-      if (data.profileImg[0]) {
+
+      // Append the profile image if it exists
+      if (data.profileImg && data.profileImg.length > 0) {
         formData.append("profileImg", data.profileImg[0]);
+      }
+
+      // To log each key-value pair in FormData:
+      for (let pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
       }
 
       // Send request to update user details
@@ -147,9 +160,14 @@ const EditProfile = () => {
               <FaEdit className="text-gray-700" />
               <input
                 type="file"
-                {...register("bannerImg")}
-                accept="image/*"
-                onChange={handleBannerChange}
+                onChange={(event) => {
+                  const file = event.target.files[0];
+                  if (file) {
+                    // Store the file in the form data manually
+                    setValue("bannerImg", event.target.files);
+                    setBannerImgPreview(URL.createObjectURL(file)); // Preview image
+                  }
+                }}
                 className="hidden"
               />
             </label>
@@ -164,9 +182,14 @@ const EditProfile = () => {
               <FaEdit className="text-gray-700" />
               <input
                 type="file"
-                {...register("profileImg")}
-                accept="image/*"
-                onChange={handleProfileChange}
+                onChange={(event) => {
+                  const file = event.target.files[0];
+                  if (file) {
+                    // Store the file in the form data manually
+                    setValue("profileImg", event.target.files);
+                    setProfileImgPreview(URL.createObjectURL(file)); // Preview image
+                  }
+                }}
                 className="hidden"
               />
             </label>

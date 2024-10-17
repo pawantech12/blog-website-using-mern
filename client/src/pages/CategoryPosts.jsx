@@ -7,15 +7,18 @@ import { FaRegHeart } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
 import axios from "axios";
 import LatestPostSection from "../components/LatestPostSection";
+import Loader from "../components/Loader";
 
 const CategoryPosts = () => {
   const { categoryId } = useParams();
   const [blogs, setBlogs] = useState([]);
+  const [loading, setLoading] = useState(false);
   const location = useLocation();
   const { categoryName } = location.state || {};
 
   useEffect(() => {
     const fetchAllBlogsByCategory = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           `http://localhost:3000/blog/get-blogs-by-category/${categoryId}`
@@ -24,10 +27,16 @@ const CategoryPosts = () => {
         console.log("Blogs:", response);
       } catch (error) {
         console.error("Error fetching blogs:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchAllBlogsByCategory();
-  }, []);
+  }, [categoryId]);
+
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <>
       <section className="">
@@ -59,7 +68,9 @@ const CategoryPosts = () => {
                     <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
                       {item.category.name}
                     </span>
-                    <span className="text-zinc-500">By {item.author.name}</span>
+                    <span className="text-zinc-500">
+                      By {item?.author?.name}
+                    </span>
                   </div>
                   <h5 className="text-xl font-medium ">
                     <Link

@@ -1,5 +1,6 @@
 const upload = require("../config/multer");
 const User = require("../models/user.model");
+const cloudinary = require("../config/cloudinary");
 
 const register = async (req, res) => {
   try {
@@ -357,44 +358,68 @@ const updateUserProfileDetails = async (req, res) => {
       age,
     } = req.body;
 
-    // Prepare user update data
-    const updateData = {
-      name,
-      username,
-      summary,
-      headline,
-      city,
-      state,
-      country,
-      dob,
-      gender,
-      age,
-    };
+    // Prepare user update data (only include fields that were provided)
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (username) updateData.username = username;
+    if (summary) updateData.summary = summary;
+    if (headline) updateData.headline = headline;
+    if (city) updateData.city = city;
+    if (state) updateData.state = state;
+    if (country) updateData.country = country;
+    if (dob) updateData.dob = dob;
+    if (gender) updateData.gender = gender;
+    if (age) updateData.age = age;
+    console.log("request files: ", req.files);
+
+    // Get the current user details from the database
+    const currentUser = await User.findById(userId);
 
     // Handle image uploads
-    if (req.file) {
+    if (req.files) {
       // Check if a banner image is uploaded
-      if (req.file.fieldname === "bannerImg") {
-        const result = await cloudinary.uploader.upload_stream(
-          { folder: "banner_images" }, // Specify the folder
-          (error, result) => {
-            if (error) return res.status(500).json({ error: "Upload failed" });
-            updateData.bannerImg = result.secure_url; // Save the URL
-          }
-        );
-        await upload.single("bannerImg")(req, res, () => result);
+      if (req.files.bannerImg && req.files.bannerImg[0]) {
+        // Delete the previous banner image from Cloudinary
+        if (currentUser.bannerImg) {
+          const publicId = currentUser.bannerImg.split("/").pop().split(".")[0]; // Extract public ID
+          await cloudinary.uploader.destroy(`banner_images/${publicId}`);
+        }
+
+        const bannerImgResult = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "banner_images" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          stream.end(req.files.bannerImg[0].buffer); // Send the file buffer to Cloudinary
+        });
+        updateData.bannerImg = bannerImgResult.secure_url; // Store the new URL
       }
 
       // Check if a profile image is uploaded
-      if (req.file.fieldname === "profileImg") {
-        const result = await cloudinary.uploader.upload_stream(
-          { folder: "profile_images" }, // Specify the folder
-          (error, result) => {
-            if (error) return res.status(500).json({ error: "Upload failed" });
-            updateData.profileImg = result.secure_url; // Save the URL
-          }
-        );
-        await upload.single("profileImg")(req, res, () => result);
+      if (req.files.profileImg && req.files.profileImg[0]) {
+        // Delete the previous profile image from Cloudinary
+        if (currentUser.profileImg) {
+          const publicId = currentUser.profileImg
+            .split("/")
+            .pop()
+            .split(".")[0]; // Extract public ID
+          await cloudinary.uploader.destroy(`profile_images/${publicId}`);
+        }
+
+        const profileImgResult = await new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "profile_images" },
+            (error, result) => {
+              if (error) return reject(error);
+              resolve(result);
+            }
+          );
+          stream.end(req.files.profileImg[0].buffer); // Send the file buffer to Cloudinary
+        });
+        updateData.profileImg = profileImgResult.secure_url; // Store the new URL
       }
     }
 

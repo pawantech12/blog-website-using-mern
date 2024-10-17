@@ -1,11 +1,14 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import Loader from "../components/Loader";
 // import CategoryData from "../data/CategoryData";
 const Category = () => {
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
           "http://localhost:3000/blog/get-categories"
@@ -14,11 +17,16 @@ const Category = () => {
         setCategories(response.data.categories);
       } catch (error) {
         console.error("Error fetching categories:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchCategories();
   }, []);
+  if (loading) {
+    return <Loader />;
+  }
   return (
     <>
       <section className="">

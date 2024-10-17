@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css";
 const Register = () => {
   const {
     register,
@@ -11,7 +13,6 @@ const Register = () => {
     formState: { errors },
   } = useForm();
   const [apiError, setApiError] = useState(""); // for handling API error messages
-  const [successMessage, setSuccessMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
@@ -36,17 +37,16 @@ const Register = () => {
 
       if (response.data.success) {
         console.log("Registration successful:", response);
-        setSuccessMessage(response.data.message);
+        toast.success(response.data.message);
         setTimeout(() => {
           navigate("/login");
-          setSuccessMessage("");
         }, 3000);
         // Redirect or show success message
       } else {
-        setApiError(response.data.message || "Failed to register");
+        toast.error(response.data.message || "Failed to register");
       }
     } catch (error) {
-      setApiError(error.response.data.message || "An error occurred");
+      toast.error(error.response.data.message || "An error occurred");
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -68,11 +68,6 @@ const Register = () => {
         {apiError && (
           <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
             <p>{apiError}</p>
-          </div>
-        )}
-        {successMessage && (
-          <div className="p-4 mb-4 text-sm text-emerald-500 bg-emerald-100 rounded-lg font-medium text-center mt-2">
-            <p>{successMessage}</p>
           </div>
         )}
 
@@ -205,6 +200,17 @@ const Register = () => {
           </Link>
         </p>
       </div>
+      <ToastContainer
+        position="bottom-right" // Set position to bottom-right
+        autoClose={5000} // Automatically close after 5 seconds
+        hideProgressBar={false} // Show progress bar
+        newestOnTop={false} // Display newest on top
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

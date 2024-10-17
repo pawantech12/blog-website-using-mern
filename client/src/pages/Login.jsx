@@ -5,22 +5,23 @@ import google from "../img/google.png";
 import facebook from "../img/facebook.png";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
+import { ToastContainer, toast } from "react-toastify"; // Import toast
+import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
+
 const Login = () => {
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const [apiError, setApiError] = useState(""); // for handling API error messages
-  const [successMessage, setSuccessMessage] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { storeTokenInLS } = useAuth();
+
   const onSubmit = async (data) => {
     console.log(data);
     setIsSubmitting(true);
-    setSuccessMessage("");
-    setApiError(""); // Reset error message
 
     try {
       const response = await axios.post(
@@ -32,18 +33,17 @@ const Login = () => {
       if (response.data.success) {
         console.log("Login successful:", response);
         storeTokenInLS(response.data.token);
-        setSuccessMessage(response.data.message);
+        toast.success(response.data.message); // Display success toast
         setTimeout(() => {
           navigate("/dashboard");
-          setSuccessMessage("");
         }, 3000);
       } else {
-        setApiError(response.data.message || "Failed to login");
+        toast.error(response.data.message || "Failed to login"); // Display error toast
       }
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "An error occurred. Please try again.";
-      setApiError(errorMessage);
+      toast.error(errorMessage); // Display error toast
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -62,17 +62,6 @@ const Login = () => {
             Login to your account and start exploring blog posts
           </p>
         </div>
-        {apiError && (
-          <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg font-medium text-center mt-2">
-            <p>{apiError}</p>
-          </div>
-        )}
-
-        {successMessage && (
-          <div className="p-4 mb-4 text-sm text-green-700 bg-green-100 rounded-lg font-medium text-center mt-2">
-            <p>{successMessage}</p>
-          </div>
-        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
@@ -141,11 +130,11 @@ const Login = () => {
 
         {/* Social Sign Up Buttons */}
         <div className="flex justify-center gap-4">
-          <button className="flex items-center gap-2 bg-gray-100  py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200">
+          <button className="flex items-center gap-2 bg-gray-100 py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200">
             <img src={google} alt="Google Logo" className="w-8" />
             Google
           </button>
-          <button className="flex items-center gap-2 w-1/2  py-3 px-4 rounded-md bg-gray-100 transition font-medium justify-center hover:bg-gray-200">
+          <button className="flex items-center gap-2 w-1/2 py-3 px-4 rounded-md bg-gray-100 transition font-medium justify-center hover:bg-gray-200">
             <img src={facebook} alt="Facebook Logo" className="w-8" />
             Facebook
           </button>
@@ -158,6 +147,17 @@ const Login = () => {
           </Link>
         </p>
       </div>
+      <ToastContainer
+        position="bottom-right" // Set position to bottom-right
+        autoClose={5000} // Automatically close after 5 seconds
+        hideProgressBar={false} // Show progress bar
+        newestOnTop={false} // Display newest on top
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 };

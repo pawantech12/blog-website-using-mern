@@ -28,7 +28,7 @@ router
   .put(authenticateToken, upload.single("coverImage"), updateBlogPost);
 router.route("/all-blogs").get(getAllUserBlogs);
 router.route("/following-blogs").get(authenticateToken, getBlogsFromFollowing);
-router.route("/get-blog/:id").get(authenticateToken, getBlogById);
+router.route("/get-blog/:id").get(getBlogById);
 router.route("/get-blogs").get(authenticateToken, getAllBlogs);
 router.route("/user/:id/blogs").get(getAllBlogsByUserId);
 router.route("/delete-blog/:id").delete(authenticateToken, deleteBlogPost);

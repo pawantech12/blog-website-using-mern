@@ -24,6 +24,10 @@ import DOMPurify from "dompurify";
 import LatestPostSection from "../components/LatestPostSection";
 import { likeBlog, unLikeBlog } from "../helper/like.handler";
 import { BsBookmarkCheckFill, BsBookmarkDash } from "react-icons/bs";
+import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
+import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
+import parse, { domToReact } from "html-react-parser";
+import Loader from "../components/Loader";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
@@ -35,77 +39,73 @@ const BlogDetails = () => {
 
   useEffect(() => {
     const fetchBlogDetails = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blog/${blogId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
+          `http://localhost:3000/blog/get-blog/${blogId}`
         );
         setBlog(response.data.blog);
-        setLoading(false);
       } catch (error) {
         console.error("Error fetching blog details:", error);
+      } finally {
         setLoading(false);
       }
     };
-    const initFetch = async () => {
+
+    const fetchLikedAndSavedPosts = async () => {
+      if (!token) return; // Exit if there is no token
+
       try {
-        const response = await axios.get(
-          "http://localhost:3000/api/get-liked-posts",
-          {
+        const [likedResponse, savedResponse] = await Promise.all([
+          axios.get("http://localhost:3000/api/get-liked-posts", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          }
+          }),
+          axios.get("http://localhost:3000/api/get-saved-posts", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }),
+        ]);
+
+        console.log(
+          "All liked Blogs of current logged-in user: ",
+          likedResponse
         );
-        console.log("all liked Blogs of current loggedin user: ", response);
+
         if (user?.user?._id) {
           // If user data is available, check for liked blogs
-          const likedBlogIds = response.data.blogs
+          const likedBlogIds = likedResponse.data.blogs
             .filter((blog) => blog.likes.includes(user.user._id))
             .map((blog) => blog._id);
           setLikedBlogs(likedBlogIds); // Set the liked blog IDs
           console.log("Liked blogs on load:", likedBlogIds); // Debugging line
         }
-      } catch (error) {
-        console.log("error occured", error);
-      }
-    };
-    const initFetchSavedBlogs = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:3000/api/get-saved-posts",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
 
-        if (response.data.success) {
-          setSavedPosts(response.data.savedPosts.map((post) => post._id));
+        if (savedResponse.data.success) {
+          setSavedPosts(savedResponse.data.savedPosts.map((post) => post._id));
         }
-        console.log("initial saved post: ", response);
+        console.log("Initial saved posts: ", savedResponse);
       } catch (error) {
-        console.log("error occurred while fetching saved post: ", error);
+        console.log(
+          "Error occurred while fetching liked or saved posts: ",
+          error
+        );
       }
     };
-    initFetchSavedBlogs();
-    initFetch();
 
-    fetchBlogDetails();
+    const fetchData = async () => {
+      setLoading(true); // Set loading to true before starting the requests
+      await Promise.all([fetchBlogDetails(), fetchLikedAndSavedPosts()]);
+      setLoading(false); // Set loading to false after all requests are completed
+    };
+
+    fetchData();
   }, [blogId, token]);
 
   if (loading) {
-    return <div>Loading...</div>; // Show loading indicator while fetching data
-  }
-
-  if (!blog) {
-    return <div>No blog found</div>; // Handle case when blog is not found
+    return <Loader />;
   }
 
   // Like/Unlike handler
@@ -153,6 +153,7 @@ const BlogDetails = () => {
       console.error("Error updating likes:", error);
     }
   };
+  console.log("Blog Content: ", blog.content);
 
   const handleSaveClick = async (postId) => {
     try {
@@ -207,6 +208,35 @@ const BlogDetails = () => {
       console.error("Web Share API not supported.");
     }
   };
+  // Sanitize the blog content to prevent XSS attacks
+  const cleanHTML = DOMPurify.sanitize(blog?.content);
+
+  // Function to render <pre><code> blocks with SyntaxHighlighter
+  const renderCodeBlocks = (domNode) => {
+    // Check if it's a <pre> tag
+    if (domNode.name === "pre") {
+      // Check if it contains a <code> block
+      const codeElement = domNode.children?.find(
+        (child) => child.name === "code"
+      );
+
+      if (codeElement) {
+        // Extract the language (e.g., "language-html" or "language-js")
+        const languageClass = codeElement.attribs?.class || "";
+        const language = languageClass.replace("language-", "") || "text";
+
+        // Get the raw code content
+        const codeContent = domToReact(codeElement.children);
+
+        return (
+          <SyntaxHighlighter language={language} style={docco}>
+            {codeContent}
+          </SyntaxHighlighter>
+        );
+      }
+    }
+    return domNode; // If it's not a <pre> block, return the node as-is
+  };
 
   return (
     <>
@@ -236,7 +266,7 @@ const BlogDetails = () => {
                   {blog.category.name}{" "}
                   {/* Assuming category has a name field */}
                 </span>
-                <span className="text-zinc-500">By {blog.author.name}</span>{" "}
+                <span className="text-zinc-500">By {blog?.author?.name}</span>{" "}
                 {/* Author name */}
               </div>
               <div className="flex items-center gap-2 text-sm">
@@ -273,12 +303,9 @@ const BlogDetails = () => {
               <h4 className="text-2xl text-custom-black font-semibold">
                 {blog.title}
               </h4>
-              <div
-                className="text-zinc-500"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(blog?.content),
-                }}
-              ></div>
+              <div className="prose">
+                {parse(cleanHTML, { replace: renderCodeBlocks })}
+              </div>
               <div className="flex items-center gap-3 mt-3 self-end">
                 <h4 className="font-semibold text-custom-black">Share on </h4>
                 <ul className="flex items-center gap-3 text-sm ">
@@ -328,46 +355,46 @@ const BlogDetails = () => {
           <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
             <figure className="border border-gray-200 rounded-full p-2">
               <img
-                src={blog.author.profileImage || defaultUser} // Assuming author has a profileImage field
+                src={blog?.author?.profileImage || defaultUser} // Assuming author has a profileImage field
                 alt="profile Img"
                 className="rounded-full w-24 h-24"
               />
             </figure>
             <h4 className="text-lg mt-5 font-semibold text-neutral-800">
-              {blog.author.name} {/* Display author name */}
+              {blog?.author?.name} {/* Display author name */}
             </h4>
             <span className="text-[15px] text-zinc-500">
-              {blog.author.title}
+              {blog?.author?.headline}
             </span>{" "}
             {/* Display author title */}
             <p className="text-zinc-600 mt-4 text-[15px]">
-              {blog.author.bio} {/* Display author bio */}
+              {blog?.author?.summary} {/* Display author bio */}
             </p>
             <ul className="flex items-center gap-2 mt-4">
               <li>
                 <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog.author.facebook}>
+                  <Link to={blog?.author?.facebook}>
                     <FaFacebookF className="w-3 h-3" />
                   </Link>
                 </button>
               </li>
               <li>
                 <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog.author.instagram}>
+                  <Link to={blog?.author?.instagram}>
                     <FaInstagram />
                   </Link>
                 </button>
               </li>
               <li>
                 <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog.author.twitter}>
+                  <Link to={blog?.author?.twitter}>
                     <FiTwitter />
                   </Link>
                 </button>
               </li>
               <li>
                 <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog.author.linkedin}>
+                  <Link to={blog?.author?.linkedin}>
                     <FaLinkedin />
                   </Link>
                 </button>
@@ -376,7 +403,7 @@ const BlogDetails = () => {
             <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
               <Link
                 className="flex items-center gap-2"
-                to={`/user/profile/${blog.author._id}`}
+                to={`/user/profile/${blog?.author?._id}`}
               >
                 View Profile <HiOutlineArrowNarrowRight />
               </Link>

@@ -258,10 +258,9 @@ const deleteBlogPost = async (req, res) => {
 const getAllBlogs = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const blogs = await Blog.find({ author: userId }).populate(
-      "category",
-      "name"
-    );
+    const blogs = await Blog.find({ author: userId })
+      .populate("category", "name")
+      .populate("author", "name");
     res.status(200).json({
       success: true,
       blogs,
