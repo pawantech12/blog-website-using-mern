@@ -12,6 +12,7 @@ import { LuBookmarkMinus, LuCalendarDays } from "react-icons/lu";
 import { Link, useParams } from "react-router-dom";
 import { useAuth } from "../store/Authentication";
 import Loader from "../components/Loader";
+import { toast, ToastContainer } from "react-toastify";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("allPosts");
@@ -85,11 +86,11 @@ const Profile = () => {
 
       if (response.data.success) {
         setIsFollowing(!isFollowing); // Toggle follow state
-        setSuccessMessage(response.data.message);
+        toast.success(response.data.message);
       }
     } catch (error) {
       console.error("Error following/unfollowing user:", error);
-      setApiError(error.response?.data?.message || "Something went wrong");
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLocalLoading(false); // End loading state
     }
@@ -311,6 +312,17 @@ const Profile = () => {
           )}
         </div>
       </div>
+      <ToastContainer
+        position="bottom-right" // Set position to bottom-right
+        autoClose={5000} // Automatically close after 5 seconds
+        hideProgressBar={false} // Show progress bar
+        newestOnTop={false} // Display newest on top
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </section>
   );
 };

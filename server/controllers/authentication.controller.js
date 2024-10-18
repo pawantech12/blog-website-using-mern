@@ -1,10 +1,11 @@
-const upload = require("../config/multer");
 const User = require("../models/user.model");
 const cloudinary = require("../config/cloudinary");
-
+const userSchemaValidation = require("../validations/user.validation.schema");
+const { ZodError } = require("zod");
 const register = async (req, res) => {
   try {
     console.log(req.body);
+    userSchemaValidation.parse(req.body);
     const { name, email, password } = req.body;
 
     // checking whether the email is already exist or not
@@ -29,6 +30,14 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+    if (error instanceof ZodError) {
+      // Handle Zod validation error
+      return res.status(400).json({
+        message: "Validation error",
+        errors: error.errors,
+        success: false,
+      });
+    }
 
     res.status(500).json(error);
   }
@@ -37,6 +46,7 @@ const register = async (req, res) => {
 // user login logic
 const login = async (req, res) => {
   try {
+    userSchemaValidation.pick({ email: true, password: true }).parse(req.body);
     const { email, password } = req.body;
     const userExist = await User.findOne({ email });
     if (!userExist) {
@@ -59,6 +69,15 @@ const login = async (req, res) => {
         .json({ message: "Invalid Email or password", success: false });
     }
   } catch (error) {
+    if (error instanceof ZodError) {
+      // Handle Zod validation error
+      return res.status(400).json({
+        message: "Validation error",
+        errors: error.errors,
+        success: false,
+      });
+    }
+
     res.status(500).json({ message: "Internal Server Error", success: false });
     console.error(error);
   }
@@ -428,12 +447,14 @@ const updateUserProfileDetails = async (req, res) => {
       new: true,
     });
 
-    return res
-      .status(200)
-      .json({ message: "Profile updated successfully", user: updatedUser });
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: updatedUser,
+    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 

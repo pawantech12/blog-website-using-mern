@@ -13,6 +13,7 @@ const Login = () => {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,10 +42,21 @@ const Login = () => {
         toast.error(response.data.message || "Failed to login"); // Display error toast
       }
     } catch (error) {
-      const errorMessage =
-        error.response?.data?.message || "An error occurred. Please try again.";
-      toast.error(errorMessage); // Display error toast
-      console.log(error);
+      if (error.response && error.response.data.errors) {
+        // Map API errors to react-hook-form
+        const apiErrors = error.response.data.errors.reduce((acc, curr) => {
+          acc[curr.path[0]] = { message: curr.message };
+          return acc;
+        }, {});
+
+        // Set errors in the form
+        Object.keys(apiErrors).forEach((key) => {
+          setError(key, apiErrors[key]);
+        });
+      } else {
+        toast.error(error.response.data.message || "An error occurred");
+        console.log(error);
+      }
     } finally {
       setIsSubmitting(false);
     }

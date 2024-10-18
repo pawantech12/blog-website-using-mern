@@ -11,6 +11,7 @@ const Register = () => {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm();
   const [apiError, setApiError] = useState(""); // for handling API error messages
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -46,8 +47,24 @@ const Register = () => {
         toast.error(response.data.message || "Failed to register");
       }
     } catch (error) {
-      toast.error(error.response.data.message || "An error occurred");
-      console.log(error);
+      if (error.response && error.response.data.errors) {
+        // Clear existing form errors
+        setApiError("");
+
+        // Map API errors to react-hook-form
+        const apiErrors = error.response.data.errors.reduce((acc, curr) => {
+          acc[curr.path[0]] = { message: curr.message };
+          return acc;
+        }, {});
+
+        // Set errors in the form
+        Object.keys(apiErrors).forEach((key) => {
+          setError(key, apiErrors[key]);
+        });
+      } else {
+        toast.error(error.response.data.message || "An error occurred");
+        console.log(error);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -73,6 +90,7 @@ const Register = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
+          {/* Name Input */}
           {/* Name Input */}
           <div className="flex flex-col gap-1">
             <label
@@ -138,10 +156,11 @@ const Register = () => {
               </span>
             )}
           </div>
-          {/*Confirm Password Input */}
+
+          {/* Confirm Password Input */}
           <div className="flex flex-col gap-1">
             <label
-              htmlFor="password"
+              htmlFor="cpassword"
               className="block text-sm font-semibold text-custom-light-black"
             >
               Confirm Password
@@ -155,9 +174,9 @@ const Register = () => {
               className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
               placeholder="Confirm Password"
             />
-            {errors.cpassword && (
+            {errors.password && (
               <span className="text-[13px] mt-1 font-medium text-gray-500">
-                {errors.cpassword.message}
+                {errors.password.message}
               </span>
             )}
           </div>
@@ -200,17 +219,6 @@ const Register = () => {
           </Link>
         </p>
       </div>
-      <ToastContainer
-        position="bottom-right" // Set position to bottom-right
-        autoClose={5000} // Automatically close after 5 seconds
-        hideProgressBar={false} // Show progress bar
-        newestOnTop={false} // Display newest on top
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 };

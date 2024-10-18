@@ -5,6 +5,7 @@ import { useAuth } from "../../../store/Authentication";
 import Loader from "../../../components/Loader";
 import { FaChevronDown, FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const EditProfile = () => {
   const { token } = useAuth();
@@ -15,8 +16,7 @@ const EditProfile = () => {
   const [userDetails, setUserDetails] = useState({});
   const [bannerImgPreview, setBannerImgPreview] = useState("");
   const [profileImgPreview, setProfileImgPreview] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
-  const [apiError, setApiError] = useState("");
+
   useEffect(() => {
     setValue("name", userDetails.name);
     setValue("username", userDetails.username);
@@ -57,29 +57,6 @@ const EditProfile = () => {
 
     fetchData();
   }, [token]);
-  // Handler for banner image change
-  const handleBannerChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setBannerImgPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Handler for profile image change
-  const handleProfileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImgPreview(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   if (loading) {
     return <Loader />;
@@ -127,21 +104,25 @@ const EditProfile = () => {
           },
         }
       );
-
-      console.log("Update successful:", response.data);
-      setTimeout(() => {
-        setSuccessMessage(response.data.message);
-        navigate("/dashboard/user-profile");
-      }, 3000);
-      reset();
+      if (response.data.success) {
+        console.log("Update successful:", response.data);
+        toast.success(response.data.message || "Profile updated successfully");
+        setTimeout(() => {
+          navigate("/dashboard/user-profile");
+        }, 3000);
+        reset();
+      } else {
+        console.log("Update failed:", response.data);
+        toast.error(response.data.message);
+      }
       // You can redirect or show a success message here
     } catch (error) {
       console.error("Error updating user:", error);
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
   };
-  console.log("user details: ", userDetails);
 
   return (
     <section className="my-[5rem] px-24">

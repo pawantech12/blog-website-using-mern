@@ -20,26 +20,32 @@ import { FiTwitter } from "react-icons/fi";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import defaultUser from "../img/default-user.jpg";
-import DOMPurify from "dompurify";
 import LatestPostSection from "../components/LatestPostSection";
 import { likeBlog, unLikeBlog } from "../helper/like.handler";
 import { BsBookmarkCheckFill, BsBookmarkDash } from "react-icons/bs";
-import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
-import { docco } from "react-syntax-highlighter/dist/esm/styles/hljs";
-import parse, { domToReact } from "html-react-parser";
+import rehypePrettyCode from "rehype-pretty-code";
+
 import Loader from "../components/Loader";
+import { transformerCopyButton } from "@rehype-pretty/transformers";
+
+import rehypeDocument from "rehype-document";
+import rehypeFormat from "rehype-format";
+import rehypeStringify from "rehype-stringify";
+import remarkParse from "remark-parse";
+import remarkRehype from "remark-rehype";
+import { unified } from "unified";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
   const [blog, setBlog] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const { token, user } = useAuth();
   const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
   const [savedPosts, setSavedPosts] = useState([]);
+  const [htmlContent, setHtmlContent] = useState("");
 
   useEffect(() => {
     const fetchBlogDetails = async () => {
-      setLoading(true);
       try {
         const response = await axios.get(
           `http://localhost:3000/blog/get-blog/${blogId}`
@@ -47,8 +53,6 @@ const BlogDetails = () => {
         setBlog(response.data.blog);
       } catch (error) {
         console.error("Error fetching blog details:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -102,11 +106,40 @@ const BlogDetails = () => {
     };
 
     fetchData();
-  }, [blogId, token]);
+  }, [blogId, token, user]);
 
-  if (loading) {
-    return <Loader />;
-  }
+  useEffect(() => {
+    if (blog && blog.content) {
+      const processContent = async () => {
+        setLoading(true);
+        try {
+          const file = await unified()
+            .use(remarkParse)
+            .use(remarkRehype)
+            .use(rehypeFormat)
+            .use(rehypeStringify)
+            .use(rehypePrettyCode, {
+              theme: "one-dark-pro",
+              transformers: [
+                transformerCopyButton({
+                  visibility: "always",
+                  feedbackDuration: 3_000,
+                }),
+              ],
+            });
+
+          const htmlContent = (await file.process(blog.content)).toString();
+          setHtmlContent(htmlContent);
+        } catch (error) {
+          console.error("Error processing content:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      processContent();
+    }
+  }, [blog]);
 
   // Like/Unlike handler
   const handleLikeClick = async (blogId) => {
@@ -153,7 +186,6 @@ const BlogDetails = () => {
       console.error("Error updating likes:", error);
     }
   };
-  console.log("Blog Content: ", blog.content);
 
   const handleSaveClick = async (postId) => {
     try {
@@ -176,7 +208,7 @@ const BlogDetails = () => {
   };
 
   const shareUrl = window.location.href; // The URL of the current blog post
-  const title = blog.title; // The title of the blog post
+  const title = blog?.title; // The title of the blog post
 
   // Custom share URLs for different platforms
   const shareUrls = {
@@ -208,35 +240,9 @@ const BlogDetails = () => {
       console.error("Web Share API not supported.");
     }
   };
-  // Sanitize the blog content to prevent XSS attacks
-  const cleanHTML = DOMPurify.sanitize(blog?.content);
-
-  // Function to render <pre><code> blocks with SyntaxHighlighter
-  const renderCodeBlocks = (domNode) => {
-    // Check if it's a <pre> tag
-    if (domNode.name === "pre") {
-      // Check if it contains a <code> block
-      const codeElement = domNode.children?.find(
-        (child) => child.name === "code"
-      );
-
-      if (codeElement) {
-        // Extract the language (e.g., "language-html" or "language-js")
-        const languageClass = codeElement.attribs?.class || "";
-        const language = languageClass.replace("language-", "") || "text";
-
-        // Get the raw code content
-        const codeContent = domToReact(codeElement.children);
-
-        return (
-          <SyntaxHighlighter language={language} style={docco}>
-            {codeContent}
-          </SyntaxHighlighter>
-        );
-      }
-    }
-    return domNode; // If it's not a <pre> block, return the node as-is
-  };
+  if (loading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -245,7 +251,7 @@ const BlogDetails = () => {
           <span className="bg-custom-light-orange rounded-md px-4 py-2 text-base font-medium">
             <Link to="/">Home</Link> / <Link to="/blog">Blog</Link> /{" "}
             <Link to={`/blog-post/${blogId}`} className="text-orange-400">
-              {blog.title}
+              {blog?.title}
             </Link>
           </span>
         </div>
@@ -255,7 +261,7 @@ const BlogDetails = () => {
           <div>
             <figure className="w-full">
               <img
-                src={blog.coverImage || blog1}
+                src={blog?.coverImage || blog1}
                 className="rounded-xl w-full"
                 alt="Blog Image"
               />
@@ -263,7 +269,7 @@ const BlogDetails = () => {
             <div className="flex items-center justify-between mt-6">
               <div className="flex items-center gap-3">
                 <span className="bg-yellow-200 px-5 py-2 font-medium text-neutral-600 rounded-xl">
-                  {blog.category.name}{" "}
+                  {blog?.category?.name}{" "}
                   {/* Assuming category has a name field */}
                 </span>
                 <span className="text-zinc-500">By {blog?.author?.name}</span>{" "}
@@ -272,12 +278,12 @@ const BlogDetails = () => {
               <div className="flex items-center gap-2 text-sm">
                 <span className="flex gap-1 items-center">
                   <LuCalendarDays />
-                  {new Date(blog.publishedDate).toLocaleDateString()}{" "}
+                  {new Date(blog?.publishedDate).toLocaleDateString()}{" "}
                   {/* Format date */}
                 </span>
                 <GoDotFill className="w-2 h-2" />
                 <span>
-                  {Math.ceil(blog.content.split(" ").length / 200)} min read
+                  {Math.ceil(blog?.content.split(" ").length / 200)} min read
                 </span>{" "}
                 {/* Assuming readTime is a property */}
               </div>
@@ -290,22 +296,27 @@ const BlogDetails = () => {
                   )}
                 </button>
                 <button onClick={() => handleLikeClick(blog?._id)}>
-                  {likedBlogs.includes(blog._id) ? (
+                  {likedBlogs.includes(blog?._id) ? (
                     <FaHeart className="text-red-500" />
                   ) : (
                     <FaRegHeart />
                   )}
                 </button>
-                <span>{blog.likes.length}</span>
+                <span>{blog?.likes?.length}</span>
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-4">
               <h4 className="text-2xl text-custom-black font-semibold">
-                {blog.title}
+                {blog?.title}
               </h4>
-              <div className="prose">
-                {parse(cleanHTML, { replace: renderCodeBlocks })}
-              </div>
+              {loading ? (
+                <p>Loading...</p>
+              ) : (
+                <div
+                  dangerouslySetInnerHTML={{ __html: htmlContent }}
+                  className="prose"
+                ></div>
+              )}
               <div className="flex items-center gap-3 mt-3 self-end">
                 <h4 className="font-semibold text-custom-black">Share on </h4>
                 <ul className="flex items-center gap-3 text-sm ">
@@ -355,7 +366,7 @@ const BlogDetails = () => {
           <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
             <figure className="border border-gray-200 rounded-full p-2">
               <img
-                src={blog?.author?.profileImage || defaultUser} // Assuming author has a profileImage field
+                src={blog?.author?.profileImg || defaultUser} // Assuming author has a profileImage field
                 alt="profile Img"
                 className="rounded-full w-24 h-24"
               />

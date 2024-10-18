@@ -6,6 +6,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import ConfirmationModal from "../components/ConfirmationModal";
+import { toast } from "react-toastify";
 const PostList = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [blogs, setBlogs] = useState([]);
@@ -14,8 +15,6 @@ const PostList = () => {
   const [sortBy, setSortBy] = useState(""); // Changed from category to sortBy
 
   const { token } = useAuth();
-  const [apiError, setApiError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const navigate = useNavigate();
   if (!token) {
     navigate("/login");
@@ -76,10 +75,7 @@ const PostList = () => {
 
       if (response.data.success === true) {
         setBlogs(blogs.filter((blog) => blog._id !== blogToDelete)); // Update state to remove the blog
-        setSuccessMessage(response.data.message);
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
+        toast.success(response.data.message);
       }
       setIsDeleting(false);
 
@@ -87,10 +83,7 @@ const PostList = () => {
     } catch (error) {
       console.error("Failed to delete the blog post:", error);
       setIsDeleting(false);
-      setApiError(error.response.data.message);
-      setTimeout(() => {
-        setApiError("");
-      }, 3000);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -123,16 +116,7 @@ const PostList = () => {
             </Link>
           </button>
         </div>
-        {successMessage && (
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4">
-            <p className="text-sm">{successMessage}</p>
-          </div>
-        )}
-        {apiError && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
-            <p className="text-sm">{apiError}</p>
-          </div>
-        )}
+
         <div className="max-w-7xl mx-auto bg-white p-6 border border-gray-200 rounded-lg my-[2rem]">
           <SearchFilter
             searchTerm={searchTerm}

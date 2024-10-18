@@ -1,9 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { Editor } from "@tinymce/tinymce-react";
-import { FaChevronDown } from "react-icons/fa";
+// import { FaChevronDown } from "react-icons/fa";
+
+import "ckeditor5/ckeditor5.css";
+import "ckeditor5-premium-features/ckeditor5-premium-features.css";
+
+import MDEditor from "@uiw/react-md-editor";
+
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
+import { toast, ToastContainer } from "react-toastify";
 
 const CreateBlogPost = () => {
   const {
@@ -13,8 +19,7 @@ const CreateBlogPost = () => {
     reset,
   } = useForm();
   const [postBody, setPostBody] = useState("");
-  const [apiError, setApiError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [categories, setCategories] = useState([]);
@@ -56,8 +61,7 @@ const CreateBlogPost = () => {
     data.content = postBody; // Add post body from the TinyMCE editor
     console.log("Form Data:", data);
     setIsSubmitting(true);
-    setApiError("");
-    setSuccessMessage("");
+
     // Create a FormData object to handle file upload
     const formData = new FormData();
     formData.append("title", data.title);
@@ -82,25 +86,16 @@ const CreateBlogPost = () => {
       if (response.data.success === true) {
         console.log("Blog Post created successfully:", response);
         // Redirect or show success message
-        setSuccessMessage(response.data.message);
+        toast.success(response.data.message);
         reset();
+        setPostBody("");
         setImagePreview(null);
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
       } else {
-        setApiError(response.data.message);
-        setTimeout(() => {
-          setApiError("");
-        }, 3000);
+        toast.error(response.data.message);
       }
       console.log(response.data.message); // Handle success response
     } catch (error) {
-      console.error(error);
-      setApiError(error.response.data.message);
-      setTimeout(() => {
-        setApiError("");
-      }, 3000);
+      toast.error(error.response.data.message || "An error occurred");
       console.log(error);
     } finally {
       setIsSubmitting(false);
@@ -116,16 +111,7 @@ const CreateBlogPost = () => {
       <h1 className="text-2xl font-semibold text-custom-black mb-6">
         Create Blog Post
       </h1>
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative font-medium">
-          <span className="block sm:inline">{successMessage}</span>
-        </div>
-      )}
-      {apiError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-medium">
-          <span className="block sm:inline">{apiError}</span>
-        </div>
-      )}
+
       {/* Image Preview */}
       {imagePreview && (
         <div className="mt-2">
@@ -152,49 +138,24 @@ const CreateBlogPost = () => {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
           />
           {errors.title && (
-            <span className="text-red-500">This field is required</span>
+            <span className="text-[13px] mt-1 font-medium text-gray-500">
+              {errors.title.message}
+            </span>
           )}
         </div>
 
-        {/* Post Body (TinyMCE Editor) {import.meta.VITE_APP_TINYMCE_API_KEY}*/}
         <div>
           <label className="block text-gray-700 text-sm font-semibold mb-2">
             Post Body
           </label>
-          <Editor
-            apiKey="niogdjwfejq20ihmep2n3quecbaqvke4kmkolr9sn3x2ubcm"
-            onEditorChange={handleEditorChange}
-            init={{
-              plugins: [
-                // Core editing features
-                "anchor",
-                "autolink",
-                "charmap",
-                "codesample",
-                "emoticons",
-                "image",
-                "link",
-                "lists",
-                "media",
-                "searchreplace",
-                "table",
-                "visualblocks",
-                "wordcount",
-              ],
-              toolbar:
-                "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-              tinycomments_mode: "embedded",
-              tinycomments_author: "Author name",
-              mergetags_list: [
-                { value: "First.Name", title: "First Name" },
-                { value: "Email", title: "Email" },
-              ],
-              ai_request: (request, respondWith) =>
-                respondWith.string(() =>
-                  Promise.reject("See docs to implement AI Assistant")
-                ),
-            }}
-          />{" "}
+          {/* here editor will come  */}
+
+          <MDEditor value={postBody} onChange={handleEditorChange} />
+          {errors.content && (
+            <span className="text-[13px] mt-1 font-medium text-gray-500">
+              {errors.content.message}
+            </span>
+          )}
         </div>
         <div className="flex justify-between items-center gap-5">
           {/* Post Category */}
@@ -214,7 +175,9 @@ const CreateBlogPost = () => {
               ))}
             </select>
             {errors.category && (
-              <span className="text-red-500">This field is required</span>
+              <span className="text-[13px] mt-1 font-medium text-gray-500">
+                {errors.category.message}
+              </span>
             )}
           </div>
 
@@ -230,7 +193,9 @@ const CreateBlogPost = () => {
               className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {errors.coverImage && (
-              <span className="text-red-500">This field is required</span>
+              <span className="text-[13px] mt-1 font-medium text-gray-500">
+                {errors.coverImage.message}
+              </span>
             )}
           </div>
         </div>

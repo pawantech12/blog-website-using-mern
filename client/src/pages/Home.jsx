@@ -308,92 +308,99 @@ export const Home = () => {
   }
   return (
     <>
-      <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12">
-        <div className="flex flex-col md:w-[78%] md:flex-row gap-6 md:gap-10">
-          <div className="flex flex-row md:flex-col gap-4 justify-between w-[50%]">
-            {/* Assuming you have some feature images */}
-            {[0, 1, 2, 3].map((index) => (
-              <figure key={index}>
-                <Link to={`/blog-post/${blogs[index]?._id}`}>
-                  <img
-                    src={blogs[index]?.coverImage}
-                    alt=""
-                    className="rounded-xl object-cover"
-                  />
-                </Link>
-              </figure>
-            ))}
-          </div>
-          <div className="w-[50%] md:w-full h-full">
-            <figure className="p-3 bg-white rounded-xl h-full">
-              <Link to={`/blog-post/${blogs[0]?._id}`} className="h-full">
-                <img
-                  src={blogs[0]?.coverImage}
-                  alt=""
-                  className="rounded-xl w-full h-full object-cover"
-                />
-              </Link>
-            </figure>
-          </div>
-        </div>
-        <div className="w-full md:w-1/3 flex flex-col justify-around gap-4">
-          {blogs.slice(0, 2).map((blog) => (
-            <div key={blog._id} className="flex flex-col gap-5">
-              <div className="flex items-center gap-3">
-                <span className="bg-yellow-200 px-5 py-2 font-medium text-neutral-600 rounded-xl">
-                  {blog.category?.name || "Uncategorized"}
-                </span>
-                <span className="text-zinc-500">
-                  By {blog.author?.name || "Unknown"}
-                </span>
+      <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12 w-full">
+        {blogs.length > 0 ? (
+          <>
+            <div className="flex flex-col md:w-[78%] md:flex-row gap-6 md:gap-10">
+              <div className="flex flex-row md:flex-col gap-4 justify-between w-[50%]">
+                {/* Assuming you have some feature images */}
+                {[0, 1, 2, 3].map((index) => (
+                  <figure key={index}>
+                    <Link to={`/blog-post/${blogs[index]?._id}`}>
+                      <img
+                        src={blogs[index]?.coverImage}
+                        alt=""
+                        className="rounded-xl object-cover"
+                      />
+                    </Link>
+                  </figure>
+                ))}
               </div>
-              <h3 className="text-xl md:text-2xl font-semibold">
-                <Link to={`/blog-post/${blog._id}`}>
-                  {blog.title.length > 60
-                    ? blog.title.slice(0, 60) + "..."
-                    : blog.title}
-                </Link>
-              </h3>
-              <div
-                className="text-gray-500"
-                dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(
-                    blog?.content?.slice(0, 100) + "..."
-                  ),
-                }}
-              ></div>
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="flex gap-1 items-center">
-                    <LuCalendarDays />
-                    {new Date(blog.publishedDate).toLocaleDateString()}
-                  </span>
-                  <GoDotFill className="w-2 h-2" />
-                  <span>
-                    {Math.ceil(blog.content.split(" ").length / 200)} min read
-                  </span>
-                </div>
-                <div className="text-xl flex gap-2 items-center">
-                  <button onClick={() => handleSaveClick(blog?._id)}>
-                    {savedPosts.includes(blog?._id) ? (
-                      <BsBookmarkCheckFill />
-                    ) : (
-                      <BsBookmarkDash />
-                    )}
-                  </button>
-                  <button onClick={() => handleLikeClick(blog?._id)}>
-                    {likedBlogs.includes(blog._id) ? (
-                      <FaHeart className="text-red-500" />
-                    ) : (
-                      <FaRegHeart />
-                    )}
-                  </button>
-                  <span>{blog.likes.length}</span>
-                </div>
+              <div className="w-[50%] md:w-full h-full">
+                <figure className="p-3 bg-white rounded-xl h-full">
+                  <Link to={`/blog-post/${blogs[0]?._id}`} className="h-full">
+                    <img
+                      src={blogs[0]?.coverImage}
+                      alt=""
+                      className="rounded-xl w-full h-full object-cover"
+                    />
+                  </Link>
+                </figure>
               </div>
             </div>
-          ))}
-        </div>
+            <div className="w-full md:w-1/3 flex flex-col justify-around gap-4">
+              {blogs.slice(0, 2).map((blog) => (
+                <div key={blog._id} className="flex flex-col gap-5">
+                  <div className="flex items-center gap-3">
+                    <span className="bg-yellow-200 px-5 py-2 font-medium text-neutral-600 rounded-xl">
+                      {blog.category?.name || "Uncategorized"}
+                    </span>
+                    <span className="text-zinc-500">
+                      By {blog.author?.name || "Unknown"}
+                    </span>
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-semibold">
+                    <Link to={`/blog-post/${blog._id}`}>
+                      {blog.title.length > 60
+                        ? blog.title.slice(0, 60) + "..."
+                        : blog.title}
+                    </Link>
+                  </h3>
+                  <div
+                    className="text-gray-500"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        blog?.content?.slice(0, 100) + "..."
+                      ),
+                    }}
+                  ></div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="flex gap-1 items-center">
+                        <LuCalendarDays />
+                        {new Date(blog.publishedDate).toLocaleDateString()}
+                      </span>
+                      <GoDotFill className="w-2 h-2" />
+                      <span>
+                        {Math.ceil(blog.content.split(" ").length / 200)} min
+                        read
+                      </span>
+                    </div>
+                    <div className="text-xl flex gap-2 items-center">
+                      <button onClick={() => handleSaveClick(blog?._id)}>
+                        {savedPosts.includes(blog?._id) ? (
+                          <BsBookmarkCheckFill />
+                        ) : (
+                          <BsBookmarkDash />
+                        )}
+                      </button>
+                      <button onClick={() => handleLikeClick(blog?._id)}>
+                        {likedBlogs.includes(blog._id) ? (
+                          <FaHeart className="text-red-500" />
+                        ) : (
+                          <FaRegHeart />
+                        )}
+                      </button>
+                      <span>{blog.likes.length}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <p className="mx-auto text-zinc-600">No posts found.</p>
+        )}
       </section>
 
       <section className="p-4 md:p-16">
@@ -633,11 +640,14 @@ export const Home = () => {
                         </button>
                       </div>
                       <div>
-                        <figure>
+                        <figure className="w-full h-64">
                           <img
-                            src="https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
-                            alt=""
-                            className="w-full"
+                            src={
+                              user.bannerImg ||
+                              "https://bunzo-react.pages.dev/static/e67d76024176298c373c4565aacb13ba/c04cd/home-following-banner.webp"
+                            }
+                            alt={user.name}
+                            className="w-full h-full object-cover rounded-lg"
                           />
                         </figure>
                       </div>

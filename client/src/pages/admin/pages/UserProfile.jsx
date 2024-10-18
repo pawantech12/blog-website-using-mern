@@ -128,7 +128,10 @@ const UserProfile = () => {
           className="w-full h-56 object-cover rounded-lg shadow-lg"
         />
         <img
-          src={userDetails.profileImg || "https://via.placeholder.com/150"} // Use userDetails's profile image
+          src={
+            userDetails.profileImg ||
+            "https://t4.ftcdn.net/jpg/05/42/36/11/360_F_542361185_VFRJWpR2FH5OiAEVveWO7oZnfSccZfD3.jpg"
+          } // Use userDetails's profile image
           alt="profile image"
           className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
         />
