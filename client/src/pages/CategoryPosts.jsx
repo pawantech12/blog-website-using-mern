@@ -1,8 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useParams } from "react-router-dom";
-import CategoryData from "../data/CategoryData";
 import { LuBookmarkMinus, LuCalendarDays } from "react-icons/lu";
-import blog1 from "../img/blog1.webp";
 import { FaRegHeart } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
 import axios from "axios";

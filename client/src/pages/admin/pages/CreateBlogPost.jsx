@@ -2,14 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 // import { FaChevronDown } from "react-icons/fa";
 
-import "ckeditor5/ckeditor5.css";
-import "ckeditor5-premium-features/ckeditor5-premium-features.css";
-
 import MDEditor from "@uiw/react-md-editor";
 
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const CreateBlogPost = () => {
   const {
@@ -83,17 +80,12 @@ const CreateBlogPost = () => {
       );
       console.log(response);
 
-      if (response.data.success === true) {
-        console.log("Blog Post created successfully:", response);
-        // Redirect or show success message
-        toast.success(response.data.message);
-        reset();
-        setPostBody("");
-        setImagePreview(null);
-      } else {
-        toast.error(response.data.message);
-      }
-      console.log(response.data.message); // Handle success response
+      console.log("Blog Post created successfully:", response);
+      // Redirect or show success message
+      toast.success(response.data.message);
+      reset();
+      setPostBody("");
+      setImagePreview(null);
     } catch (error) {
       toast.error(error.response.data.message || "An error occurred");
       console.log(error);

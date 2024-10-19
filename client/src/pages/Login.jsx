@@ -5,8 +5,7 @@ import google from "../img/google.png";
 import facebook from "../img/facebook.png";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
-import { ToastContainer, toast } from "react-toastify"; // Import toast
-import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
+import { toast } from "react-toastify"; // Import toast
 
 const Login = () => {
   const {
@@ -31,16 +30,12 @@ const Login = () => {
       );
       console.log(response);
 
-      if (response.data.success) {
-        console.log("Login successful:", response);
-        storeTokenInLS(response.data.token);
-        toast.success(response.data.message); // Display success toast
-        setTimeout(() => {
-          navigate("/dashboard");
-        }, 3000);
-      } else {
-        toast.error(response.data.message || "Failed to login"); // Display error toast
-      }
+      console.log("Login successful:", response);
+      storeTokenInLS(response.data.token);
+      toast.success(response.data.message); // Display success toast
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 3000);
     } catch (error) {
       if (error.response && error.response.data.errors) {
         // Map API errors to react-hook-form
@@ -159,17 +154,6 @@ const Login = () => {
           </Link>
         </p>
       </div>
-      <ToastContainer
-        position="bottom-right" // Set position to bottom-right
-        autoClose={5000} // Automatically close after 5 seconds
-        hideProgressBar={false} // Show progress bar
-        newestOnTop={false} // Display newest on top
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 };

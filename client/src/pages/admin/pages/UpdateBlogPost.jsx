@@ -4,19 +4,14 @@ import { Editor } from "@tinymce/tinymce-react";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import { useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const UpdateBlogPost = () => {
   const { blogId } = useParams(); // Get blog post ID from URL params
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-  } = useForm();
+  const { register, handleSubmit, setValue } = useForm();
 
   const [postBody, setPostBody] = useState("");
-  const [apiError, setApiError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [blogData, setBlogData] = useState({});
@@ -97,8 +92,6 @@ const UpdateBlogPost = () => {
   const onSubmit = async (data) => {
     data.content = postBody; // Add post body from TinyMCE editor
     setIsSubmitting(true);
-    setApiError("");
-    setSuccessMessage("");
 
     const formData = new FormData();
     formData.append("title", data.title);
@@ -122,23 +115,16 @@ const UpdateBlogPost = () => {
         }
       );
 
-      if (response.data.success) {
-        console.log("Blog post updated succesfully", response);
+      console.log("Blog post updated succesfully", response);
 
-        setSuccessMessage(response.data.message);
-        setTimeout(() => setSuccessMessage(""), 3000);
-        setTimeout(() => {
-          navigate(`/dashboard/post-list`);
-        }, 3000);
-      } else {
-        setApiError(response.data.message);
-        setTimeout(() => setApiError(""), 3000);
-      }
+      toast.success(response.data.message);
+      setTimeout(() => {
+        navigate(`/dashboard/post-list`);
+      }, 3000);
     } catch (error) {
-      setApiError(
+      toast.error(
         error.response?.data?.message || "Failed to update blog post"
       );
-      setTimeout(() => setApiError(""), 3000);
     } finally {
       setIsSubmitting(false);
     }
@@ -157,16 +143,7 @@ const UpdateBlogPost = () => {
       <h1 className="text-2xl font-semibold text-custom-black mb-6">
         Update Blog Post
       </h1>
-      {successMessage && (
-        <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative font-medium">
-          <span className="block sm:inline">{successMessage}</span>
-        </div>
-      )}
-      {apiError && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative font-medium">
-          <span className="block sm:inline">{apiError}</span>
-        </div>
-      )}
+
       {/* Image Preview */}
       {imagePreview && (
         <div className="mt-2">

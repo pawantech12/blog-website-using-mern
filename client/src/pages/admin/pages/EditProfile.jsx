@@ -111,18 +111,12 @@ const EditProfile = () => {
           },
         }
       );
-      if (response.data.success) {
-        console.log("Update successful:", response.data);
-        toast.success(response.data.message || "Profile updated successfully");
-        setTimeout(() => {
-          navigate("/dashboard/user-profile");
-        }, 3000);
-        reset();
-      } else {
-        console.log("Update failed:", response.data);
-        toast.error(response.data.message);
-      }
-      // You can redirect or show a success message here
+      console.log("Update successful:", response.data);
+      toast.success(response.data.message || "Profile updated successfully");
+      setTimeout(() => {
+        navigate("/dashboard/user-profile");
+      }, 3000);
+      reset();
     } catch (error) {
       if (error.response && error.response.data.errors) {
         // Map API errors to react-hook-form

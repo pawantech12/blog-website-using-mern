@@ -20,11 +20,14 @@ const blogRouter = require("./routers/blog.router.js");
 const categoryRouter = require("./routers/category.router.js");
 const contactRouter = require("./routers/contact.router.js");
 const subscriptionRouter = require("./routers/subscription.router.js");
+const commentRouter = require("./routers/comment.router.js");
+
 app.use("/api", authenticationRouter);
 app.use("/api", contactRouter);
 app.use("/api", subscriptionRouter);
 app.use("/blog", blogRouter);
 app.use("/blog", categoryRouter);
+app.use("/blog", commentRouter);
 
 connectDB().then(() => {
   app.listen(PORT, () => {

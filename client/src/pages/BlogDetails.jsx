@@ -34,6 +34,7 @@ import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+import CommentSection from "../components/CommentSection";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
@@ -361,6 +362,7 @@ const BlogDetails = () => {
               </div>
             </div>
           </div>
+          <CommentSection blogId={blogId} user={user} />
         </div>
         <div className="w-[30%] flex flex-col gap-10">
           <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">

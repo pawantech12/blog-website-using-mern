@@ -13,6 +13,7 @@ import {
 import { BsArrowRight } from "react-icons/bs";
 import { useForm } from "react-hook-form";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const Contact = () => {
   const {
@@ -20,14 +21,10 @@ const Contact = () => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const [apiError, setApiError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
-    setApiError("");
-    setSuccessMessage("");
 
     try {
       const response = await axios.post(
@@ -35,10 +32,10 @@ const Contact = () => {
         data
       );
       console.log(response.data.message); // Handle success response
-      setSuccessMessage("Your message has been sent successfully!");
+      toast.success("Your message has been sent successfully!");
     } catch (error) {
       console.error(error);
-      setApiError("Failed to send message. Please try again later.");
+      toast.error("Failed to send message. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -120,11 +117,6 @@ const Contact = () => {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col gap-4 mt-[2rem]"
           >
-            {/* Display API Errors and Success Messages */}
-            {apiError && <p className="text-red-500">{apiError}</p>}
-            {successMessage && (
-              <p className="text-green-500">{successMessage}</p>
-            )}
             {/* Name Input */}
             <input
               type="text"

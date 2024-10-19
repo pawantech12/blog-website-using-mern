@@ -4,8 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
 import axios from "axios";
-import { ToastContainer, toast } from "react-toastify"; // Import toast
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify"; // Import toast
 const Register = () => {
   const {
     register,
@@ -36,16 +35,11 @@ const Register = () => {
       );
       console.log(response);
 
-      if (response.data.success) {
-        console.log("Registration successful:", response);
-        toast.success(response.data.message);
-        setTimeout(() => {
-          navigate("/login");
-        }, 3000);
-        // Redirect or show success message
-      } else {
-        toast.error(response.data.message || "Failed to register");
-      }
+      console.log("Registration successful:", response);
+      toast.success(response.data.message);
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (error) {
       if (error.response && error.response.data.errors) {
         // Clear existing form errors
@@ -90,7 +84,6 @@ const Register = () => {
 
         {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
-          {/* Name Input */}
           {/* Name Input */}
           <div className="flex flex-col gap-1">
             <label
@@ -219,17 +212,6 @@ const Register = () => {
           </Link>
         </p>
       </div>
-      <ToastContainer
-        position="bottom-right" // Set position to bottom-right
-        autoClose={5000} // Automatically close after 5 seconds
-        hideProgressBar={false} // Show progress bar
-        newestOnTop={false} // Display newest on top
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
     </div>
   );
 };

@@ -21,6 +21,9 @@ import UpdateBlogPost from "./pages/admin/pages/UpdateBlogPost.jsx";
 import CategoryPage from "./pages/admin/pages/CategoryPage.jsx";
 import UserProfile from "./pages/admin/pages/UserProfile.jsx";
 import EditProfile from "./pages/admin/pages/EditProfile.jsx";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -92,6 +95,17 @@ ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <AuthProvider>
       <RouterProvider router={router} />
+      <ToastContainer
+        position="bottom-right" // Set position to bottom-right
+        autoClose={3000} // Automatically close after 5 seconds
+        hideProgressBar={false} // Show progress bar
+        newestOnTop={false} // Display newest on top
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </AuthProvider>
   </React.StrictMode>
 );
