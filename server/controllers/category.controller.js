@@ -38,7 +38,7 @@ const createCategory = async (req, res) => {
       // Upload image to Cloudinary and get the public_id and secure_url
       const uploadResult = await new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "category_images" },
+          { folder: "blog_website/category_images" },
           (error, result) => {
             if (error) {
               console.error("Cloudinary upload error:", error);

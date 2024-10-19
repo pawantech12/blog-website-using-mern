@@ -3,7 +3,6 @@ const User = require("../models/user.model");
 const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
 const crypto = require("crypto");
-
 // Helper function to compute hash of image buffer
 const computeImageHash = (buffer) => {
   return crypto.createHash("md5").update(buffer).digest("hex");
@@ -22,7 +21,7 @@ const deleteImageFromCloudinary = async (publicId) => {
 const uploadImageToCloudinary = async (file) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder: "blog_images" },
+      { folder: "blog_website/blog_images" },
       (error, result) => {
         if (error) {
           console.error("Cloudinary upload error:", error);
@@ -115,6 +114,7 @@ const createBlogPost = async (req, res) => {
     }
   } catch (error) {
     console.error("Error creating blog post:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to create blog post",
@@ -209,6 +209,7 @@ const updateBlogPost = async (req, res) => {
     });
   } catch (error) {
     console.error("Error updating blog post:", error);
+
     res.status(500).json({
       success: false,
       message: "Failed to update blog post",

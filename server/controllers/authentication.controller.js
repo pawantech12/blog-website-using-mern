@@ -401,12 +401,14 @@ const updateUserProfileDetails = async (req, res) => {
         // Delete the previous banner image from Cloudinary
         if (currentUser.bannerImg) {
           const publicId = currentUser.bannerImg.split("/").pop().split(".")[0]; // Extract public ID
-          await cloudinary.uploader.destroy(`banner_images/${publicId}`);
+          await cloudinary.uploader.destroy(
+            `blog_website/banner_images/${publicId}`
+          );
         }
 
         const bannerImgResult = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "banner_images" },
+            { folder: "blog_website/banner_images" },
             (error, result) => {
               if (error) return reject(error);
               resolve(result);
@@ -425,12 +427,14 @@ const updateUserProfileDetails = async (req, res) => {
             .split("/")
             .pop()
             .split(".")[0]; // Extract public ID
-          await cloudinary.uploader.destroy(`profile_images/${publicId}`);
+          await cloudinary.uploader.destroy(
+            `blog_website/profile_images/${publicId}`
+          );
         }
 
         const profileImgResult = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { folder: "profile_images" },
+            { folder: "blog_website/profile_images" },
             (error, result) => {
               if (error) return reject(error);
               resolve(result);

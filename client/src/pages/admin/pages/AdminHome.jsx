@@ -231,33 +231,43 @@ const AdminHome = () => {
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Latest Posts
           </h2>
-          <div className="grid grid-cols-1 gap-4">
-            {[0, 1, 2].map((index) => (
-              <div
-                className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100"
-                key={index}
-              >
-                <div className="flex items-center">
-                  <img
-                    src={`https://via.placeholder.com/48`} // Replace with actual image URLs
-                    alt={`Post ${index + 1}`}
-                    className="w-12 h-12 rounded-lg"
-                  />
-                  <div className="ml-4">
-                    <h3 className="font-semibold">Understanding React Hooks</h3>
-                    <p className="text-sm text-gray-600">
-                      A comprehensive guide to React hooks.
+          {blogs.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 gap-4">
+                {blogs.slice(0, 3).map((blog, index) => (
+                  <div
+                    className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100"
+                    key={index}
+                  >
+                    <div className="flex items-center">
+                      <img
+                        src={blog.coverImage} // Replace with actual image URLs
+                        alt={blog.title}
+                        className="w-12 h-12 rounded-lg"
+                      />
+                      <div className="ml-4">
+                        <h3 className="font-semibold">{blog.title}</h3>
+                        <p className="text-sm text-gray-600">
+                          {blog?.content?.length > 80
+                            ? blog?.content?.slice(0, 80) + "..."
+                            : blog?.content}
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-400">
+                      {new Date(blog.publishedDate).toLocaleDateString()}
                     </p>
                   </div>
-                </div>
-                <p className="text-sm text-gray-400">Sept 19, 2024</p>
+                ))}
               </div>
-            ))}
-          </div>
-          <hr className="my-4" />
-          <Link className="self-center font-medium text-orange-400 hover:text-orange-500">
-            View More
-          </Link>
+              <hr className="my-4" />
+              <Link className="self-center font-medium text-orange-400 hover:text-orange-500">
+                View More
+              </Link>
+            </>
+          ) : (
+            <p className="text-gray-600 text-center">No posts found.</p>
+          )}
         </div>
       </section>
       {/* Confirmation Modal */}

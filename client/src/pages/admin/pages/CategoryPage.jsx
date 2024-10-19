@@ -3,6 +3,7 @@ import { AiOutlinePlus, AiOutlineDelete } from "react-icons/ai"; // Plus and Del
 import axios from "axios"; // Assuming you're using axios for API calls
 import { useAuth } from "../../../store/Authentication";
 import { useForm } from "react-hook-form"; // Import React Hook Form
+import { toast } from "react-toastify";
 
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
@@ -11,9 +12,6 @@ const CategoryPage = () => {
   const [isAddModal, setIsAddModal] = useState(false); // Track if it's the add modal
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState(null);
-
-  const [successMessage, setSuccessMessage] = useState(null);
 
   // Fetch categories from the backend
   useEffect(() => {
@@ -57,18 +55,13 @@ const CategoryPage = () => {
         categories.filter((cat) => cat._id !== selectedCategory._id)
       ); // Update the UI after deletion
 
-      setSuccessMessage(response.data.message);
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
+      toast.success(response.data.message);
+
       setShowModal(false); // Close the modal
-      setLoading(false);
     } catch (error) {
       console.error("Error deleting category:", error);
-      setApiError(error.response.data.message);
-      setTimeout(() => {
-        setApiError(null);
-      }, 3000);
+      toast.error(error.response.data.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -97,20 +90,15 @@ const CategoryPage = () => {
       );
       console.log("Category created:", response);
       setCategories([...categories, response.data.category]); // Add the new category to the list
-      setSuccessMessage(response.data.message);
-      setTimeout(() => {
-        setSuccessMessage(null);
-      }, 3000);
+      toast.success(response.data.message);
+
       reset(); // Reset the form
       setShowModal(false); // Close the modal
       setIsAddModal(false); // Reset after adding category
-      setLoading(false);
     } catch (error) {
       console.error("Error creating category:", error);
-      setApiError(error.response.data.message);
-      setTimeout(() => {
-        setApiError(null);
-      }, 3000);
+      toast.error(error.response.data.message);
+    } finally {
       setLoading(false);
     }
   };
@@ -129,7 +117,7 @@ const CategoryPage = () => {
         </button>
       </div>
 
-      {successMessage && (
+      {/* {successMessage && (
         <div
           className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
           role="alert"
@@ -145,7 +133,7 @@ const CategoryPage = () => {
         >
           <span className="block sm:inline">{apiError}</span>
         </div>
-      )}
+      )} */}
 
       <div className="bg-white shadow rounded-lg p-4">
         {categories.length > 0 ? (

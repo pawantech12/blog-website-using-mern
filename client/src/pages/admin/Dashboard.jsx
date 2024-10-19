@@ -1,5 +1,4 @@
 import { ToastContainer } from "react-toastify"; // Import toast
-import "react-toastify/dist/ReactToastify.css";
 
 const Dashboard = ({ element }) => {
   return (

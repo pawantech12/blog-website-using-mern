@@ -13,11 +13,16 @@ import blog1 from "../../../img/blog1.webp"; // Example image
 import { useAuth } from "../../../store/Authentication";
 import axios from "axios";
 import { GoDotFill } from "react-icons/go";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Loader from "../../../components/Loader";
 
 const UserProfile = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const navigate = useNavigate();
+  if (user === null) {
+    navigate("/login");
+  }
+  // console.log("user ogged in:", user);
   const [activeTab, setActiveTab] = useState("allPosts");
   const [loading, setLoading] = useState(false);
   const [userDetails, setUserDetails] = useState({});
@@ -128,10 +133,7 @@ const UserProfile = () => {
           className="w-full h-56 object-cover rounded-lg shadow-lg"
         />
         <img
-          src={
-            userDetails.profileImg ||
-            "https://t4.ftcdn.net/jpg/05/42/36/11/360_F_542361185_VFRJWpR2FH5OiAEVveWO7oZnfSccZfD3.jpg"
-          } // Use userDetails's profile image
+          src={userDetails.profileImg || defaultProfileImg} // Use userDetails's profile image
           alt="profile image"
           className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
         />
@@ -159,7 +161,7 @@ const UserProfile = () => {
 
           <div className="flex flex-col items-center">
             <h4 className="text-xl font-semibold text-zinc-600">
-              {userDetails?.followers?.length}
+              {userDetails?.followers?.length || 0}
             </h4>
             <span className="text-zinc-500 font-medium text-[15px]">
               Followers
@@ -171,7 +173,7 @@ const UserProfile = () => {
 
           <div className="flex flex-col items-center">
             <h4 className="text-xl font-semibold text-zinc-600">
-              {userDetails?.following?.length}
+              {userDetails?.following?.length || 0}
             </h4>
             <span className="text-zinc-500 font-medium text-[15px]">
               Following

@@ -10,7 +10,7 @@ const userSchemaValidation = z.object({
 
   username: z
     .string()
-    .max(30, "Username must be less than 30 characters") // Max length
+    .max(30, "Username must be less than 30 characters")
     .optional(), // Optional
 
   email: z

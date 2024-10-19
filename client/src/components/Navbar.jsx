@@ -90,7 +90,7 @@ export const Navbar = () => {
             >
               <FiSearch />
             </button>
-            {token ? (
+            {token && user ? (
               <div className="relative">
                 <div
                   onClick={toggleProfileDropdown}

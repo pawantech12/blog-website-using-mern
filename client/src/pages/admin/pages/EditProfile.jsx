@@ -9,7 +9,14 @@ import { toast } from "react-toastify";
 
 const EditProfile = () => {
   const { token } = useAuth();
-  const { register, handleSubmit, setValue, reset } = useForm();
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    reset,
+    formState: { errors },
+    setError,
+  } = useForm();
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
@@ -117,8 +124,21 @@ const EditProfile = () => {
       }
       // You can redirect or show a success message here
     } catch (error) {
-      console.error("Error updating user:", error);
-      toast.error(error.response.data.message);
+      if (error.response && error.response.data.errors) {
+        // Map API errors to react-hook-form
+        const apiErrors = error.response.data.errors.reduce((acc, curr) => {
+          acc[curr.path[0]] = { message: curr.message };
+          return acc;
+        }, {});
+
+        // Set errors in the form
+        Object.keys(apiErrors).forEach((key) => {
+          setError(key, apiErrors[key]);
+        });
+      } else {
+        toast.error(error.response.data.message || "An error occurred");
+        console.log(error);
+      }
     } finally {
       setLoading(false);
     }
@@ -192,6 +212,11 @@ const EditProfile = () => {
                 {...register("name")}
                 placeholder="Name"
               />
+              {errors.name && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.name.message}
+                </span>
+              )}
             </div>
             <div className="flex flex-col gap-1 w-full">
               <label
@@ -214,6 +239,11 @@ const EditProfile = () => {
                   {...register("username")}
                   placeholder="Username"
                 />
+                {errors.username && (
+                  <span className="text-[13px] mt-1 font-medium text-gray-500">
+                    {errors.username.message}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -231,6 +261,11 @@ const EditProfile = () => {
               {...register("headline")}
               placeholder="Headline"
             />
+            {errors.headline && (
+              <span className="text-[13px] mt-1 font-medium text-gray-500">
+                {errors.headline.message}
+              </span>
+            )}
           </div>
           <div className="flex flex-col gap-1 w-full">
             <label
@@ -247,6 +282,11 @@ const EditProfile = () => {
               rows={5}
               cols={30}
             ></textarea>
+            {errors.summary && (
+              <span className="text-[13px] mt-1 font-medium text-gray-500">
+                {errors.summary.message}
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-6">
             <div className="flex flex-col gap-1 w-full">
@@ -263,6 +303,11 @@ const EditProfile = () => {
                 {...register("city")}
                 placeholder="City"
               />
+              {errors.city && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.city.message}
+                </span>
+              )}
             </div>
             <div className="flex flex-col gap-1 w-full">
               <label
@@ -279,6 +324,11 @@ const EditProfile = () => {
                 {...register("state")}
                 placeholder="State"
               />
+              {errors.state && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.state.message}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -296,6 +346,11 @@ const EditProfile = () => {
                 {...register("country")}
                 placeholder="Country"
               />
+              {errors.country && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.country.message}
+                </span>
+              )}
             </div>
             <div className="flex flex-col gap-1 w-full">
               <label
@@ -312,6 +367,11 @@ const EditProfile = () => {
                 {...register("dob")}
                 placeholder="Date of Birth"
               />
+              {errors.dob && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.dob.message}
+                </span>
+              )}
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -337,6 +397,11 @@ const EditProfile = () => {
                   <FaChevronDown className="text-gray-500" />
                 </div>
               </div>
+              {errors.gender && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.gender.message}
+                </span>
+              )}
             </div>
             <div className="flex flex-col gap-1 w-full">
               <label
@@ -352,6 +417,11 @@ const EditProfile = () => {
                 {...register("age")}
                 placeholder="Age"
               />
+              {errors.age && (
+                <span className="text-[13px] mt-1 font-medium text-gray-500">
+                  {errors.age.message}
+                </span>
+              )}
             </div>
           </div>
         </div>
