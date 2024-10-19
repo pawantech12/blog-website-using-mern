@@ -32,6 +32,7 @@ import { useForm } from "react-hook-form";
 import { likeBlog, unLikeBlog } from "../helper/like.handler";
 import LatestPostSection from "../components/LatestPostSection";
 import Loader from "../components/Loader";
+import { toast } from "react-toastify";
 export const Home = () => {
   const [current, setCurrent] = useState(0);
   const [catcurrent, setCatCurrent] = useState(0);
@@ -205,9 +206,6 @@ export const Home = () => {
   };
 
   const onSubmit = async (data) => {
-    setError("");
-    setSuccess("");
-
     setLoading(true);
 
     try {
@@ -217,11 +215,11 @@ export const Home = () => {
       );
 
       if (response.data.success) {
-        setSuccess(response.data.message);
+        toast.success(response.data.message);
         reset(); // Reset form on successful submission
       }
     } catch (error) {
-      setError(error.response.data.message);
+      toast.error(error.response.data.message);
     } finally {
       setLoading(false);
     }
@@ -229,6 +227,10 @@ export const Home = () => {
 
   // Like/Unlike handler
   const handleLikeClick = async (blogId) => {
+    if (user === null) {
+      toast.error("Please login to like a blog");
+      return;
+    }
     setLocalLoading(true);
     try {
       if (!user?.user?._id || !blogs) {
@@ -277,6 +279,10 @@ export const Home = () => {
     }
   };
   const handleSaveClick = async (postId) => {
+    if (user === null) {
+      toast.error("Please login to save a blog");
+      return;
+    }
     setLocalLoading(true);
     try {
       const response = await axios.put(
@@ -291,9 +297,11 @@ export const Home = () => {
       console.log("response while saving post: ", response);
       if (response.data.success) {
         setSavedPosts(response.data.savedPosts); // Toggle the save state on success
+        toast.success(response.data.message);
       }
     } catch (error) {
       console.error("Error saving post:", error);
+      toast.error(error.response?.data?.message || "Something went wrong");
     } finally {
       setLocalLoading(false);
     }
@@ -687,7 +695,10 @@ export const Home = () => {
           >
             {categories.map((item, index) => (
               <div key={index} className="relative w-[16.8%] flex-shrink-0">
-                <Link>
+                <Link
+                  to={`/category/${item._id}`}
+                  state={{ categoryName: item.name }}
+                >
                   <figure className="relative">
                     <img
                       src={item.imageUrl}

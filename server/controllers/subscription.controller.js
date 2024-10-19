@@ -4,12 +4,16 @@ const userSubscriptionData = async (req, res) => {
   const { name, email } = req.body;
 
   if (!email) {
-    return res.status(400).json({ message: "Email is required" });
+    return res
+      .status(400)
+      .json({ message: "Email is required", success: false });
   }
   if (!name) {
     const emailExists = await Subscription.findOne({ email });
     if (emailExists) {
-      return res.status(400).json({ message: "You have already subscribed" });
+      return res
+        .status(400)
+        .json({ message: "You have already subscribed", success: false });
     }
   }
 

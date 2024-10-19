@@ -1,8 +1,16 @@
+const mongoose = require("mongoose");
 const Blog = require("../models/blog.model");
 const Comment = require("../models/comment.model");
 
 const createComment = async (req, res) => {
   const { content, blogId } = req.body;
+  console.log("Comment content: ", content);
+  console.log("Blog ID: ", blogId);
+
+  if (!content || !blogId) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
   const userId = req.user.userId;
 
   try {
@@ -13,22 +21,24 @@ const createComment = async (req, res) => {
       content,
       author: userId,
       blog: blogId,
-    }).populate("author", "name profileImg");
+    });
 
     await newComment.save();
 
     // Populate the author field after saving
-    newComment = await newComment
-      .populate("author", "name profileImg")
-      .execPopulate();
+    const populatedComment = await Comment.populate(newComment, {
+      path: "author",
+      select: "name profileImg",
+    });
 
     res.status(201).json({
       message: "Comment created successfully",
       success: true,
-      comment: newComment,
+      comment: populatedComment,
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error creating comment:", error); // Log the error for debugging
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -50,14 +60,19 @@ const fetchCommentsByBlogId = async (req, res) => {
 
 const deleteComment = async (req, res) => {
   const { commentId } = req.params;
-  const userId = req.user.userId;
+  console.log("Received commentId: ", commentId);
+
+  const userId = req.user?.userId;
+  console.log("Received userId: ", userId);
+
   try {
     const comment = await Comment.findById(commentId);
 
-    if (!comment)
+    if (!comment) {
       return res
         .status(404)
         .json({ success: false, message: "Comment not found" });
+    }
 
     if (comment.author.toString() !== userId.toString()) {
       return res
@@ -65,13 +80,17 @@ const deleteComment = async (req, res) => {
         .json({ success: false, message: "Unauthorized user" });
     }
 
-    await comment.remove();
+    // Delete the comment by its ID
+    await Comment.findByIdAndDelete(commentId);
 
-    res
+    return res
       .status(200)
       .json({ success: true, message: "Comment deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    console.error("Error deleting comment:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Server error", error: error.message });
   }
 };
 
