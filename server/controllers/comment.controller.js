@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Blog = require("../models/blog.model");
 const Comment = require("../models/comment.model");
+const Reply = require("../models/reply.model");
 
 const createComment = async (req, res) => {
   const { content, blogId } = req.body;
@@ -47,6 +48,15 @@ const fetchCommentsByBlogId = async (req, res) => {
   try {
     const comments = await Comment.find({ blog: blogId })
       .populate("author", "name profileImg")
+      .populate({
+        path: "replies",
+        populate: [
+          {
+            path: "author",
+            select: "name profileImg",
+          },
+        ],
+      })
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -110,6 +120,13 @@ const likeComment = async (req, res) => {
       return res.status(404).json({ message: "Comment not found" });
     }
 
+    if (comment.author._id.toString() === userId.toString()) {
+      return res.status(400).json({
+        message: "You cannot Like to your own comment",
+        success: false,
+      });
+    }
+
     // If the user has disliked the comment, remove the dislike
     if (comment.dislikes.includes(userId)) {
       comment.dislikes = comment.dislikes.filter(
@@ -146,6 +163,13 @@ const dislikeComment = async (req, res) => {
     );
     if (!comment) return res.status(404).json({ message: "Comment not found" });
 
+    if (comment.author._id.toString() === userId.toString()) {
+      return res.status(400).json({
+        message: "You cannot Dislike to your own comment",
+        success: false,
+      });
+    }
+
     // If the user has liked the comment, remove the like
     if (comment.likes.includes(userId)) {
       comment.likes = comment.likes.filter(
@@ -170,10 +194,70 @@ const dislikeComment = async (req, res) => {
   }
 };
 
+const replyToComment = async (req, res) => {
+  const { commentId } = req.params;
+  const { content } = req.body;
+  const userId = req.user.userId;
+
+  if (!content) {
+    return res.status(400).json({ message: "Reply content is required" });
+  }
+
+  try {
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res
+        .status(404)
+        .json({ message: "Comment not found", success: false });
+    }
+
+    if (comment.author.toString() === userId.toString()) {
+      return res.status(400).json({
+        message: "You cannot reply to your own comment",
+        success: false,
+      });
+    }
+
+    // Log the comment to check its structure
+    console.log("Comment retrieved:", comment);
+
+    // Create a new reply comment
+    const newReply = new Reply({
+      content,
+      author: userId,
+      commentId: comment._id, // Ensure the reply has a blog reference if needed
+    });
+
+    // Save the new reply
+    await newReply.save();
+
+    // Add the reply to the comment
+    comment.replies.push(newReply._id);
+    await comment.save();
+
+    // Populate the new reply
+    const populatedReply = await Reply.findById(newReply._id).populate(
+      "author",
+      "name profileImg"
+    );
+
+    res.status(201).json({
+      message: "Reply added successfully",
+      success: true,
+      reply: populatedReply,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Server error", success: false, error: error.message });
+  }
+};
+
 module.exports = {
   createComment,
   fetchCommentsByBlogId,
   deleteComment,
   likeComment,
   dislikeComment,
+  replyToComment,
 };

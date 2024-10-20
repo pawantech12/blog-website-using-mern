@@ -1,18 +1,17 @@
 const mongoose = require("mongoose");
 
-const commentSchema = new mongoose.Schema({
+const replySchema = new mongoose.Schema({
   content: { type: String, required: true },
   author: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
-  blog: {
+  commentId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Blog",
+    ref: "Comment",
     required: true,
   },
-  replies: [{ type: mongoose.Schema.Types.ObjectId, ref: "Reply" }],
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,
@@ -28,6 +27,6 @@ const commentSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
 });
 
-const Comment = mongoose.model("Comment", commentSchema);
+const Reply = mongoose.model("Reply", replySchema);
 
-module.exports = Comment;
+module.exports = Reply;

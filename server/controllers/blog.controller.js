@@ -113,8 +113,6 @@ const createBlogPost = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error creating blog post:", error);
-
     res.status(500).json({
       success: false,
       message: "Failed to create blog post",
@@ -208,8 +206,6 @@ const updateBlogPost = async (req, res) => {
       blog: updatedBlog,
     });
   } catch (error) {
-    console.error("Error updating blog post:", error);
-
     res.status(500).json({
       success: false,
       message: "Failed to update blog post",
@@ -246,7 +242,6 @@ const deleteBlogPost = async (req, res) => {
       message: "Blog post deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting blog post:", error);
     res.status(500).json({
       success: false,
       message: "Failed to delete blog post",

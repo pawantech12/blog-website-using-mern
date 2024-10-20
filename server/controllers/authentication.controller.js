@@ -4,7 +4,6 @@ const userSchemaValidation = require("../validations/user.validation.schema");
 const { ZodError } = require("zod");
 const register = async (req, res) => {
   try {
-    console.log(req.body);
     userSchemaValidation.parse(req.body);
     const { name, email, password } = req.body;
 
@@ -29,7 +28,6 @@ const register = async (req, res) => {
       userId: userCreated._id.toString(),
     });
   } catch (error) {
-    console.log(error);
     if (error instanceof ZodError) {
       // Handle Zod validation error
       return res.status(400).json({
@@ -79,7 +77,6 @@ const login = async (req, res) => {
     }
 
     res.status(500).json({ message: "Internal Server Error", success: false });
-    console.error(error);
   }
 };
 
@@ -111,7 +108,10 @@ const getUserData = async (req, res) => {
       user: user,
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -144,7 +144,10 @@ const getUserDataById = async (req, res) => {
       user: user,
     });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Internal server error.",
+    });
   }
 };
 
@@ -193,7 +196,6 @@ const followUserById = async (req, res) => {
       message: "User followed successfully.",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -253,7 +255,6 @@ const unfollowUserById = async (req, res) => {
       message: "User unfollowed successfully.",
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({
       success: false,
       message: "Internal server error.",
@@ -263,7 +264,6 @@ const unfollowUserById = async (req, res) => {
 
 const fetchCurrentUserAllLikedPost = async (req, res) => {
   const userId = req.user.userId;
-  console.log("user Id: ", userId);
   try {
     // Find the user by their ID and populate likedPosts with blog details
     const user = await User.findById(userId).populate("likedPosts");
@@ -273,14 +273,11 @@ const fetchCurrentUserAllLikedPost = async (req, res) => {
         .status(404)
         .json({ success: false, message: "User not found." });
     }
-    console.log("user data: ", user);
     // likedPosts already contains populated blog details
     const likedBlogs = user.likedPosts;
-    console.log("liked blogs: ", likedBlogs);
 
     res.status(200).json({ success: true, blogs: likedBlogs || [] });
   } catch (error) {
-    console.error("Error fetching liked blogs:", error);
     res.status(500).json({ success: false, message: "Server error." });
   }
 };
@@ -288,8 +285,6 @@ const fetchCurrentUserAllLikedPost = async (req, res) => {
 const toggleSavedPost = async (req, res) => {
   const userId = req.user.userId; // Get user ID from JWT
   const blogId = req.params.blogId;
-  console.log("userid: ", userId);
-  console.log("blogid: ", blogId);
 
   try {
     const user = await User.findById(userId);
@@ -324,7 +319,6 @@ const toggleSavedPost = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error toggling saved post:", error);
     return res.status(500).json({ success: false, message: "Server error." });
   }
 };
@@ -357,7 +351,6 @@ const getSavedPosts = async (req, res) => {
       savedPosts: user.savedPosts || [],
     });
   } catch (error) {
-    console.error("Error fetching saved posts:", error);
     return res.status(500).json({ success: false, message: "Server error." });
   }
 };
@@ -389,7 +382,6 @@ const updateUserProfileDetails = async (req, res) => {
     if (dob) updateData.dob = dob;
     if (gender) updateData.gender = gender;
     if (age) updateData.age = age;
-    console.log("request files: ", req.files);
 
     // Get the current user details from the database
     const currentUser = await User.findById(userId);
@@ -457,7 +449,6 @@ const updateUserProfileDetails = async (req, res) => {
       user: updatedUser,
     });
   } catch (error) {
-    console.error(error);
     return res.status(500).json({ success: false, message: error.message });
   }
 };
