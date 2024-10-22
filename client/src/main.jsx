@@ -23,6 +23,8 @@ import UserProfile from "./pages/admin/pages/UserProfile.jsx";
 import EditProfile from "./pages/admin/pages/EditProfile.jsx";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
+import VerifyCode from "./components/VerifyCode.jsx";
+import Setting from "./pages/admin/pages/Setting.jsx";
 
 const router = createBrowserRouter([
   {
@@ -48,6 +50,10 @@ const router = createBrowserRouter([
   {
     path: "/register",
     element: <App element={<Register />} />,
+  },
+  {
+    path: "/verify-otp",
+    element: <App element={<VerifyCode />} />,
   },
   {
     path: "/login",
@@ -84,6 +90,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard/edit-profile",
     element: <App element={<Dashboard element={<EditProfile />} />} />,
+  },
+  {
+    path: "/dashboard/settings",
+    element: <App element={<Dashboard element={<Setting />} />} />,
   },
   {
     path: "/user/profile/:userId",

@@ -7,6 +7,7 @@ import MDEditor from "@uiw/react-md-editor";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CreateBlogPost = () => {
   const {
@@ -51,7 +52,13 @@ const CreateBlogPost = () => {
       setImagePreview(null); // Clear the preview if no file is selected
     }
   };
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+
+  const navigate = useNavigate();
+
+  if (user === null) {
+    navigate("/login");
+  }
   console.log("token", token);
 
   const onSubmit = async (data) => {

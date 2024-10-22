@@ -33,12 +33,14 @@ const Register = () => {
         `http://localhost:3000/api/register`,
         data
       );
-      console.log(response);
+      const userId = response.data.userId; // Get userId from the response
 
-      console.log("Registration successful:", response);
-      toast.success(response.data.message);
+      toast.success(
+        "Registration successful! Please check your email for OTP."
+      );
+
       setTimeout(() => {
-        navigate("/login");
+        navigate("/verify-otp", { state: { userId } });
       }, 3000);
     } catch (error) {
       if (error.response && error.response.data.errors) {
@@ -97,7 +99,7 @@ const Register = () => {
               id="name"
               {...register("name", { required: "Name is required" })}
               className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Username"
+              placeholder="Full Name"
             />
             {errors.name && (
               <span className="text-[13px] mt-1 font-medium text-gray-500">

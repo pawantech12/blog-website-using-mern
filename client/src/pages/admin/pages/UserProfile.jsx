@@ -9,12 +9,12 @@ import { BsBookmarkCheckFill, BsBookmarkDash } from "react-icons/bs";
 import { FaRegHeart } from "react-icons/fa";
 import { LuCalendarDays } from "react-icons/lu";
 import defaultProfileImg from "../../../img/default-user.jpg"; // Replace with a default profile image path
-import blog1 from "../../../img/blog1.webp"; // Example image
 import { useAuth } from "../../../store/Authentication";
 import axios from "axios";
 import { GoDotFill } from "react-icons/go";
 import { Link, useNavigate } from "react-router-dom";
 import Loader from "../../../components/Loader";
+import { IoSettingsOutline } from "react-icons/io5";
 
 const UserProfile = () => {
   const { token, user } = useAuth();
@@ -180,24 +180,65 @@ const UserProfile = () => {
             </span>
           </div>
         </div>
-        <button className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md">
-          <Link to={`/dashboard/edit-profile`}>Edit Profile</Link>
-        </button>
+        <div className="flex items-center justify-center gap-4">
+          <button className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-2 rounded-md">
+            <Link to={`/dashboard/edit-profile`}>Edit Profile</Link>
+          </button>
+          <button className="p-2 bg-gray-200 rounded-md group">
+            <Link to={`/dashboard/settings`}>
+              <IoSettingsOutline className="w-5 h-5 group-hover:rotate-180 transition-all ease-in-out duration-500" />
+            </Link>
+          </button>
+        </div>
 
-        <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-6">
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaFacebookF />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaTwitter />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaInstagram />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaLinkedinIn />
-          </li>
-        </ul>
+        {user?.user?.socialMedia && (
+          <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-6">
+            {user.user.socialMedia.facebook && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={user.user.socialMedia.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaFacebookF />
+                </Link>
+              </li>
+            )}
+            {user.user.socialMedia.twitter && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={user.user.socialMedia.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaTwitter />
+                </Link>
+              </li>
+            )}
+            {user.user.socialMedia.instagram && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={user.user.socialMedia.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaInstagram />
+                </Link>
+              </li>
+            )}
+            {user.user.socialMedia.linkedin && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={user.user.socialMedia.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaLinkedinIn />
+                </Link>
+              </li>
+            )}
+          </ul>
+        )}
       </div>
       <hr className="mt-8" />
 

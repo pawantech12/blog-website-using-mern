@@ -14,9 +14,10 @@ const PostList = () => {
   const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState(""); // Changed from category to sortBy
 
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const navigate = useNavigate();
-  if (!token) {
+
+  if (user === null) {
     navigate("/login");
   }
 

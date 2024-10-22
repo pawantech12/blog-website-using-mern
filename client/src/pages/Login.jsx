@@ -31,6 +31,7 @@ const Login = () => {
       console.log(response);
 
       console.log("Login successful:", response);
+
       storeTokenInLS(response.data.token);
       toast.success(response.data.message); // Display success toast
       setTimeout(() => {

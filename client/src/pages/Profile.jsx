@@ -21,8 +21,7 @@ const Profile = () => {
   const [savedBlogs, setSavedBlogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [apiError, setApiError] = useState("");
+
   const [isFollowing, setIsFollowing] = useState(false);
 
   // Replace this with the actual user ID

@@ -9,7 +9,13 @@ import { toast } from "react-toastify";
 const UpdateBlogPost = () => {
   const { blogId } = useParams(); // Get blog post ID from URL params
   const { register, handleSubmit, setValue } = useForm();
+  const navigate = useNavigate();
+  const { token, user } = useAuth();
 
+  if (user === null) {
+    navigate("/login");
+  }
+  const editorRef = useRef(null); // Create a ref for TinyMCE
   const [postBody, setPostBody] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -33,10 +39,6 @@ const UpdateBlogPost = () => {
 
     fetchCategories();
   }, []);
-
-  const { token } = useAuth();
-  const editorRef = useRef(null); // Create a ref for TinyMCE
-  const navigate = useNavigate();
 
   // Fetch existing blog post data when component mounts
   useEffect(() => {

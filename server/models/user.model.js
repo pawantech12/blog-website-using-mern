@@ -11,6 +11,8 @@ const userSchema = new mongoose.Schema({
   bannerImg: { type: String },
   password: { type: String, required: true },
   resetCode: { type: String },
+  otp: { type: String }, // Store OTP temporarily for verification
+  isVerified: { type: Boolean, default: false },
   city: { type: String },
   state: { type: String },
   country: { type: String },
@@ -43,6 +45,10 @@ const userSchema = new mongoose.Schema({
       ref: "User", // users that follow this user
     },
   ],
+  socialMedia: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "SocialMedia",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

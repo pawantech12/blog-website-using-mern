@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const EditProfile = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const {
     register,
     handleSubmit,
@@ -23,6 +23,10 @@ const EditProfile = () => {
   const [userDetails, setUserDetails] = useState({});
   const [bannerImgPreview, setBannerImgPreview] = useState("");
   const [profileImgPreview, setProfileImgPreview] = useState("");
+
+  if (user === null) {
+    navigate("/login");
+  }
 
   useEffect(() => {
     setValue("name", userDetails.name);
@@ -93,11 +97,6 @@ const EditProfile = () => {
       // Append the profile image if it exists
       if (data.profileImg && data.profileImg.length > 0) {
         formData.append("profileImg", data.profileImg[0]);
-      }
-
-      // To log each key-value pair in FormData:
-      for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
       }
 
       // Send request to update user details

@@ -67,6 +67,40 @@ const fetchCommentsByBlogId = async (req, res) => {
     res.status(500).json({ message: "Server error", error });
   }
 };
+const fetchAllCommentsOfCurrentUser = async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    // Fetch all blogs authored by the current user
+    const blogs = await Blog.find({ author: userId }).select("_id"); // Get only blog IDs
+
+    // Extract blog IDs into an array
+    const blogIds = blogs.map((blog) => blog._id);
+
+    // Fetch comments on these blogs, but exclude comments authored by the current user
+    const comments = await Comment.find({
+      blog: { $in: blogIds },
+      author: { $ne: userId },
+    })
+      .populate("author", "name profileImg")
+      .populate({
+        path: "replies",
+        populate: {
+          path: "author",
+          select: "name profileImg",
+        },
+      })
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      comments,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "Something went wrong", error });
+  }
+};
 
 const deleteComment = async (req, res) => {
   const { commentId } = req.params;
@@ -256,6 +290,7 @@ const replyToComment = async (req, res) => {
 module.exports = {
   createComment,
   fetchCommentsByBlogId,
+  fetchAllCommentsOfCurrentUser,
   deleteComment,
   likeComment,
   dislikeComment,

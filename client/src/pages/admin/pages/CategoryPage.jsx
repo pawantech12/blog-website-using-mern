@@ -4,13 +4,19 @@ import axios from "axios"; // Assuming you're using axios for API calls
 import { useAuth } from "../../../store/Authentication";
 import { useForm } from "react-hook-form"; // Import React Hook Form
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [isAddModal, setIsAddModal] = useState(false); // Track if it's the add modal
-  const { token } = useAuth();
+  const { token, user } = useAuth();
+  const navigate = useNavigate();
+
+  if (user === null) {
+    navigate("/login");
+  }
   const [loading, setLoading] = useState(false);
 
   // Fetch categories from the backend

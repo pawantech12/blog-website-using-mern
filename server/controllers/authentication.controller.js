@@ -2,6 +2,9 @@ const User = require("../models/user.model");
 const cloudinary = require("../config/cloudinary");
 const userSchemaValidation = require("../validations/user.validation.schema");
 const { ZodError } = require("zod");
+const generateOTP = require("../utils/generate_otp");
+const sendEmail = require("../utils/send_email");
+const SocialMedia = require("../models/socialmedia.model");
 const register = async (req, res) => {
   try {
     userSchemaValidation.parse(req.body);
@@ -9,23 +12,44 @@ const register = async (req, res) => {
 
     // checking whether the email is already exist or not
     const userExist = await User.findOne({ email: email });
-    if (userExist) {
+    if (userExist && userExist.isVerified === false) {
+      return res.status(200).json({
+        message: "Email already exist but not verified",
+        // i want to send only email,isverified,id
+
+        userId: userExist._id.toString(),
+        isVerified: userExist.isVerified,
+        success: false,
+      });
+    }
+    if (userExist && userExist.isVerified === true) {
       return res
         .status(400)
-        .json({ message: "Email already exist", success: false });
+        .json({ message: "Email already exist and verified", success: false });
     }
-
+    // Create user with OTP (Not verified yet)
+    const otp = generateOTP();
     // If user not exist then it will create new user
-    const userCreated = await User.create({
+    const newUser = new User({
       name,
       email,
       password,
+      otp,
     });
+
+    await newUser.save();
+
+    // Send OTP to the user's email
+    await sendEmail(
+      email,
+      "Verify your account",
+      `Your OTP for account verification is: ${otp}`
+    );
 
     res.status(201).json({
       message: "Registration Successfull",
       success: true,
-      userId: userCreated._id.toString(),
+      userId: newUser._id.toString(),
     });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -40,6 +64,76 @@ const register = async (req, res) => {
     res.status(500).json(error);
   }
 };
+// verify user email controller
+const verifyOtp = async (req, res) => {
+  try {
+    const { userId, otp } = req.body;
+
+    // Find user by ID
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    // Check if OTP matches
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: "Incorrect OTP", success: false });
+    }
+
+    // Mark user as verified and clear OTP
+    user.isVerified = true;
+    user.otp = null;
+    await user.save();
+
+    res
+      .status(200)
+      .json({ message: "Email verified successfully", success: true });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+const resendOtp = async (req, res) => {
+  try {
+    const { userId } = req.body; // Expecting email in the request body
+
+    // Find the user by email
+    const user = await User.findById(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    // Check if the user is already verified
+    if (user.isVerified) {
+      return res
+        .status(400)
+        .json({ message: "Account already verified", success: false });
+    }
+
+    // Generate a new OTP and update the user
+    const otp = generateOTP();
+    user.otp = otp;
+    await user.save();
+
+    // Send the new OTP to the user's email
+    await sendEmail(
+      email,
+      "Resend OTP for Account Verification",
+      `Your new OTP for account verification is: ${otp}`
+    );
+
+    res.status(200).json({
+      message: "OTP has been re-sent to your email",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error", error });
+  }
+};
 
 // user login logic
 const login = async (req, res) => {
@@ -51,6 +145,12 @@ const login = async (req, res) => {
       return res
         .status(400)
         .json({ message: "You have not registered", success: false });
+    }
+
+    if (userExist.isVerified === false) {
+      return res
+        .status(401)
+        .json({ message: "Please verify your email to login", success: false });
     }
 
     const user = await userExist.comparePassword(password);
@@ -83,19 +183,30 @@ const login = async (req, res) => {
 const getUserData = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId).populate({
-      path: "savedPosts", // Populate saved posts
-      populate: [
-        {
-          path: "author",
-          select: "name",
+    const user = await User.findById(userId)
+      .populate({
+        path: "savedPosts", // Populate saved posts
+        populate: [
+          {
+            path: "author",
+            select: "name",
+          },
+          {
+            path: "category",
+            select: "name",
+          },
+        ],
+      })
+      .populate({
+        path: "followers",
+        select: "name username profileImg",
+        populate: {
+          path: "followers",
+          select: "_id",
         },
-        {
-          path: "category",
-          select: "name",
-        },
-      ],
-    });
+      })
+      .populate("following", "name username profileImg")
+      .populate("socialMedia");
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -191,9 +302,24 @@ const followUserById = async (req, res) => {
 
     userToFollow.followers.push(userId);
     await userToFollow.save();
+
+    // Populate the 'following' field with specific fields (name, username, profileImg)
+    const populatedCurrentUser = await User.findById(userId)
+      .populate({
+        path: "followers",
+        select: "name username profileImg",
+        populate: {
+          path: "followers",
+          select: "_id",
+        },
+      })
+      .populate("following", "name username profileImg");
+
     res.status(200).json({
       success: true,
       message: "User followed successfully.",
+      updatedFollowing: populatedCurrentUser.following,
+      updatedFollowers: populatedCurrentUser.followers,
     });
   } catch (error) {
     res.status(500).json({
@@ -249,15 +375,31 @@ const unfollowUserById = async (req, res) => {
       (id) => id.toString() !== userId.toString()
     );
     await userToUnfollow.save();
+    console.log("current user following: ", currentUser.following);
+
+    // Populate the 'following' field with specific fields (name, username, profileImg)
+    const populatedCurrentUser = await User.findById(userId)
+      .populate({
+        path: "followers",
+        select: "name username profileImg",
+        populate: {
+          path: "followers",
+          select: "_id",
+        },
+      })
+      .populate("following", "name username profileImg");
 
     res.status(200).json({
       success: true,
       message: "User unfollowed successfully.",
+      updatedFollowing: populatedCurrentUser.following,
+      updatedFollowers: populatedCurrentUser.followers,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Internal server error.",
+      error: error,
     });
   }
 };
@@ -453,8 +595,51 @@ const updateUserProfileDetails = async (req, res) => {
   }
 };
 
+// Function to create or update social media links
+const saveOrUpdateSocialMedia = async (req, res) => {
+  try {
+    const { facebook, twitter, instagram, linkedin } = req.body;
+    const userId = req.user.userId;
+
+    // Check if social media links already exist for the user
+    let socialMedia = await SocialMedia.findOne({ userId });
+
+    if (socialMedia) {
+      // Update existing social media links
+      socialMedia.facebook = facebook;
+      socialMedia.twitter = twitter;
+      socialMedia.instagram = instagram;
+      socialMedia.linkedin = linkedin;
+      await socialMedia.save();
+    } else {
+      // Create new social media links
+      socialMedia = await SocialMedia.create({
+        userId,
+        facebook,
+        twitter,
+        instagram,
+        linkedin,
+      });
+    }
+
+    // Optionally, you can also update the user model with a reference to social media
+    await User.findByIdAndUpdate(userId, { socialMedia: socialMedia._id });
+
+    return res.status(200).json({
+      success: true,
+      message: "Social media links saved successfully",
+      data: socialMedia,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
 module.exports = {
   register,
+  verifyOtp,
+  resendOtp,
   login,
   getUserData,
   getUserDataById,
@@ -464,4 +649,5 @@ module.exports = {
   toggleSavedPost,
   getSavedPosts,
   updateUserProfileDetails,
+  saveOrUpdateSocialMedia,
 };
