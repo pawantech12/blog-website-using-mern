@@ -1,9 +1,12 @@
 // configuring dotenv
 require("dotenv").config({ path: "./.env" });
 const express = require("express");
+const http = require("http");
 const connectDB = require("./utils/db_connect");
 const cors = require("cors");
 const app = express();
+const server = http.createServer(app);
+
 app.use(express.json());
 const corsOptions = {
   origin: "http://localhost:5173",
@@ -21,6 +24,7 @@ const categoryRouter = require("./routers/category.router.js");
 const contactRouter = require("./routers/contact.router.js");
 const subscriptionRouter = require("./routers/subscription.router.js");
 const commentRouter = require("./routers/comment.router.js");
+const { initializeSocket } = require("./socket.js");
 
 app.use("/api", authenticationRouter);
 app.use("/api", contactRouter);
@@ -29,8 +33,11 @@ app.use("/blog", blogRouter);
 app.use("/blog", categoryRouter);
 app.use("/blog", commentRouter);
 
+// Initialize Socket.IO
+initializeSocket(server);
+
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
     console.log(`Server is running at PORT ${PORT}`);
   });
 });

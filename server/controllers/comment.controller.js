@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const Blog = require("../models/blog.model");
 const Comment = require("../models/comment.model");
 const Reply = require("../models/reply.model");
+const { sendRealTimeNotification } = require("../socket");
+const Notification = require("../models/notification.model");
+const User = require("../models/user.model");
 
 const createComment = async (req, res) => {
   const { content, blogId } = req.body;
@@ -31,12 +34,23 @@ const createComment = async (req, res) => {
     const notification = new Notification({
       user: blog.author,
       userId: user._id,
+      post: blog._id,
       type: "comment",
       comment: newComment._id,
       message: `${user.name} Commented on your post ${blog.title}`,
     });
 
     await notification.save();
+
+    // Populate the notification before sending it
+    const populatedNotification = await Notification.populate(notification, [
+      { path: "userId", select: "name profileImg" },
+      { path: "post", select: "title" },
+      { path: "comment" },
+    ]);
+
+    // Emit real-time notification to the blog author
+    sendRealTimeNotification(blog.author, populatedNotification);
     // Populate the author field after saving
     const populatedComment = await Comment.populate(newComment, {
       path: "author",
@@ -144,6 +158,7 @@ const deleteComment = async (req, res) => {
     await Notification.findOneAndDelete({
       user: blog.author,
       userId: userId,
+      post: blog._id,
       type: "comment",
       comment: commentId,
       message: `${comment.author.name} Commented on your post ${blog.title}`,

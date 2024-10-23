@@ -3,6 +3,8 @@ const User = require("../models/user.model");
 const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
 const crypto = require("crypto");
+const Notification = require("../models/notification.model");
+const { sendRealTimeNotification } = require("../socket");
 // Helper function to compute hash of image buffer
 const computeImageHash = (buffer) => {
   return crypto.createHash("md5").update(buffer).digest("hex");
@@ -482,7 +484,7 @@ const likeBlog = async (req, res) => {
     const { blogId } = req.params;
     const userId = req.user.userId; // Assumes user is authenticated
 
-    const blog = await Blog.findById(blogId).populate("author", "_id");
+    const blog = await Blog.findById(blogId);
     const user = await User.findById(userId); // Fetch the user to update likedPosts
 
     if (!blog) {
@@ -498,17 +500,26 @@ const likeBlog = async (req, res) => {
         .json({ success: false, message: "Blog already liked" });
     }
 
+    // Add userId to blog's likes
+    blog.likes.push(userId);
+    await blog.save();
+
     const notification = new Notification({
-      user: blog.author._id,
+      user: blog.author,
       userId: user._id,
+      post: blog._id,
       type: "like",
       message: `${user.name} liked your blog post ${blog.title}`,
     });
     await notification.save();
 
-    // Add userId to blog's likes
-    blog.likes.push(userId);
-    await blog.save();
+    const populatedNotification = await Notification.populate(notification, [
+      { path: "userId", select: "name profileImg" },
+      { path: "post", select: "title" },
+    ]);
+
+    // Emit real-time notification to the blog author
+    sendRealTimeNotification(blog.author, populatedNotification);
 
     // Add blogId to user's likedPosts
     user.likedPosts.push(blogId);
@@ -552,8 +563,9 @@ const unlikeBlog = async (req, res) => {
     }
 
     await Notification.findOneAndDelete({
-      user: blog.author._id,
+      user: blog.author,
       userId: user._id,
+      post: blog._id,
       type: "like",
       message: `${user.name} liked your blog post ${blog.title}`,
     });

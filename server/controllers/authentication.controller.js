@@ -7,6 +7,8 @@ const sendEmail = require("../utils/send_email");
 const SocialMedia = require("../models/socialmedia.model");
 const bcrypt = require("bcryptjs");
 const Notification = require("../models/notification.model");
+const { sendRealTimeNotification } = require("../socket");
+const Blog = require("../models/blog.model");
 const register = async (req, res) => {
   try {
     userSchemaValidation.parse(req.body);
@@ -306,6 +308,14 @@ const followUserById = async (req, res) => {
     });
     await notification.save();
 
+    // Populate the notification before sending it
+    const populatedNotification = await Notification.populate(notification, [
+      { path: "userId", select: "name profileImg" },
+    ]);
+
+    // Emit real-time notification to the blog author
+    sendRealTimeNotification(userToFollow._id, populatedNotification);
+
     currentUser.following.push(followingId);
     await currentUser.save();
 
@@ -453,9 +463,16 @@ const toggleSavedPost = async (req, res) => {
         .json({ success: false, message: "User not found." });
     }
 
+    // Find the blog to check if it exists
+    const findBlogUser = await Blog.findById(blogId);
+    if (!findBlogUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Blog not found." });
+    }
+
     // Check if the post is already saved
     const isPostSaved = user.savedPosts.includes(blogId);
-    const findBlogUser = await Blog.findById(blogId).populate("author", "_id");
 
     if (isPostSaved) {
       // Remove post from savedPosts
@@ -465,8 +482,9 @@ const toggleSavedPost = async (req, res) => {
       await user.save();
 
       await Notification.findOneAndDelete({
-        user: findBlogUser.author._id, // The user receiving the notification
+        user: findBlogUser.author, // The user receiving the notification
         userId: user._id,
+        post: findBlogUser._id, // Use findBlogUser instead of blog
         type: "save", // Type of notification
         message: `${user.name} has saved your post ${findBlogUser.title}`, // Specific message for the notification
       });
@@ -477,18 +495,25 @@ const toggleSavedPost = async (req, res) => {
         savedPosts: user.savedPosts,
       });
     } else {
-      // Add post to savedPosts
-      user.savedPosts.push(blogId);
-      await user.save();
-
       const notification = new Notification({
-        user: findBlogUser.author._id, // The user receiving the notification
+        user: findBlogUser.author, // The user receiving the notification
         userId: user._id,
+        post: findBlogUser._id, // Use findBlogUser instead of blog
         type: "save", // Type of notification
         message: `${user.name} has saved your post ${findBlogUser.title}`, // Specific message for the notification
       });
 
       await notification.save();
+
+      const populatedNotification = await Notification.populate(notification, [
+        { path: "userId", select: "name profileImg" },
+        { path: "post", select: "title" },
+      ]);
+
+      // Emit real-time notification to the blog author
+      sendRealTimeNotification(findBlogUser.author, populatedNotification);
+      user.savedPosts.push(blogId);
+      await user.save();
 
       return res.status(200).json({
         success: true,
@@ -497,9 +522,13 @@ const toggleSavedPost = async (req, res) => {
       });
     }
   } catch (error) {
-    return res.status(500).json({ success: false, message: "Server error." });
+    console.error("Error in toggleSavedPost:", error); // Log the error for debugging
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error.", error: error.message });
   }
 };
+
 const getSavedPosts = async (req, res) => {
   const userId = req.user.userId; // Get user ID from the JWT token
 

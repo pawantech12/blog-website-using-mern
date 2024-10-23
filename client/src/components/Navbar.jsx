@@ -4,6 +4,8 @@ import { FiSearch } from "react-icons/fi";
 import { LuCalendarDays, LuLayoutList, LuUser2 } from "react-icons/lu";
 import { IoClose } from "react-icons/io5";
 import { BiCategory } from "react-icons/bi";
+import { BsCheck2All } from "react-icons/bs";
+import { io } from "socket.io-client";
 
 import {
   FaFacebookF,
@@ -18,6 +20,7 @@ import { useAuth } from "../store/Authentication";
 
 import { RiDashboardHorizontalLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { useEffect } from "react";
+import defaultUserProfile from "../img/default-user.jpg";
 import axios from "axios";
 export const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -31,6 +34,31 @@ export const Navbar = () => {
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
   const [notificationDropdownVisible, setNotificationDropdownVisible] =
     useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  useEffect(() => {
+    // Establish a connection to the server
+    const socket = io("http://localhost:3000");
+
+    // Join the room based on the user ID (replace `userId` with actual logged-in user ID)
+    const userId = user?.user?._id; // Replace with your actual userId logic
+
+    socket.emit("join_room", userId);
+
+    // Listen for new notifications
+    socket.on("new_notification", (notification) => {
+      setNotifications((prevNotifications) => [
+        notification,
+        ...prevNotifications,
+      ]);
+      setUnreadCount((prevUnreadCount) => prevUnreadCount + 1);
+    });
+
+    return () => {
+      socket.disconnect(); // Cleanup on component unmount
+    };
+  }, [user]);
+
   useEffect(() => {
     const fetchAllBlogs = async () => {
       try {
@@ -47,8 +75,29 @@ export const Navbar = () => {
       }
     };
 
+    const fetchNotifications = async () => {
+      try {
+        const response = await axios.get(
+          "http://localhost:3000/api/get-notifications",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setNotifications(response.data);
+
+        // console.log("notifications: ", response.data.notifications);
+        setUnreadCount(response.data.filter((n) => !n.isRead).length);
+      } catch (error) {
+        console.log("error occured while fetching notifications: ", error);
+      }
+    };
+
     fetchAllBlogs();
-  }, [user]);
+    fetchNotifications();
+  }, [user, token]);
+
   useEffect(() => {
     // Filter blogs based on the search term
     const results = blogs.filter((blog) =>
@@ -77,7 +126,7 @@ export const Navbar = () => {
     logout();
     navigate("/");
   };
-
+  console.log("notifications", notifications);
   console.log("setBlogs", blogs);
 
   return (
@@ -101,23 +150,107 @@ export const Navbar = () => {
               <>
                 <div className="relative">
                   <button
-                    className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md"
+                    className="relative bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md"
                     onClick={toggleNotificationDropdown}
                   >
                     <FaRegBell className="text-gray-600 w-5 h-5" />
                   </button>
+                  {unreadCount > 0 && (
+                    <span className="absolute top-[-4px] right-[-4px] bg-red-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-xs">
+                      {unreadCount}
+                    </span>
+                  )}
                   {notificationDropdownVisible && (
-                    <ul className="absolute top-full right-0 py-4 z-10 px-3 text-sm mt-2 w-44 bg-white shadow-lg rounded-md">
-                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
-                        <Link
-                          to="/dashboard/notification"
-                          className="flex items-center gap-2 font-medium"
-                        >
-                          <FaRegBell className="w-5 h-5 text-zinc-500" />
+                    <div className="absolute top-full right-0 py-4 z-10 text-sm mt-2 w-[340px] bg-white border border-gray-200 rounded-md">
+                      <div className="flex justify-between items-center  px-3">
+                        <h3 className="text-base font-semibold">
                           Notifications
-                        </Link>
-                      </li>
-                    </ul>
+                        </h3>
+                        <button className="bg-transparent text-emerald-500 font-semibold text-[13px] outline-none flex items-center gap-1">
+                          <BsCheck2All className="w-5 h-5" />
+                          Mark All as Read
+                        </button>
+                      </div>
+                      <hr className="mt-3" />
+                      <ul>
+                        {notifications?.length > 0 ? (
+                          notifications.map((notification, index) => (
+                            <li
+                              key={index}
+                              className="px-4 py-2 flex gap-2 items-center"
+                            >
+                              <figure className="w-10 h-10">
+                                <img
+                                  src={
+                                    notification?.userId?.profileImg ||
+                                    defaultUserProfile
+                                  }
+                                  alt={notification?.userId?.name}
+                                  className="w-full h-full object-cover rounded-full"
+                                />
+                              </figure>
+                              <div className="w-2/3">
+                                {notification.type === "comment" ? (
+                                  <p className="text-[13px]">
+                                    <span className="font-semibold">
+                                      {notification?.userId?.name}
+                                    </span>{" "}
+                                    commented on your post{" "}
+                                    <span className="font-semibold">
+                                      {notification?.post?.title?.length > 20
+                                        ? notification?.post?.title?.slice(
+                                            0,
+                                            20
+                                          ) + "..."
+                                        : notification?.post?.title}
+                                    </span>
+                                  </p>
+                                ) : notification.type === "like" ? (
+                                  <p className="text-[13px]">
+                                    <span className="font-semibold">
+                                      {notification?.userId?.name}
+                                    </span>{" "}
+                                    liked your post{" "}
+                                    <span className="font-semibold">
+                                      {notification?.post?.title?.length > 20
+                                        ? notification?.post?.title.slice(
+                                            0,
+                                            20
+                                          ) + "..."
+                                        : notification?.post?.title}
+                                    </span>
+                                  </p>
+                                ) : notification.type === "follow" ? (
+                                  <p className="text-[13px]">
+                                    <span className="font-semibold">
+                                      {notification?.userId?.name}
+                                    </span>{" "}
+                                    started following you
+                                  </p>
+                                ) : notification.type === "save" ? (
+                                  <p className="text-[13px]">
+                                    <span className="font-semibold">
+                                      {notification?.userId?.name}
+                                    </span>
+                                    saved your post{" "}
+                                    <span className="font-semibold">
+                                      {notification?.post?.title?.length > 20
+                                        ? notification?.post?.title?.slice(
+                                            0,
+                                            20
+                                          ) + "..."
+                                        : notification?.post?.title}
+                                    </span>
+                                  </p>
+                                ) : null}
+                              </div>
+                            </li>
+                          ))
+                        ) : (
+                          <p>No Notifications</p>
+                        )}
+                      </ul>
+                    </div>
                   )}
                 </div>
                 <div className="relative">
