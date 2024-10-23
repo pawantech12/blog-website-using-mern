@@ -13,11 +13,17 @@ const {
   verifyOtp,
   resendOtp,
   saveOrUpdateSocialMedia,
+  saveUserTheme,
+  saveUserLanguage,
+  updateUserPassword,
 } = require("../controllers/authentication.controller");
 const {
   authenticateToken,
 } = require("../middlewares/authenticateToken.middleware");
 const upload = require("../config/multer");
+const {
+  getAllNotificationOfCurrentUser,
+} = require("../controllers/notification.controller");
 
 const router = express.Router();
 
@@ -43,5 +49,12 @@ router
   );
 
 router.route("/social-media").post(authenticateToken, saveOrUpdateSocialMedia);
+router.route("/theme").put(authenticateToken, saveUserTheme);
+router.route("/language").put(authenticateToken, saveUserLanguage);
+router.route("/update-password").put(authenticateToken, updateUserPassword);
+
+router
+  .route("/get-notifications")
+  .get(authenticateToken, getAllNotificationOfCurrentUser);
 
 module.exports = router;

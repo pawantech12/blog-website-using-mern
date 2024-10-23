@@ -5,6 +5,8 @@ const { ZodError } = require("zod");
 const generateOTP = require("../utils/generate_otp");
 const sendEmail = require("../utils/send_email");
 const SocialMedia = require("../models/socialmedia.model");
+const bcrypt = require("bcryptjs");
+const Notification = require("../models/notification.model");
 const register = async (req, res) => {
   try {
     userSchemaValidation.parse(req.body);
@@ -296,6 +298,13 @@ const followUserById = async (req, res) => {
         message: "You are already following this user.",
       });
     }
+    const notification = new Notification({
+      user: userToFollow._id, // The user receiving the notification
+      userId: currentUser._id,
+      type: "follow", // Type of notification
+      message: `${currentUser.name} has followed you.`,
+    });
+    await notification.save();
 
     currentUser.following.push(followingId);
     await currentUser.save();
@@ -377,6 +386,14 @@ const unfollowUserById = async (req, res) => {
     await userToUnfollow.save();
     console.log("current user following: ", currentUser.following);
 
+    // Delete the follow notification for the userToUnfollow
+    await Notification.findOneAndDelete({
+      user: userToUnfollow._id, // The user who received the notification
+      userId: currentUser._id,
+      type: "follow",
+      message: `${currentUser.name} has followed you.`, // Specific message for the notification
+    });
+
     // Populate the 'following' field with specific fields (name, username, profileImg)
     const populatedCurrentUser = await User.findById(userId)
       .populate({
@@ -438,6 +455,7 @@ const toggleSavedPost = async (req, res) => {
 
     // Check if the post is already saved
     const isPostSaved = user.savedPosts.includes(blogId);
+    const findBlogUser = await Blog.findById(blogId).populate("author", "_id");
 
     if (isPostSaved) {
       // Remove post from savedPosts
@@ -445,6 +463,14 @@ const toggleSavedPost = async (req, res) => {
         (id) => id.toString() !== blogId
       );
       await user.save();
+
+      await Notification.findOneAndDelete({
+        user: findBlogUser.author._id, // The user receiving the notification
+        userId: user._id,
+        type: "save", // Type of notification
+        message: `${user.name} has saved your post ${findBlogUser.title}`, // Specific message for the notification
+      });
+
       return res.status(200).json({
         success: true,
         message: "Post removed from saved posts.",
@@ -454,6 +480,16 @@ const toggleSavedPost = async (req, res) => {
       // Add post to savedPosts
       user.savedPosts.push(blogId);
       await user.save();
+
+      const notification = new Notification({
+        user: findBlogUser.author._id, // The user receiving the notification
+        userId: user._id,
+        type: "save", // Type of notification
+        message: `${user.name} has saved your post ${findBlogUser.title}`, // Specific message for the notification
+      });
+
+      await notification.save();
+
       return res.status(200).json({
         success: true,
         message: "Post saved successfully.",
@@ -636,6 +672,83 @@ const saveOrUpdateSocialMedia = async (req, res) => {
   }
 };
 
+const saveUserTheme = async (req, res) => {
+  try {
+    const { theme } = req.body;
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+
+    user.theme = theme;
+    await user.save();
+    return res.status(200).json({ message: "Theme updated", success: true });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+const saveUserLanguage = async (req, res) => {
+  try {
+    const { language } = req.body;
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+
+    user.language = language;
+    await user.save();
+    return res.status(200).json({ message: "Language updated", success: true });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error", success: false });
+  }
+};
+
+const updateUserPassword = async (req, res) => {
+  try {
+    userSchemaValidation
+      .pick({ password: true })
+      .parse({ password: req.body.newPassword });
+
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch)
+      return res
+        .status(400)
+        .json({ message: "Incorrect password", success: true });
+
+    user.password = newPassword;
+    await user.save();
+
+    return res
+      .status(200)
+      .json({ message: "Password updated successfully", success: true });
+  } catch (error) {
+    if (error instanceof ZodError) {
+      // Handle Zod validation error
+      return res.status(400).json({
+        message: "Validation error",
+        errors: error.errors,
+        success: false,
+      });
+    }
+    return res
+      .status(500)
+      .json({ message: "Server error", success: false, error: error });
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
@@ -650,4 +763,7 @@ module.exports = {
   getSavedPosts,
   updateUserProfileDetails,
   saveOrUpdateSocialMedia,
+  saveUserTheme,
+  saveUserLanguage,
+  updateUserPassword,
 };

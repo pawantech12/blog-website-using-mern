@@ -5,8 +5,8 @@ const {
   deleteBlogPost,
   getBlogById,
   getAllBlogs,
-  saveBlogPost,
-  unsaveBlogPost,
+  // saveBlogPost,
+  // unsaveBlogPost,
   getAllUserBlogs,
   getBlogsFromFollowing,
   getAllBlogsByUserId,
@@ -32,8 +32,8 @@ router.route("/get-blog/:id").get(getBlogById);
 router.route("/get-blogs").get(authenticateToken, getAllBlogs);
 router.route("/user/:id/blogs").get(getAllBlogsByUserId);
 router.route("/delete-blog/:id").delete(authenticateToken, deleteBlogPost);
-router.route("/save-blog/:id").put(authenticateToken, saveBlogPost);
-router.route("/unsave-blog/:id").put(authenticateToken, unsaveBlogPost);
+// router.route("/save-blog/:id").put(authenticateToken, saveBlogPost);
+// router.route("/unsave-blog/:id").put(authenticateToken, unsaveBlogPost);
 router.route("/:blogId/like").post(authenticateToken, likeBlog);
 router.route("/:blogId/unlike").post(authenticateToken, unlikeBlog);
 

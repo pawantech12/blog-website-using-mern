@@ -9,6 +9,7 @@ import {
   FaFacebookF,
   FaInstagram,
   FaLinkedinIn,
+  FaRegBell,
   FaRegUser,
   FaTwitter,
 } from "react-icons/fa";
@@ -28,6 +29,8 @@ export const Navbar = () => {
   const navigate = useNavigate();
   console.log(user);
   const [profileDropdownVisible, setProfileDropdownVisible] = useState(false);
+  const [notificationDropdownVisible, setNotificationDropdownVisible] =
+    useState(false);
   useEffect(() => {
     const fetchAllBlogs = async () => {
       try {
@@ -61,6 +64,10 @@ export const Navbar = () => {
     setProfileDropdownVisible(!profileDropdownVisible);
   };
 
+  const toggleNotificationDropdown = () => {
+    setNotificationDropdownVisible(!notificationDropdownVisible);
+  };
+
   const handleSearchClick = () => {
     setIsSearchOpen(!isSearchOpen);
     setSearchTerm(""); // Clear the search term
@@ -88,73 +95,96 @@ export const Navbar = () => {
               onClick={handleSearchClick}
               className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md"
             >
-              <FiSearch />
+              <FiSearch className="w-5 h-5" />
             </button>
             {token && user ? (
-              <div className="relative">
-                <div
-                  onClick={toggleProfileDropdown}
-                  className="w-12 h-12 rounded-full bg-gray-200 cursor-pointer flex items-center justify-center"
-                >
-                  <img
-                    src={
-                      user?.user?.profileImg ||
-                      "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
-                    }
-                    alt="User Profile"
-                    className="w-full h-full rounded-full object-cover"
-                  />
+              <>
+                <div className="relative">
+                  <button
+                    className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md"
+                    onClick={toggleNotificationDropdown}
+                  >
+                    <FaRegBell className="text-gray-600 w-5 h-5" />
+                  </button>
+                  {notificationDropdownVisible && (
+                    <ul className="absolute top-full right-0 py-4 z-10 px-3 text-sm mt-2 w-44 bg-white shadow-lg rounded-md">
+                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
+                        <Link
+                          to="/dashboard/notification"
+                          className="flex items-center gap-2 font-medium"
+                        >
+                          <FaRegBell className="w-5 h-5 text-zinc-500" />
+                          Notifications
+                        </Link>
+                      </li>
+                    </ul>
+                  )}
                 </div>
-                {profileDropdownVisible && (
-                  <ul className="absolute top-full right-0 py-4 z-10 px-3 text-sm mt-2 w-44 bg-white shadow-lg rounded-md">
-                    <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
-                      <Link
-                        to="/dashboard"
-                        className="flex items-center gap-2 font-medium"
-                      >
-                        <RiDashboardHorizontalLine className="w-5 h-5 text-zinc-500" />
-                        Dashboard
-                      </Link>
-                    </li>
+                <div className="relative">
+                  <div
+                    onClick={toggleProfileDropdown}
+                    className="w-12 h-12 rounded-full bg-gray-200 cursor-pointer flex items-center justify-center"
+                  >
+                    <img
+                      src={
+                        user?.user?.profileImg ||
+                        "https://www.shutterstock.com/image-vector/vector-flat-illustration-grayscale-avatar-600nw-2264922221.jpg"
+                      }
+                      alt="User Profile"
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  {profileDropdownVisible && (
+                    <ul className="absolute top-full right-0 py-4 z-10 px-3 text-sm mt-2 w-44 bg-white shadow-lg rounded-md">
+                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
+                        <Link
+                          to="/dashboard"
+                          className="flex items-center gap-2 font-medium"
+                        >
+                          <RiDashboardHorizontalLine className="w-5 h-5 text-zinc-500" />
+                          Dashboard
+                        </Link>
+                      </li>
 
-                    <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
-                      <Link
-                        to="/dashboard/post-list"
-                        className="flex items-center gap-2 font-medium"
-                      >
-                        <LuLayoutList className="w-5 h-5 text-zinc-500" />
-                        Post List
-                      </Link>
-                    </li>
-                    <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
-                      <Link
-                        to="/dashboard/category"
-                        className="flex items-center gap-2 font-medium"
-                      >
-                        <BiCategory className="w-5 h-5 text-zinc-500" />
-                        Category
-                      </Link>
-                    </li>
-                    <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
-                      <Link
-                        to="/dashboard/user-profile"
-                        className="flex items-center gap-2 font-medium"
-                      >
-                        <FaRegUser className="w-5 h-5 text-zinc-500" />
-                        Profile
-                      </Link>
-                    </li>
+                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
+                        <Link
+                          to="/dashboard/post-list"
+                          className="flex items-center gap-2 font-medium"
+                        >
+                          <LuLayoutList className="w-5 h-5 text-zinc-500" />
+                          Post List
+                        </Link>
+                      </li>
+                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
+                        <Link
+                          to="/dashboard/category"
+                          className="flex items-center gap-2 font-medium"
+                        >
+                          <BiCategory className="w-5 h-5 text-zinc-500" />
+                          Category
+                        </Link>
+                      </li>
+                      <li className="hover:text-orange-400 py-2 transition-all ease-in-out duration-300">
+                        <Link
+                          to="/dashboard/user-profile"
+                          className="flex items-center gap-2 font-medium"
+                        >
+                          <FaRegUser className="w-5 h-5 text-zinc-500" />
+                          Profile
+                        </Link>
+                      </li>
 
-                    <li
-                      onClick={handleLogout}
-                      className="hover:text-orange-400 flex items-center gap-2 font-medium py-2 transition-all ease-in-out duration-300 cursor-pointer"
-                    >
-                      <RiLogoutBoxRLine className="w-5 h-5 text-zinc-500" />
-                      Logout
-                    </li>
-                  </ul>
-                )}
-              </div>
+                      <li
+                        onClick={handleLogout}
+                        className="hover:text-orange-400 flex items-center gap-2 font-medium py-2 transition-all ease-in-out duration-300 cursor-pointer"
+                      >
+                        <RiLogoutBoxRLine className="w-5 h-5 text-zinc-500" />
+                        Logout
+                      </li>
+                    </ul>
+                  )}
+                </div>
+              </>
             ) : (
               <button className="bg-zinc-100 p-[0.6rem] hover:bg-orange-200 transition-all ease-in-out duration-200 text-2xl rounded-md">
                 <Link to="/register">

@@ -1,10 +1,12 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { IoChevronDownOutline } from "react-icons/io5";
 import { useAuth } from "../../../store/Authentication";
 import { toast } from "react-toastify";
 import SocialMediaSettings from "../components/SocialMediaSettings";
+import ThemeSetting from "../components/ThemeSetting";
+import LanguageSetting from "../components/LanguageSetting";
+import UpdatePassword from "../components/UpdatePassword";
 
 const Setting = () => {
   const {
@@ -15,6 +17,7 @@ const Setting = () => {
   const [activeTab, setActiveTab] = useState("socialMedia");
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
+  const [apiError, setApiError] = useState("");
   const onSocialMediaSubmit = async (data) => {
     console.log("social data: ", data);
     setLoading(true);
@@ -37,6 +40,49 @@ const Setting = () => {
       setLoading(false);
     }
   };
+  const onThemeSubmit = async (data) => {
+    console.log("theme data: ", data);
+    setLoading(true);
+    try {
+      const response = await axios.put(
+        "http://localhost:3000/api/theme",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onLanguageSubmit = async (data) => {
+    console.log("language data: ", data);
+    setLoading(true);
+    try {
+      const response = await axios.put(
+        "http://localhost:3000/api/language",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -44,16 +90,26 @@ const Setting = () => {
         return (
           <SocialMediaSettings
             onSocialMediaSubmit={onSocialMediaSubmit}
-            errors={errors}
             loading={loading}
           />
         );
       case "theme":
-        return <ThemeSettings />;
+        return <ThemeSetting loading={loading} onThemeSubmit={onThemeSubmit} />;
       case "language":
-        return <LanguageSettings />;
+        return (
+          <LanguageSetting
+            loading={loading}
+            onLanguageSubmit={onLanguageSubmit}
+          />
+        );
       case "updatePassword":
-        return <UpdatePassword />;
+        return (
+          <UpdatePassword
+            errors={errors}
+            loading={loading}
+            apiError={apiError}
+          />
+        );
       default:
         return null;
     }
@@ -113,96 +169,5 @@ const Setting = () => {
     </div>
   );
 };
-
-// Placeholder components for each settings option
-
-const ThemeSettings = () => (
-  <div>
-    <h2 className="text-2xl font-bold mb-4">Select Theme</h2>
-    {/* Dropdown or buttons to select theme */}
-    <div className="relative w-fit">
-      <select className="block appearance-none w-full border border-gray-300 bg-white text-gray-700 py-3 px-4 pr-10 rounded-md text-sm font-medium outline-none">
-        <option value="" disabled>
-          Select Theme
-        </option>
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
-      </select>
-      <div className="absolute inset-y-0 right-2 flex items-center px-2 pointer-events-none">
-        <IoChevronDownOutline
-          className="h-5 w-5 text-gray-600"
-          aria-hidden="true"
-        />
-      </div>
-    </div>
-    <button className="bg-custom-light-black text-white px-6 py-2 rounded-md hover:bg-black transition-colors duration-300 mt-3 text-sm font-medium">
-      Save Theme
-    </button>
-  </div>
-);
-
-const LanguageSettings = () => (
-  <div>
-    <h2 className="text-2xl font-bold mb-4">Select Language</h2>
-    {/* Dropdown or buttons to select theme */}
-    <div className="relative w-fit">
-      <select className="block appearance-none w-full border border-gray-300 bg-white text-gray-700 py-3 px-4 pr-10 rounded-md text-sm font-medium outline-none">
-        <option value="" disabled>
-          Select Language
-        </option>
-        <option value="english">English</option>
-        <option value="spanish">Spanish</option>
-      </select>
-      <div className="absolute inset-y-0 right-2 flex items-center px-2 pointer-events-none">
-        <IoChevronDownOutline
-          className="h-5 w-5 text-gray-600"
-          aria-hidden="true"
-        />
-      </div>
-    </div>
-    <button className="bg-custom-light-black text-white px-6 py-2 rounded-md hover:bg-black transition-colors duration-300 mt-3 text-sm font-medium">
-      Save Language
-    </button>
-  </div>
-);
-
-const UpdatePassword = () => (
-  <div>
-    <h2 className="text-xl font-semibold mb-4">Update Password</h2>
-    {/* Form to update password */}
-    <form className="space-y-4">
-      <div className="flex flex-col gap-1">
-        <label className="font-medium">Current Password:</label>
-        <input
-          type="password"
-          className="border border-gray-300 p-3 rounded-md outline-none text-sm"
-          placeholder="Enter your current password"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="font-medium">New Password:</label>
-        <input
-          type="password"
-          className="border border-gray-300 p-3 rounded-md outline-none text-sm"
-          placeholder="Enter your New password"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label className="font-medium">Confirm New Password:</label>
-        <input
-          type="password"
-          className="border border-gray-300 p-3 rounded-md outline-none text-sm"
-          placeholder="Enter your Confirm New password"
-        />
-      </div>
-      <button
-        type="submit"
-        className="bg-custom-light-black text-white px-6 py-2 rounded-md hover:bg-black transition-colors duration-300 mt-3 text-sm font-medium"
-      >
-        Update Password
-      </button>
-    </form>
-  </div>
-);
 
 export default Setting;

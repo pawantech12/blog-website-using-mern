@@ -26,6 +26,17 @@ const createComment = async (req, res) => {
 
     await newComment.save();
 
+    const user = await User.findById(userId);
+
+    const notification = new Notification({
+      user: blog.author,
+      userId: user._id,
+      type: "comment",
+      comment: newComment._id,
+      message: `${user.name} Commented on your post ${blog.title}`,
+    });
+
+    await notification.save();
     // Populate the author field after saving
     const populatedComment = await Comment.populate(newComment, {
       path: "author",
@@ -110,7 +121,10 @@ const deleteComment = async (req, res) => {
   console.log("Received userId: ", userId);
 
   try {
-    const comment = await Comment.findById(commentId);
+    const comment = await Comment.findById(commentId).populate(
+      "author",
+      "name"
+    );
 
     if (!comment) {
       return res
@@ -118,11 +132,22 @@ const deleteComment = async (req, res) => {
         .json({ success: false, message: "Comment not found" });
     }
 
-    if (comment.author.toString() !== userId.toString()) {
+    if (comment.author._id.toString() !== userId.toString()) {
       return res
         .status(401)
         .json({ success: false, message: "Unauthorized user" });
     }
+
+    // Delete the notification
+    const blog = await Blog.findById(comment.blog);
+
+    await Notification.findOneAndDelete({
+      user: blog.author,
+      userId: userId,
+      type: "comment",
+      comment: commentId,
+      message: `${comment.author.name} Commented on your post ${blog.title}`,
+    });
 
     // Delete the comment by its ID
     await Comment.findByIdAndDelete(commentId);

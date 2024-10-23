@@ -394,87 +394,87 @@ const getBlogById = async (req, res) => {
   }
 };
 
-// Save a blog post to user's saved posts
-const saveBlogPost = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const blogId = req.params.id;
-    // console.log("userId", userId);
-    // console.log("blogId", blogId);
+// // Save a blog post to user's saved posts
+// const saveBlogPost = async (req, res) => {
+//   try {
+//     const userId = req.user.userId;
+//     const blogId = req.params.id;
+//     // console.log("userId", userId);
+//     // console.log("blogId", blogId);
 
-    const user = await User.findById(userId);
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
 
-    // Check if blog is already saved
-    if (user.savedPosts.includes(blogId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Blog post already saved",
-      });
-    }
+//     // Check if blog is already saved
+//     if (user.savedPosts.includes(blogId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Blog post already saved",
+//       });
+//     }
 
-    user.savedPosts.push(blogId);
-    await user.save();
+//     user.savedPosts.push(blogId);
+//     await user.save();
 
-    res.status(200).json({
-      success: true,
-      message: "Blog post saved successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to save blog post",
-      error: error.message,
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       message: "Blog post saved successfully",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to save blog post",
+//       error: error.message,
+//     });
+//   }
+// };
 
-// Remove a blog post from user's saved posts
-const unsaveBlogPost = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-    const blogId = req.params.id;
+// // Remove a blog post from user's saved posts
+// const unsaveBlogPost = async (req, res) => {
+//   try {
+//     const userId = req.user.userId;
+//     const blogId = req.params.id;
 
-    const user = await User.findById(userId);
+//     const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+//     if (!user) {
+//       return res.status(404).json({
+//         success: false,
+//         message: "User not found",
+//       });
+//     }
 
-    // Check if blog is not in saved posts
-    if (!user.savedPosts.includes(blogId)) {
-      return res.status(400).json({
-        success: false,
-        message: "Blog post not in saved posts",
-      });
-    }
+//     // Check if blog is not in saved posts
+//     if (!user.savedPosts.includes(blogId)) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Blog post not in saved posts",
+//       });
+//     }
 
-    user.savedPosts = user.savedPosts.filter(
-      (postId) => postId.toString() !== blogId
-    );
-    await user.save();
+//     user.savedPosts = user.savedPosts.filter(
+//       (postId) => postId.toString() !== blogId
+//     );
+//     await user.save();
 
-    res.status(200).json({
-      success: true,
-      message: "Blog post removed from saved posts",
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to unsave blog post",
-      error: error.message,
-    });
-  }
-};
+//     res.status(200).json({
+//       success: true,
+//       message: "Blog post removed from saved posts",
+//     });
+//   } catch (error) {
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to unsave blog post",
+//       error: error.message,
+//     });
+//   }
+// };
 
 // Controller for liking a blog post
 const likeBlog = async (req, res) => {
@@ -482,7 +482,7 @@ const likeBlog = async (req, res) => {
     const { blogId } = req.params;
     const userId = req.user.userId; // Assumes user is authenticated
 
-    const blog = await Blog.findById(blogId);
+    const blog = await Blog.findById(blogId).populate("author", "_id");
     const user = await User.findById(userId); // Fetch the user to update likedPosts
 
     if (!blog) {
@@ -497,6 +497,14 @@ const likeBlog = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Blog already liked" });
     }
+
+    const notification = new Notification({
+      user: blog.author._id,
+      userId: user._id,
+      type: "like",
+      message: `${user.name} liked your blog post ${blog.title}`,
+    });
+    await notification.save();
 
     // Add userId to blog's likes
     blog.likes.push(userId);
@@ -543,6 +551,13 @@ const unlikeBlog = async (req, res) => {
         .json({ success: false, message: "Blog not liked yet" });
     }
 
+    await Notification.findOneAndDelete({
+      user: blog.author._id,
+      userId: user._id,
+      type: "like",
+      message: `${user.name} liked your blog post ${blog.title}`,
+    });
+
     // Remove userId from blog's likes
     blog.likes = blog.likes.filter(
       (like) => like.toString() !== userId.toString()
@@ -574,8 +589,8 @@ module.exports = {
   getBlogById,
   updateBlogPost,
   deleteBlogPost,
-  saveBlogPost,
-  unsaveBlogPost,
+  // saveBlogPost,
+  // unsaveBlogPost,
   likeBlog,
   unlikeBlog,
 };

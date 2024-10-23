@@ -19,7 +19,7 @@ import { IoSettingsOutline } from "react-icons/io5";
 const UserProfile = () => {
   const { token, user } = useAuth();
   const navigate = useNavigate();
-  if (user === null) {
+  if (!token && user === null) {
     navigate("/login");
   }
   // console.log("user ogged in:", user);

@@ -49,6 +49,15 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "SocialMedia",
   },
+  theme: {
+    type: String,
+    enum: ["light", "dark"],
+    default: "light",
+  },
+  language: {
+    type: String,
+    default: "english",
+  },
   createdAt: { type: Date, default: Date.now },
 });
 
