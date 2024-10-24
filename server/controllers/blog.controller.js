@@ -4,7 +4,10 @@ const Category = require("../models/category.model");
 const cloudinary = require("../config/cloudinary");
 const crypto = require("crypto");
 const Notification = require("../models/notification.model");
-const { sendRealTimeNotification } = require("../socket");
+const {
+  sendRealTimeNotification,
+  deleteRealTimeNotification,
+} = require("../socket");
 // Helper function to compute hash of image buffer
 const computeImageHash = (buffer) => {
   return crypto.createHash("md5").update(buffer).digest("hex");
@@ -562,13 +565,17 @@ const unlikeBlog = async (req, res) => {
         .json({ success: false, message: "Blog not liked yet" });
     }
 
-    await Notification.findOneAndDelete({
+    const deleteNotification = await Notification.findOneAndDelete({
       user: blog.author,
       userId: user._id,
       post: blog._id,
       type: "like",
       message: `${user.name} liked your blog post ${blog.title}`,
     });
+
+    if (deleteNotification) {
+      deleteRealTimeNotification(blog.author, deleteNotification._id);
+    }
 
     // Remove userId from blog's likes
     blog.likes = blog.likes.filter(

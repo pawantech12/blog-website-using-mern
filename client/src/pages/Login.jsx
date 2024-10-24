@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import google from "../img/google.png";
-import facebook from "../img/facebook.png";
+
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import { toast } from "react-toastify"; // Import toast
@@ -117,6 +116,16 @@ const Login = () => {
             )}
           </div>
 
+          {/* Forgot Password */}
+          <div className="flex justify-end">
+            <Link
+              to="/forgot-password"
+              className="text-sm font-medium text-custom-light-black"
+            >
+              Forgot Password?
+            </Link>
+          </div>
+
           {/* Sign Up Button */}
           <button
             type="submit"
@@ -137,7 +146,7 @@ const Login = () => {
         </div>
 
         {/* Social Sign Up Buttons */}
-        <div className="flex justify-center gap-4">
+        {/* <div className="flex justify-center gap-4">
           <button className="flex items-center gap-2 bg-gray-100 py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200">
             <img src={google} alt="Google Logo" className="w-8" />
             Google
@@ -146,7 +155,7 @@ const Login = () => {
             <img src={facebook} alt="Facebook Logo" className="w-8" />
             Facebook
           </button>
-        </div>
+        </div> */}
 
         <p className="text-center mt-5 font-medium ">
           Don&apos;t Have an Account?{" "}

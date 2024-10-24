@@ -22,6 +22,7 @@ import { RiDashboardHorizontalLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { useEffect } from "react";
 import defaultUserProfile from "../img/default-user.jpg";
 import axios from "axios";
+import { formatDistanceToNow } from "date-fns";
 export const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [blogs, setBlogs] = useState([]);
@@ -54,11 +55,24 @@ export const Navbar = () => {
       setUnreadCount((prevUnreadCount) => prevUnreadCount + 1);
     });
 
+    // Listen for the "remove_notification" event
+    socket.on("remove_notification", ({ notificationId }) => {
+      // Remove the specific notification from the state when the user unfollows someone
+      setNotifications((prevNotifications) =>
+        prevNotifications.filter(
+          (notification) => notification._id !== notificationId
+        )
+      );
+
+      // Update the unread count
+      setUnreadCount((prevUnreadCount) => prevUnreadCount - 1);
+    });
+
     return () => {
       socket.disconnect(); // Cleanup on component unmount
     };
-  }, [user]);
-
+  }, [user, token]);
+  // console.log("notifications: ", notifications);
   useEffect(() => {
     const fetchAllBlogs = async () => {
       try {
@@ -122,6 +136,33 @@ export const Navbar = () => {
     setSearchTerm(""); // Clear the search term
   };
 
+  const handleMarkAllAsRead = async () => {
+    try {
+      await axios.put(
+        "http://localhost:3000/api/mark-all-notifications-as-read",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Update the notifications in the frontend state to mark them as read
+      setNotifications((prevNotifications) =>
+        prevNotifications.map((notification) => ({
+          ...notification,
+          isRead: true, // Update the isRead field
+        }))
+      );
+
+      // Optionally update unread count
+      setUnreadCount(0); // Assuming you're tracking unread notifications
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -163,93 +204,115 @@ export const Navbar = () => {
                   {notificationDropdownVisible && (
                     <div className="absolute top-full right-0 py-4 z-10 text-sm mt-2 w-[340px] bg-white border border-gray-200 rounded-md">
                       <div className="flex justify-between items-center  px-3">
-                        <h3 className="text-base font-semibold">
+                        <h3 className="text-base font-semibold text-gray-700">
                           Notifications
                         </h3>
-                        <button className="bg-transparent text-emerald-500 font-semibold text-[13px] outline-none flex items-center gap-1">
+                        <button
+                          className="bg-transparent text-emerald-500 font-semibold text-[13px] outline-none flex items-center gap-1"
+                          onClick={handleMarkAllAsRead}
+                        >
                           <BsCheck2All className="w-5 h-5" />
                           Mark All as Read
                         </button>
                       </div>
                       <hr className="mt-3" />
                       <ul>
-                        {notifications?.length > 0 ? (
-                          notifications.map((notification, index) => (
-                            <li
-                              key={index}
-                              className="px-4 py-2 flex gap-2 items-center"
-                            >
-                              <figure className="w-10 h-10">
-                                <img
-                                  src={
-                                    notification?.userId?.profileImg ||
-                                    defaultUserProfile
-                                  }
-                                  alt={notification?.userId?.name}
-                                  className="w-full h-full object-cover rounded-full"
-                                />
-                              </figure>
-                              <div className="w-2/3">
-                                {notification.type === "comment" ? (
-                                  <p className="text-[13px]">
-                                    <span className="font-semibold">
-                                      {notification?.userId?.name}
-                                    </span>{" "}
-                                    commented on your post{" "}
-                                    <span className="font-semibold">
-                                      {notification?.post?.title?.length > 20
-                                        ? notification?.post?.title?.slice(
-                                            0,
-                                            20
-                                          ) + "..."
-                                        : notification?.post?.title}
-                                    </span>
-                                  </p>
-                                ) : notification.type === "like" ? (
-                                  <p className="text-[13px]">
-                                    <span className="font-semibold">
-                                      {notification?.userId?.name}
-                                    </span>{" "}
-                                    liked your post{" "}
-                                    <span className="font-semibold">
-                                      {notification?.post?.title?.length > 20
-                                        ? notification?.post?.title.slice(
-                                            0,
-                                            20
-                                          ) + "..."
-                                        : notification?.post?.title}
-                                    </span>
-                                  </p>
-                                ) : notification.type === "follow" ? (
-                                  <p className="text-[13px]">
-                                    <span className="font-semibold">
-                                      {notification?.userId?.name}
-                                    </span>{" "}
-                                    started following you
-                                  </p>
-                                ) : notification.type === "save" ? (
-                                  <p className="text-[13px]">
-                                    <span className="font-semibold">
-                                      {notification?.userId?.name}
-                                    </span>
-                                    saved your post{" "}
-                                    <span className="font-semibold">
-                                      {notification?.post?.title?.length > 20
-                                        ? notification?.post?.title?.slice(
-                                            0,
-                                            20
-                                          ) + "..."
-                                        : notification?.post?.title}
-                                    </span>
-                                  </p>
-                                ) : null}
-                              </div>
-                            </li>
-                          ))
+                        {notifications.filter((n) => !n.isRead).length > 0 ? (
+                          notifications
+                            .filter((notification) => !notification.isRead)
+                            .slice(0, 4)
+                            .map((notification, index) => (
+                              <li
+                                key={index}
+                                className="px-4 py-2 flex gap-2 items-center w-full"
+                              >
+                                <figure className="w-10 h-10">
+                                  <img
+                                    src={
+                                      notification?.userId?.profileImg ||
+                                      defaultUserProfile
+                                    }
+                                    alt={notification?.userId?.name}
+                                    className="w-full h-full object-cover rounded-full"
+                                  />
+                                </figure>
+                                <div className="w-full ">
+                                  {notification.type === "comment" ? (
+                                    <p className="text-[13px]">
+                                      <span className="font-semibold">
+                                        {notification?.userId?.name}
+                                      </span>{" "}
+                                      commented on your post{" "}
+                                      <span className="font-semibold">
+                                        {notification?.post?.title?.length > 20
+                                          ? notification?.post?.title?.slice(
+                                              0,
+                                              20
+                                            ) + "..."
+                                          : notification?.post?.title}
+                                      </span>
+                                    </p>
+                                  ) : notification.type === "like" ? (
+                                    <p className="text-[13px]">
+                                      <span className="font-semibold">
+                                        {notification?.userId?.name}
+                                      </span>{" "}
+                                      liked your post{" "}
+                                      <span className="font-semibold">
+                                        {notification?.post?.title?.length > 20
+                                          ? notification?.post?.title.slice(
+                                              0,
+                                              20
+                                            ) + "..."
+                                          : notification?.post?.title}
+                                      </span>
+                                    </p>
+                                  ) : notification.type === "follow" ? (
+                                    <p className="text-[13px]">
+                                      <span className="font-semibold">
+                                        {notification?.userId?.name}
+                                      </span>{" "}
+                                      started following you
+                                    </p>
+                                  ) : notification.type === "save" ? (
+                                    <p className="text-[13px]">
+                                      <span className="font-semibold">
+                                        {notification?.userId?.name}
+                                      </span>{" "}
+                                      saved your post{" "}
+                                      <span className="font-semibold">
+                                        {notification?.post?.title?.length > 20
+                                          ? notification?.post?.title?.slice(
+                                              0,
+                                              20
+                                            ) + "..."
+                                          : notification?.post?.title}
+                                      </span>
+                                    </p>
+                                  ) : null}
+                                  <span className="text-xs">
+                                    {formatDistanceToNow(
+                                      new Date(notification?.createdAt),
+                                      {
+                                        addSuffix: true,
+                                      }
+                                    )}
+                                  </span>
+                                </div>
+                              </li>
+                            ))
                         ) : (
-                          <p>No Notifications</p>
+                          <p className="text-center mt-3 text-gray-600">
+                            No Notifications
+                          </p>
                         )}
                       </ul>
+                      <hr className="my-2" />
+                      <div className="text-center">
+                        <button className="w-full">
+                          <Link className="font-medium">View All</Link>
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>

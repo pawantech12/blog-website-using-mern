@@ -25,6 +25,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
 import VerifyCode from "./components/VerifyCode.jsx";
 import Setting from "./pages/admin/pages/Setting.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ResetPassword from "./pages/ResetPassword.jsx";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <App element={<Login />} />,
+  },
+  {
+    path: "/forgot-password",
+    element: <App element={<ForgotPassword />} />,
+  },
+  {
+    path: "/password-reset/:token",
+    element: <App element={<ResetPassword />} />,
   },
   {
     path: "/blog-post/:blogId",

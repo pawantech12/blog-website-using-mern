@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
   bannerImg: { type: String },
   password: { type: String, required: true },
   resetCode: { type: String },
+  resetCodeExpires: { type: Date },
   otp: { type: String }, // Store OTP temporarily for verification
   isVerified: { type: Boolean, default: false },
   city: { type: String },

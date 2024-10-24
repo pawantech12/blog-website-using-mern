@@ -29,4 +29,13 @@ const sendRealTimeNotification = (userId, notification) => {
   io.to(userId.toString()).emit("new_notification", notification);
 };
 
-module.exports = { initializeSocket, sendRealTimeNotification };
+const deleteRealTimeNotification = (userId, notificationId) => {
+  if (!io) throw new Error("Socket.IO is not initialized");
+  io.to(userId.toString()).emit("remove_notification", { notificationId });
+};
+
+module.exports = {
+  initializeSocket,
+  sendRealTimeNotification,
+  deleteRealTimeNotification,
+};

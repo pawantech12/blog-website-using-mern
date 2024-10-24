@@ -24,6 +24,7 @@ const categoryRouter = require("./routers/category.router.js");
 const contactRouter = require("./routers/contact.router.js");
 const subscriptionRouter = require("./routers/subscription.router.js");
 const commentRouter = require("./routers/comment.router.js");
+const passwordRecoveryRouter = require("./routers/password.recovery.router.js");
 const { initializeSocket } = require("./socket.js");
 
 app.use("/api", authenticationRouter);
@@ -32,6 +33,7 @@ app.use("/api", subscriptionRouter);
 app.use("/blog", blogRouter);
 app.use("/blog", categoryRouter);
 app.use("/blog", commentRouter);
+app.use("/password", passwordRecoveryRouter);
 
 // Initialize Socket.IO
 initializeSocket(server);

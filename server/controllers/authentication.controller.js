@@ -7,7 +7,10 @@ const sendEmail = require("../utils/send_email");
 const SocialMedia = require("../models/socialmedia.model");
 const bcrypt = require("bcryptjs");
 const Notification = require("../models/notification.model");
-const { sendRealTimeNotification } = require("../socket");
+const {
+  sendRealTimeNotification,
+  deleteRealTimeNotification,
+} = require("../socket");
 const Blog = require("../models/blog.model");
 const register = async (req, res) => {
   try {
@@ -397,12 +400,16 @@ const unfollowUserById = async (req, res) => {
     console.log("current user following: ", currentUser.following);
 
     // Delete the follow notification for the userToUnfollow
-    await Notification.findOneAndDelete({
+    const deleteNotification = await Notification.findOneAndDelete({
       user: userToUnfollow._id, // The user who received the notification
       userId: currentUser._id,
       type: "follow",
       message: `${currentUser.name} has followed you.`, // Specific message for the notification
     });
+
+    if (deleteNotification) {
+      deleteRealTimeNotification(userToUnfollow._id, deleteNotification._id);
+    }
 
     // Populate the 'following' field with specific fields (name, username, profileImg)
     const populatedCurrentUser = await User.findById(userId)
@@ -481,13 +488,17 @@ const toggleSavedPost = async (req, res) => {
       );
       await user.save();
 
-      await Notification.findOneAndDelete({
+      const deleteNotification = await Notification.findOneAndDelete({
         user: findBlogUser.author, // The user receiving the notification
         userId: user._id,
         post: findBlogUser._id, // Use findBlogUser instead of blog
         type: "save", // Type of notification
         message: `${user.name} has saved your post ${findBlogUser.title}`, // Specific message for the notification
       });
+
+      if (deleteNotification) {
+        deleteRealTimeNotification(findBlogUser.author, deleteNotification._id);
+      }
 
       return res.status(200).json({
         success: true,

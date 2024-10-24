@@ -2,7 +2,10 @@ const mongoose = require("mongoose");
 const Blog = require("../models/blog.model");
 const Comment = require("../models/comment.model");
 const Reply = require("../models/reply.model");
-const { sendRealTimeNotification } = require("../socket");
+const {
+  sendRealTimeNotification,
+  deleteRealTimeNotification,
+} = require("../socket");
 const Notification = require("../models/notification.model");
 const User = require("../models/user.model");
 
@@ -155,7 +158,7 @@ const deleteComment = async (req, res) => {
     // Delete the notification
     const blog = await Blog.findById(comment.blog);
 
-    await Notification.findOneAndDelete({
+    const deleteNotification = await Notification.findOneAndDelete({
       user: blog.author,
       userId: userId,
       post: blog._id,
@@ -163,6 +166,10 @@ const deleteComment = async (req, res) => {
       comment: commentId,
       message: `${comment.author.name} Commented on your post ${blog.title}`,
     });
+
+    if (deleteNotification) {
+      deleteRealTimeNotification(blog.author, deleteNotification._id);
+    }
 
     // Delete the comment by its ID
     await Comment.findByIdAndDelete(commentId);

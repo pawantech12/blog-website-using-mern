@@ -23,6 +23,7 @@ const {
 const upload = require("../config/multer");
 const {
   getAllNotificationOfCurrentUser,
+  markAllNotificationAsRead,
 } = require("../controllers/notification.controller");
 
 const router = express.Router();
@@ -56,5 +57,9 @@ router.route("/update-password").put(authenticateToken, updateUserPassword);
 router
   .route("/get-notifications")
   .get(authenticateToken, getAllNotificationOfCurrentUser);
+
+router
+  .route("/mark-all-notifications-as-read")
+  .put(authenticateToken, markAllNotificationAsRead);
 
 module.exports = router;
