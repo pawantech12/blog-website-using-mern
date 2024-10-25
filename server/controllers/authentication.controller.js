@@ -12,6 +12,8 @@ const {
   deleteRealTimeNotification,
 } = require("../socket");
 const Blog = require("../models/blog.model");
+const Comment = require("../models/comment.model");
+const Reply = require("../models/reply.model");
 const register = async (req, res) => {
   try {
     userSchemaValidation.parse(req.body);
@@ -789,6 +791,59 @@ const updateUserPassword = async (req, res) => {
   }
 };
 
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User not found", success: false });
+    }
+
+    // Log the user ID before deletion
+    console.log(`About to delete user with ID: ${user._id}`);
+
+    // Get the user's blogs and comments before deletion
+    const blogs = await Blog.find({ author: user._id });
+    const blogIds = blogs.map((blog) => blog._id);
+
+    // Delete all comments associated with the user's blogs
+    await Comment.deleteMany({ blog: { $in: blogIds } });
+
+    await Blog.deleteMany({ author: user._id });
+
+    // Delete any replies to those comments
+    const comments = await Comment.find({ author: user._id });
+    const replyIds = comments.flatMap((comment) => comment.replies);
+    await Reply.deleteMany({ _id: { $in: replyIds } });
+
+    // Delete all comments made by the user
+    await Comment.deleteMany({ author: user._id });
+    // Delete all notifications for this user
+    await Notification.deleteMany({ user: user._id });
+
+    // Delete social media accounts associated with this user
+    await SocialMedia.deleteMany({ userId: user._id });
+
+    // Finally, delete the user
+    await User.deleteOne({ _id: userId });
+
+    return res.status(200).json({
+      message: "User and all associated data deleted successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error in deleteUser:", error);
+    return res.status(500).json({
+      message: "Server error",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   verifyOtp,
@@ -806,4 +861,5 @@ module.exports = {
   saveUserTheme,
   saveUserLanguage,
   updateUserPassword,
+  deleteUser,
 };

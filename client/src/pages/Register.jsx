@@ -5,6 +5,10 @@ import google from "../img/google.png";
 import facebook from "../img/facebook.png";
 import axios from "axios";
 import { toast } from "react-toastify"; // Import toast
+import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
+import { app } from "../config/firebase.config";
+import { useAuth } from "../store/Authentication";
+
 const Register = () => {
   const {
     register,
@@ -16,6 +20,7 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const navigate = useNavigate();
+  const { storeTokenInLS } = useAuth();
 
   const onSubmit = async (data) => {
     console.log(data);
@@ -63,6 +68,48 @@ const Register = () => {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const auth = getAuth(app);
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken(); // Firebase token
+      console.log("result", result);
+
+      const userData = {
+        name: result.user.displayName,
+        email: result.user.email,
+        password: "@Password123",
+        profileImg: result.user.photoURL,
+        username: result.user.displayName.replace(/\s+/g, ""),
+        isVerified: result.user.emailVerified,
+      };
+      // Send token and user data to your backend
+      const response = await axios.post(
+        `http://localhost:3000/auth/social-login2`,
+        {
+          userData,
+          token,
+        }
+      );
+
+      // Redirect or perform additional actions
+      toast.success(response.data.message);
+      storeTokenInLS(response.data.token);
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 3000);
+    } catch (error) {
+      console.error("Google login error:", error);
+
+      // Get error message from Firebase
+      const errorMessage = error.message;
+
+      // Show detailed error message
+      toast.error(`Google login failed: ${errorMessage}`);
     }
   };
 
@@ -197,7 +244,10 @@ const Register = () => {
 
         {/* Social Sign Up Buttons */}
         <div className="flex justify-center gap-4">
-          <button className="flex items-center gap-2 bg-gray-100  py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200">
+          <button
+            className="flex items-center gap-2 bg-gray-100  py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200"
+            onClick={handleGoogleLogin}
+          >
             <img src={google} alt="Google Logo" className="w-8" />
             Google
           </button>

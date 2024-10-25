@@ -311,6 +311,7 @@ export const Home = () => {
 
   console.log("user details", user);
   console.log("liked", liked);
+  // console.log("token: ", token);
   if (loading) {
     return <Loader />;
   }

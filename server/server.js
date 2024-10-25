@@ -1,6 +1,7 @@
 // configuring dotenv
 require("dotenv").config({ path: "./.env" });
 const express = require("express");
+
 const http = require("http");
 const connectDB = require("./utils/db_connect");
 const cors = require("cors");
@@ -25,8 +26,10 @@ const contactRouter = require("./routers/contact.router.js");
 const subscriptionRouter = require("./routers/subscription.router.js");
 const commentRouter = require("./routers/comment.router.js");
 const passwordRecoveryRouter = require("./routers/password.recovery.router.js");
+const signAuthRouter = require("./routers/signauth.router.js");
 const { initializeSocket } = require("./socket.js");
 
+app.use("/auth", signAuthRouter);
 app.use("/api", authenticationRouter);
 app.use("/api", contactRouter);
 app.use("/api", subscriptionRouter);

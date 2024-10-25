@@ -16,6 +16,7 @@ const {
   saveUserTheme,
   saveUserLanguage,
   updateUserPassword,
+  deleteUser,
 } = require("../controllers/authentication.controller");
 const {
   authenticateToken,
@@ -29,9 +30,9 @@ const {
 const router = express.Router();
 
 router.route("/register").post(register);
+router.route("/login").post(login);
 router.route("/verify-otp").post(verifyOtp);
 router.route("/resend-otp").post(resendOtp);
-router.route("/login").post(login);
 router.route("/user").get(authenticateToken, getUserData);
 router.route("/user/:id").get(getUserDataById);
 router
@@ -61,5 +62,7 @@ router
 router
   .route("/mark-all-notifications-as-read")
   .put(authenticateToken, markAllNotificationAsRead);
+
+router.route("/delete-user").delete(authenticateToken, deleteUser);
 
 module.exports = router;
