@@ -1,25 +1,129 @@
 import React from "react";
 import google from "../img/google.png";
 import facebook from "../img/facebook.png";
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  getAuth,
+  FacebookAuthProvider,
+} from "firebase/auth";
+import { app } from "../config/firebase.config";
 import { toast } from "react-toastify";
+import axios from "axios";
+import { useAuth } from "../store/Authentication";
+import { useNavigate } from "react-router-dom";
+
 const SignAuth = () => {
+  const { storeTokenInLS } = useAuth();
+  const navigate = useNavigate();
+
   const handleGoogleLogin = async () => {
     try {
-      // Redirect to your backend route for Google authentication
-      window.open("http://localhost:3000/api/auth/google", "_self");
+      const provider = new GoogleAuthProvider();
+      const auth = getAuth(app);
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken(); // Firebase token
+      console.log("result", result);
+
+      const userData = {
+        name: result.user.displayName,
+        email: result.user.email,
+        password: "@Password123",
+        profileImg: result.user.photoURL,
+        // username should be in lowercase and should contain 2 or more numbers at last of the name
+        username:
+          result.user.displayName.replace(/\s+/g, "").toLowerCase() +
+          Math.floor(Math.random() * 1000),
+
+        isVerified: result.user.emailVerified,
+      };
+      // Send token and user data to your backend
+      const response = await axios.post(
+        `http://localhost:3000/auth/social-login`,
+        {
+          userData,
+          token,
+        }
+      );
+
+      // Redirect or perform additional actions
+      toast.success(response.data.message);
+
+      storeTokenInLS(response.data.token);
+
+      const userId = response.data.userId;
+
+      if (response.data.isVerified === false) {
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { userId } });
+        }, 3000);
+      } else {
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 3000);
+      }
     } catch (error) {
-      toast.error("Google Login failed.");
-      console.error(error);
+      console.error("Google login error:", error);
+
+      // Get error message from Firebase
+      const errorMessage = error.message;
+
+      // Show detailed error message
+      toast.error(`Google login failed: ${errorMessage}`);
     }
   };
-
   const handleFacebookLogin = async () => {
     try {
-      // Redirect to your backend route for Facebook authentication
-      window.open("http://localhost:3000/api/auth/facebook", "_self");
+      const provider = new FacebookAuthProvider();
+      const auth = getAuth(app);
+      const result = await signInWithPopup(auth, provider);
+      const token = await result.user.getIdToken(); // Firebase token
+      console.log("result", result);
+
+      const userData = {
+        name: result.user.displayName,
+        email: result.user.email,
+        password: "@Password123",
+        profileImg: result.user.photoURL,
+        // username should be in lowercase and should contain 2 or more numbers at last of the name
+        username:
+          result.user.displayName.replace(/\s+/g, "").toLowerCase() +
+          Math.floor(Math.random() * 1000),
+
+        isVerified: result.user.emailVerified,
+      };
+      // Send token and user data to your backend
+      const response = await axios.post(
+        `http://localhost:3000/auth/social-login`,
+        {
+          userData,
+          token,
+        }
+      );
+
+      // Redirect or perform additional actions
+      toast.success(response.data.message);
+
+      storeTokenInLS(response.data.token);
+      const userId = response.data.userId;
+
+      if (response.data.isVerified === false) {
+        setTimeout(() => {
+          navigate("/verify-otp", { state: { userId } });
+        }, 3000);
+      } else {
+        setTimeout(() => {
+          navigate("/dashboard");
+        }, 3000);
+      }
     } catch (error) {
-      toast.error("Facebook Login failed.");
-      console.error(error);
+      console.error("Facebook login error:", error);
+
+      // Get error message from Firebase
+      const errorMessage = error.message;
+
+      // Show detailed error message
+      toast.error(`Facebook login failed: ${errorMessage}`);
     }
   };
 

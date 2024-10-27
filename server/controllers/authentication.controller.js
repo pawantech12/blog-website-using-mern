@@ -97,9 +97,11 @@ const verifyOtp = async (req, res) => {
     user.otp = null;
     await user.save();
 
-    res
-      .status(200)
-      .json({ message: "Email verified successfully", success: true });
+    res.status(200).json({
+      message: "Email verified successfully",
+      success: true,
+      isVerified: user.isVerified,
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }
@@ -130,7 +132,7 @@ const resendOtp = async (req, res) => {
 
     // Send the new OTP to the user's email
     await sendEmail(
-      email,
+      user.email,
       "Resend OTP for Account Verification",
       `Your new OTP for account verification is: ${otp}`
     );
@@ -794,6 +796,9 @@ const updateUserPassword = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const userId = req.user.userId;
+    console.log("userid: ", userId);
+    const { password } = req.body;
+
     const user = await User.findById(userId);
 
     if (!user) {
@@ -802,11 +807,41 @@ const deleteUser = async (req, res) => {
         .json({ message: "User not found", success: false });
     }
 
+    // Verify the password
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res
+        .status(401)
+        .json({ message: "Incorrect password", success: false });
+    }
+
     // Log the user ID before deletion
     console.log(`About to delete user with ID: ${user._id}`);
 
+    // Delete user images from Cloudinary
+    if (user.profileImg) {
+      const profilePublicId = user.profileImg.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(
+        `blog_website/profile_images/${profilePublicId}`
+      );
+    }
+
+    if (user.bannerImg) {
+      const bannerPublicId = user.bannerImg.split("/").pop().split(".")[0];
+      await cloudinary.uploader.destroy(
+        `blog_website/banner_images/${bannerPublicId}`
+      );
+    }
+
     // Get the user's blogs and comments before deletion
     const blogs = await Blog.find({ author: user._id });
+
+    for (const blog of blogs) {
+      if (blog.coverImagePublicId) {
+        await cloudinary.uploader.destroy(blog.coverImagePublicId);
+      }
+    }
+
     const blogIds = blogs.map((blog) => blog._id);
 
     // Delete all comments associated with the user's blogs

@@ -3,6 +3,7 @@ import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../store/Authentication";
 
 const VerifyCode = () => {
   const {
@@ -12,6 +13,7 @@ const VerifyCode = () => {
   } = useForm();
   const navigate = useNavigate();
   const { state } = useLocation();
+  const { user } = useAuth();
   const userId = state?.userId;
   console.log("userId from state: ", userId);
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,9 @@ const VerifyCode = () => {
       );
       toast.success(response.data.message);
       setTimeout(() => {
-        navigate("/login");
+        navigate(
+          `${response.data.isVerified === true ? "/dashboard" : "/login"}`
+        );
       }, 3000);
     } catch (error) {
       toast.error(error.response?.data?.message || "Invalid OTP");

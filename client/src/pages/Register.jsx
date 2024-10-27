@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import google from "../img/google.png";
-import facebook from "../img/facebook.png";
+
 import axios from "axios";
 import { toast } from "react-toastify"; // Import toast
-import { GoogleAuthProvider, signInWithPopup, getAuth } from "firebase/auth";
-import { app } from "../config/firebase.config";
-import { useAuth } from "../store/Authentication";
+
+import SignAuth from "../components/SignAuth";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 const Register = () => {
   const {
@@ -18,9 +17,10 @@ const Register = () => {
   } = useForm();
   const [apiError, setApiError] = useState(""); // for handling API error messages
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [show, setShow] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const navigate = useNavigate();
-  const { storeTokenInLS } = useAuth();
 
   const onSubmit = async (data) => {
     console.log(data);
@@ -71,46 +71,11 @@ const Register = () => {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      const auth = getAuth(app);
-      const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken(); // Firebase token
-      console.log("result", result);
-
-      const userData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        password: "@Password123",
-        profileImg: result.user.photoURL,
-        username: result.user.displayName.replace(/\s+/g, ""),
-        isVerified: result.user.emailVerified,
-      };
-      // Send token and user data to your backend
-      const response = await axios.post(
-        `http://localhost:3000/auth/social-login2`,
-        {
-          userData,
-          token,
-        }
-      );
-
-      // Redirect or perform additional actions
-      toast.success(response.data.message);
-      storeTokenInLS(response.data.token);
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 3000);
-    } catch (error) {
-      console.error("Google login error:", error);
-
-      // Get error message from Firebase
-      const errorMessage = error.message;
-
-      // Show detailed error message
-      toast.error(`Google login failed: ${errorMessage}`);
-    }
+  const toggleShowPassword = () => {
+    setShow(!show);
+  };
+  const toggleShowConfirmPassword = () => {
+    setShowConfirm(!showConfirm);
   };
 
   return (
@@ -185,13 +150,25 @@ const Register = () => {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              {...register("password", { required: "Password is required" })}
-              className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Password"
-            />
+            <div className="flex gap-1 items-center">
+              <input
+                type={`${show ? "text" : "password"}`}
+                id="password"
+                {...register("password", { required: "Password is required" })}
+                className=" w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
+                placeholder="Password"
+              />
+              <span
+                className=" p-3 text-gray-700 cursor-pointer bg-white border border-gray-200 rounded-md"
+                onClick={toggleShowPassword}
+              >
+                {show ? (
+                  <IoEye className="w-5 h-5" />
+                ) : (
+                  <IoEyeOff className="w-5 h-5" />
+                )}
+              </span>
+            </div>
             {errors.password && (
               <span className="text-[13px] mt-1 font-medium text-gray-500">
                 {errors.password.message}
@@ -207,15 +184,27 @@ const Register = () => {
             >
               Confirm Password
             </label>
-            <input
-              type="password"
-              id="cpassword"
-              {...register("cpassword", {
-                required: "Confirm Password is required",
-              })}
-              className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Confirm Password"
-            />
+            <div className="flex items-center gap-1">
+              <input
+                type={`${showConfirm ? "text" : "password"}`}
+                id="cpassword"
+                {...register("cpassword", {
+                  required: "Confirm Password is required",
+                })}
+                className="w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
+                placeholder="Confirm Password"
+              />
+              <span
+                className=" p-3 text-gray-700 cursor-pointer bg-white border border-gray-200 rounded-md"
+                onClick={toggleShowConfirmPassword}
+              >
+                {showConfirm ? (
+                  <IoEye className="w-5 h-5" />
+                ) : (
+                  <IoEyeOff className="w-5 h-5" />
+                )}
+              </span>
+            </div>
             {errors.password && (
               <span className="text-[13px] mt-1 font-medium text-gray-500">
                 {errors.password.message}
@@ -243,19 +232,7 @@ const Register = () => {
         </div>
 
         {/* Social Sign Up Buttons */}
-        <div className="flex justify-center gap-4">
-          <button
-            className="flex items-center gap-2 bg-gray-100  py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200"
-            onClick={handleGoogleLogin}
-          >
-            <img src={google} alt="Google Logo" className="w-8" />
-            Google
-          </button>
-          <button className="flex items-center gap-2 w-1/2  py-3 px-4 rounded-md bg-gray-100 transition font-medium justify-center hover:bg-gray-200">
-            <img src={facebook} alt="Facebook Logo" className="w-8" />
-            Facebook
-          </button>
-        </div>
+        <SignAuth />
 
         <p className="text-center mt-5 font-medium ">
           Already Have an Account?{" "}

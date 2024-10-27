@@ -7,6 +7,7 @@ import SocialMediaSettings from "../components/SocialMediaSettings";
 import ThemeSetting from "../components/ThemeSetting";
 import LanguageSetting from "../components/LanguageSetting";
 import UpdatePassword from "../components/UpdatePassword";
+import DeactivateAccount from "../components/DeactivateAccount";
 
 const Setting = () => {
   const {
@@ -110,6 +111,9 @@ const Setting = () => {
             apiError={apiError}
           />
         );
+      case "deleteAccount":
+        return <DeactivateAccount />;
+
       default:
         return null;
     }
@@ -161,6 +165,16 @@ const Setting = () => {
             onClick={() => setActiveTab("updatePassword")}
           >
             Update Password
+          </button>
+          <button
+            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
+              activeTab === "deleteAccount"
+                ? "bg-custom-light-black text-white"
+                : "hover:bg-gray-200 text-gray-700"
+            }`}
+            onClick={() => setActiveTab("deleteAccount")}
+          >
+            Deactivate Account
           </button>
           {/* Add more options as needed */}
         </nav>

@@ -5,6 +5,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import { toast } from "react-toastify"; // Import toast
+import SignAuth from "../components/SignAuth";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 const Login = () => {
   const {
@@ -15,6 +17,8 @@ const Login = () => {
   } = useForm();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [show, setShow] = useState(false);
+
   const navigate = useNavigate();
   const { storeTokenInLS } = useAuth();
 
@@ -32,11 +36,14 @@ const Login = () => {
       console.log("Login successful:", response);
 
       storeTokenInLS(response.data.token);
+
       toast.success(response.data.message); // Display success toast
+
       setTimeout(() => {
         navigate("/dashboard");
       }, 3000);
     } catch (error) {
+      console.log("error", error);
       if (error.response && error.response.data.errors) {
         // Map API errors to react-hook-form
         const apiErrors = error.response.data.errors.reduce((acc, curr) => {
@@ -55,6 +62,10 @@ const Login = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const toggleShowPassword = () => {
+    setShow(!show);
   };
 
   return (
@@ -102,13 +113,25 @@ const Login = () => {
             >
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              {...register("password", { required: "Password is required" })}
-              className="mt-1 w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
-              placeholder="Password"
-            />
+            <div className="flex gap-1 items-center">
+              <input
+                type={`${show ? "text" : "password"}`}
+                id="password"
+                {...register("password", { required: "Password is required" })}
+                className=" w-full px-4 h-12 py-2 border border-custom-light-orange rounded-md shadow-sm focus:ring-orange-400 focus:border-orange-400 outline-none bg-[#F7F7F7] placeholder:text-sm placeholder:font-medium placeholder:text-custom-black/80"
+                placeholder="Password"
+              />
+              <span
+                className=" p-3 text-gray-700 cursor-pointer bg-white border border-gray-200 rounded-md"
+                onClick={toggleShowPassword}
+              >
+                {show ? (
+                  <IoEye className="w-5 h-5" />
+                ) : (
+                  <IoEyeOff className="w-5 h-5" />
+                )}
+              </span>
+            </div>
             {errors.password && (
               <span className="text-[13px] mt-1 font-medium text-gray-500">
                 {errors.password.message}
@@ -146,16 +169,7 @@ const Login = () => {
         </div>
 
         {/* Social Sign Up Buttons */}
-        {/* <div className="flex justify-center gap-4">
-          <button className="flex items-center gap-2 bg-gray-100 py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200">
-            <img src={google} alt="Google Logo" className="w-8" />
-            Google
-          </button>
-          <button className="flex items-center gap-2 w-1/2 py-3 px-4 rounded-md bg-gray-100 transition font-medium justify-center hover:bg-gray-200">
-            <img src={facebook} alt="Facebook Logo" className="w-8" />
-            Facebook
-          </button>
-        </div> */}
+        <SignAuth />
 
         <p className="text-center mt-5 font-medium ">
           Don&apos;t Have an Account?{" "}

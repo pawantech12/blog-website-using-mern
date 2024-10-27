@@ -149,45 +149,43 @@ const EditProfile = () => {
             alt="banner img"
             className="w-full h-56 object-cover rounded-lg shadow-lg"
           />
-          {!userDetails.bannerImg && (
-            <label className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
-              <FaEdit className="text-gray-700" />
-              <input
-                type="file"
-                onChange={(event) => {
-                  const file = event.target.files[0];
-                  if (file) {
-                    // Store the file in the form data manually
-                    setValue("bannerImg", event.target.files);
-                    setBannerImgPreview(URL.createObjectURL(file)); // Preview image
-                  }
-                }}
-                className="hidden"
-              />
-            </label>
-          )}
+
+          <label className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
+            <FaEdit className="text-gray-700" />
+            <input
+              type="file"
+              onChange={(event) => {
+                const file = event.target.files[0];
+                if (file) {
+                  // Store the file in the form data manually
+                  setValue("bannerImg", event.target.files);
+                  setBannerImgPreview(URL.createObjectURL(file)); // Preview image
+                }
+              }}
+              className="hidden"
+            />
+          </label>
+
           <img
             src={profileImgPreview || "https://via.placeholder.com/150"} // Use userDetails's profile image
             alt="profile image"
             className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
           />
-          {!userDetails.profileImg && (
-            <label className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
-              <FaEdit className="text-gray-700" />
-              <input
-                type="file"
-                onChange={(event) => {
-                  const file = event.target.files[0];
-                  if (file) {
-                    // Store the file in the form data manually
-                    setValue("profileImg", event.target.files);
-                    setProfileImgPreview(URL.createObjectURL(file)); // Preview image
-                  }
-                }}
-                className="hidden"
-              />
-            </label>
-          )}
+          <label className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
+            <FaEdit className="text-gray-700" />
+            <input
+              type="file"
+              onChange={(event) => {
+                const file = event.target.files[0];
+                if (file) {
+                  // Store the file in the form data manually
+                  setValue("profileImg", event.target.files);
+                  setProfileImgPreview(URL.createObjectURL(file)); // Preview image
+                }
+              }}
+              className="hidden"
+            />
+          </label>
         </div>
         <div className="mt-[5rem] space-y-4">
           <div className="flex items-center gap-6">

@@ -310,7 +310,12 @@ export const Navbar = () => {
                       <hr className="my-2" />
                       <div className="text-center">
                         <button className="w-full">
-                          <Link className="font-medium">View All</Link>
+                          <Link
+                            to={`/dashboard/notifications`}
+                            className="font-medium"
+                          >
+                            View All
+                          </Link>
                         </button>
                       </div>
                     </div>

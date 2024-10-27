@@ -27,6 +27,7 @@ import VerifyCode from "./components/VerifyCode.jsx";
 import Setting from "./pages/admin/pages/Setting.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 import ResetPassword from "./pages/ResetPassword.jsx";
+import Notification from "./pages/admin/components/Notification.jsx";
 
 const router = createBrowserRouter([
   {
@@ -106,6 +107,10 @@ const router = createBrowserRouter([
     element: <App element={<Dashboard element={<Setting />} />} />,
   },
   {
+    path: "/dashboard/notifications",
+    element: <App element={<Dashboard element={<Notification />} />} />,
+  },
+  {
     path: "/user/profile/:userId",
     element: <App element={<Profile />} />,
   },
@@ -117,7 +122,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
       <RouterProvider router={router} />
       <ToastContainer
         position="bottom-right" // Set position to bottom-right
-        autoClose={3000} // Automatically close after 5 seconds
+        autoClose={3000} // Automatically close after 3 seconds
+        limit={1}
         hideProgressBar={false} // Show progress bar
         newestOnTop={false} // Display newest on top
         closeOnClick

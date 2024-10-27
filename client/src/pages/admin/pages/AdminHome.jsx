@@ -6,7 +6,6 @@ import Table from "../components/Table";
 
 import SearchFilter from "../components/SearchFilter";
 import { Link, useNavigate } from "react-router-dom";
-import initialBlogs from "../../../data/BlogSample";
 import ConfirmationModal from "../components/ConfirmationModal";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";

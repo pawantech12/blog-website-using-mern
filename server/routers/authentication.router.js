@@ -26,6 +26,7 @@ const {
   getAllNotificationOfCurrentUser,
   markAllNotificationAsRead,
 } = require("../controllers/notification.controller");
+const limiter = require("../utils/rate_limit");
 
 const router = express.Router();
 
@@ -63,6 +64,6 @@ router
   .route("/mark-all-notifications-as-read")
   .put(authenticateToken, markAllNotificationAsRead);
 
-router.route("/delete-user").delete(authenticateToken, deleteUser);
+router.route("/delete-account").delete(authenticateToken, deleteUser);
 
 module.exports = router;
