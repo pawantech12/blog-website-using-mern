@@ -481,6 +481,11 @@ const toggleSavedPost = async (req, res) => {
         .status(404)
         .json({ success: false, message: "Blog not found." });
     }
+    if (userId === findBlogUser.author) {
+      return res
+        .status(400)
+        .json({ success: false, message: "You cannot save your own post." });
+    }
 
     // Check if the post is already saved
     const isPostSaved = user.savedPosts.includes(blogId);

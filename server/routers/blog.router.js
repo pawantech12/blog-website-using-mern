@@ -12,6 +12,8 @@ const {
   getAllBlogsByUserId,
   likeBlog,
   unlikeBlog,
+  incrementBlogViews,
+  getUserBlogsSummary,
 } = require("../controllers/blog.controller");
 const {
   authenticateToken,
@@ -28,13 +30,12 @@ router
   .put(authenticateToken, upload.single("coverImage"), updateBlogPost);
 router.route("/all-blogs").get(getAllUserBlogs);
 router.route("/following-blogs").get(authenticateToken, getBlogsFromFollowing);
-router.route("/get-blog/:id").get(getBlogById);
+router.route("/get-blog/:id").get(incrementBlogViews, getBlogById);
 router.route("/get-blogs").get(authenticateToken, getAllBlogs);
 router.route("/user/:id/blogs").get(getAllBlogsByUserId);
 router.route("/delete-blog/:id").delete(authenticateToken, deleteBlogPost);
-// router.route("/save-blog/:id").put(authenticateToken, saveBlogPost);
-// router.route("/unsave-blog/:id").put(authenticateToken, unsaveBlogPost);
 router.route("/:blogId/like").post(authenticateToken, likeBlog);
 router.route("/:blogId/unlike").post(authenticateToken, unlikeBlog);
+router.route("/get-blog-summary").get(authenticateToken, getUserBlogsSummary);
 
 module.exports = router;

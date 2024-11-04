@@ -50,7 +50,7 @@ export const Home = () => {
   const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
   const [savedPosts, setSavedPosts] = useState([]);
 
-  const itemsPerPage = 1;
+  const itemsPerPage = 5;
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true); // Start loader before fetching data
@@ -214,10 +214,8 @@ export const Home = () => {
         data
       );
 
-      if (response.data.success) {
-        toast.success(response.data.message);
-        reset(); // Reset form on successful submission
-      }
+      toast.success(response.data.message);
+      reset(); // Reset form on successful submission
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
@@ -231,46 +229,44 @@ export const Home = () => {
       toast.error("Please login to like a blog");
       return;
     }
+
     setLocalLoading(true);
+
     try {
-      if (!user?.user?._id || !blogs) {
-        return; // Exit early if user or blogs data isn't available
-      }
+      const isLiked = likedBlogs.includes(blogId);
 
-      const isLiked = likedBlogs.includes(blogId); // Check if the blog is already liked
-
-      // Optimistically update the UI
-      const updatedBlogs = blogs.map((blog) =>
-        blog._id === blogId
-          ? {
-              ...blog,
-              likes: isLiked
-                ? blog.likes.filter((id) => id !== user.user._id) // Remove like
-                : [...blog.likes, user.user._id], // Add like
-            }
-          : blog
+      // Optimistic UI update
+      setLikedBlogs((prevLikedBlogs) =>
+        isLiked
+          ? prevLikedBlogs.filter((id) => id !== blogId)
+          : [...prevLikedBlogs, blogId]
+      );
+      setBlogs((prevBlogs) =>
+        prevBlogs.map((blog) =>
+          blog._id === blogId
+            ? {
+                ...blog,
+                likes: isLiked
+                  ? blog.likes.filter((id) => id !== user.user._id)
+                  : [...blog.likes, user.user._id],
+              }
+            : blog
+        )
       );
 
-      setBlogs(updatedBlogs); // Update blogs in state
-
-      // Update the likedBlogs state
-      const updatedLikedBlogs = isLiked
-        ? likedBlogs.filter((id) => id !== blogId) // Remove blog ID from likedBlogs
-        : [...likedBlogs, blogId]; // Add blog ID to likedBlogs
-
-      setLikedBlogs(updatedLikedBlogs);
-
-      // Make API call to update likes on the backend
+      // Make API call to toggle like
       const response = isLiked
         ? await unLikeBlog(blogId)
         : await likeBlog(blogId);
 
-      // Rollback on failure
+      // Rollback UI if backend request fails
       if (!response.success) {
-        setLikedBlogs(
-          isLiked ? [...updatedLikedBlogs, blogId] : updatedLikedBlogs
-        ); // Rollback likedBlogs
-        setBlogs(blogs); // Rollback blogs state
+        setLikedBlogs((prevLikedBlogs) =>
+          isLiked
+            ? [...prevLikedBlogs, blogId]
+            : prevLikedBlogs.filter((id) => id !== blogId)
+        );
+        setBlogs(blogs);
       }
     } catch (error) {
       console.error("Error updating likes:", error);
@@ -278,6 +274,7 @@ export const Home = () => {
       setLocalLoading(false);
     }
   };
+
   const handleSaveClick = async (postId) => {
     if (user === null) {
       toast.error("Please login to save a blog");
@@ -317,25 +314,25 @@ export const Home = () => {
   }
   return (
     <>
-      <section className="p-6 md:p-16 bg-zinc-100 flex flex-col md:flex-row gap-8 md:gap-12 w-full">
+      <section className="p-6 md:p-16 bg-zinc-100 flex max-lg:flex-col gap-8 md:gap-12 w-full">
         {blogs.length > 0 ? (
           <>
-            <div className="flex flex-col md:w-[78%] md:flex-row gap-6 md:gap-10">
-              <div className="flex flex-row md:flex-col gap-4 justify-between w-[50%]">
+            <div className="flex flex-col lg:w-[78%] max-lg:w-full md:flex-row gap-6 md:gap-10">
+              <div className="flex flex-row md:flex-col max-[480px]:flex-col gap-4 w-[50%] max-md:w-full">
                 {/* Assuming you have some feature images */}
-                {[0, 1, 2, 3].map((index) => (
-                  <figure key={index}>
-                    <Link to={`/blog-post/${blogs[index]?._id}`}>
+                {blogs.slice(0, 3).map((blog, index) => (
+                  <figure key={index} className="w-full h-1/4">
+                    <Link to={`/blog-post/${blog?._id}`}>
                       <img
-                        src={blogs[index]?.coverImage}
+                        src={blog?.coverImage}
                         alt=""
-                        className="rounded-xl object-cover"
+                        className="rounded-xl w-full h-full object-cover"
                       />
                     </Link>
                   </figure>
                 ))}
               </div>
-              <div className="w-[50%] md:w-full h-full">
+              <div className="w-[50%] md:w-full h-full max-md:w-full">
                 <figure className="p-3 bg-white rounded-xl h-full">
                   <Link to={`/blog-post/${blogs[0]?._id}`} className="h-full">
                     <img
@@ -347,7 +344,7 @@ export const Home = () => {
                 </figure>
               </div>
             </div>
-            <div className="w-full md:w-1/3 flex flex-col justify-around gap-4">
+            <div className="w-full lg:w-1/3 flex flex-col justify-around gap-4">
               {blogs.slice(0, 2).map((blog) => (
                 <div key={blog._id} className="flex flex-col gap-5">
                   <div className="flex items-center gap-3">
@@ -412,15 +409,15 @@ export const Home = () => {
         )}
       </section>
 
-      <section className="p-4 md:p-16">
+      <section className="p-4 md:p-16 max-md:mt-10">
         <h4 className="text-2xl font-semibold text-neutral-700">
           Trending Articles
         </h4>
-        <div className="grid grid-cols-1 md:grid-cols-2 mt-8 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 mt-8 gap-8">
           {blogs.length > 0 ? (
             blogs.map((blog, index) => (
-              <div key={index} className="flex gap-6">
-                <div className="w-full h-40">
+              <div key={index} className="flex gap-6 max-[480px]:flex-col">
+                <div className="w-[50%] max-[480px]:w-full lg:w-full h-40 max-[480px]:h-52">
                   <figure className="w-full h-full">
                     <img
                       src={blog.coverImage}
@@ -487,7 +484,7 @@ export const Home = () => {
         </div>
       </section>
       {followingUsers && followingUsers.length > 0 && (
-        <section className="px-16 py-20">
+        <section className="px-16 py-20 max-md:px-4">
           <div className="border-t border-b border-gray-200 py-5 flex justify-between items-center">
             <h4 className="text-2xl font-medium text-neutral-700">
               From Following
@@ -517,10 +514,10 @@ export const Home = () => {
                 followingUsers.map((user, index) => (
                   <div
                     key={index}
-                    className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200"
+                    className="w-full flex flex-shrink-0 gap-7 px-7 py-8 box-border group transition-all ease-in-out duration-200 max-lg:flex-col"
                     style={{ width: "98.33%" }}
                   >
-                    <div className="grid grid-cols-2 gap-7 w-[70%]">
+                    <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-7 w-[70%] max-lg:w-full">
                       {followingBlogs
                         ?.filter((blog) => blog.author._id === user._id)
                         .map((blog, index) => (
@@ -599,7 +596,7 @@ export const Home = () => {
                         ))}
                     </div>
 
-                    <div className="w-[28%] flex flex-col justify-between gap-6">
+                    <div className="lg:w-[28%] flex flex-col justify-between gap-6">
                       <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
                         <figure className="border border-gray-200 rounded-full p-2">
                           <img
@@ -668,8 +665,9 @@ export const Home = () => {
         </section>
       )}
 
-      <section className="flex gap-2 px-20 py-20 bg-[#FAFAFA]">
-        <div className="w-1/4">
+      <section className="flex flex-col lg:flex-row gap-6 px-5 md:px-10 lg:px-20 py-10 bg-[#FAFAFA]">
+        {/* Heading and Navigation Buttons */}
+        <div className="w-full lg:w-1/4">
           <h4 className="text-3xl font-semibold text-neutral-800">
             Trending Topic
           </h4>
@@ -689,13 +687,18 @@ export const Home = () => {
           </div>
         </div>
 
-        <div className="overflow-hidden w-[75%]">
+        {/* Carousel Grid */}
+        <div className="overflow-hidden w-full lg:w-[75%]">
           <div
-            className="flex transition-transform w-full duration-500 ease-in-out gap-6 "
-            style={{ transform: `translateX(-${(catcurrent * 95) / 5}%)` }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-transform duration-500 ease-in-out"
+            style={{
+              transform: `translateX(-${
+                (catcurrent * 95) / categories.length
+              }%)`,
+            }}
           >
             {categories.map((item, index) => (
-              <div key={index} className="relative w-[16.8%] flex-shrink-0">
+              <div key={index} className="relative flex-shrink-0">
                 <Link
                   to={`/category/${item._id}`}
                   state={{ categoryName: item.name }}
@@ -719,24 +722,29 @@ export const Home = () => {
           </div>
         </div>
       </section>
-      <section className="px-20 py-20 bg-[#FAFAFA]">
-        <div className="flex items-center gap-5 relative bg-white rounded-xl h-56 px-20">
-          <h4 className="text-2xl font-semibold text-neutral-700 w-1/4">
+
+      <section className="px-20 py-20 bg-[#FAFAFA] max-md:px-5">
+        <div className="flex max-lg:flex-col items-center gap-5 relative bg-white rounded-xl h-56 px-20 py-4 max-md:px-5">
+          <h4 className="text-2xl font-semibold text-neutral-700 max-lg:w-full max-lg:text-center">
             Subscribe For Newsletter
           </h4>
-          <form onSubmit={handleSubmit(onSubmit)} className=" w-2/3">
-            <div className="flex items-center gap-5">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className=" w-2/3 max-md:w-full"
+          >
+            <div className="flex items-center gap-5 max-lg:flex-col">
               <input
                 type="text"
                 placeholder="Enter your email"
                 {...register("email", { required: "Email is required" })}
-                className="h-14 px-5 rounded-lg border outline-none border-gray-200 w-2/3"
+                className="h-14 px-5 rounded-lg border outline-none border-gray-200 w-2/3 max-lg:w-full"
               />
               <button
+                disabled={loading}
                 type="submit"
                 className="bg-orange-400 px-5 text-white hover:bg-orange-500 transition-all ease-in-out duration-200 py-[14px] font-medium text-[17px] rounded-lg"
               >
-                Subscribe Now
+                {loading ? "Subscribing" : "Subscribe Now"}
               </button>
             </div>
             {success && <p className="text-green-500">{success}</p>}
@@ -745,145 +753,153 @@ export const Home = () => {
           <img
             src={newsletter1}
             alt=""
-            className="absolute bottom-0 left-[20%]"
+            className="absolute bottom-0 left-[20%] max-md:left-[5%] max-sm:hidden"
           />
           <img
             src={newsletter2}
             alt=""
-            className="absolute bottom-0 right-[2%]"
+            className="absolute bottom-0 right-[2%] max-md:right-0 max-sm:hidden"
           />
         </div>
       </section>
-      <section className="px-20 py-20">
+      <section className="px-20 py-20 max-[480px]:px-5">
         <h4 className="text-3xl font-semibold text-neutral-800">
           Featured Blogs
         </h4>
-        <div className="flex gap-8 mt-7">
-          <div className="w-[38%] flex flex-col gap-10">
-            {firstColumnBlogs.map((item, index) => {
-              return (
-                <div key={index} className="flex flex-col cursor-pointer gap-3">
-                  <div className="w-full">
-                    <figure className="h-[300px]">
-                      <img
-                        src={item.coverImage}
-                        alt={item.title}
-                        className="rounded-xl h-[inherit] object-cover"
-                      />
-                    </figure>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center gap-3">
-                      <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                        {item.category.name}
-                      </span>
-                      <span className="flex gap-1 items-center">
-                        <LuCalendarDays />
-                        {new Date(item.publishedDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
-                      </span>
-                      <div className="text-xl flex gap-2 items-center">
-                        <button onClick={() => handleSaveClick(item?._id)}>
-                          {savedPosts.includes(item?._id) ? (
-                            <BsBookmarkCheckFill />
-                          ) : (
-                            <BsBookmarkDash />
-                          )}
-                        </button>
-                        <button onClick={() => handleLikeClick(item?._id)}>
-                          {likedBlogs.includes(item._id) ? (
-                            <FaHeart className="text-red-500" />
-                          ) : (
-                            <FaRegHeart />
-                          )}
-                        </button>
-                        <span>{item.likes.length}</span>
-                      </div>
+        <div className="flex gap-8 mt-7 max-lg:flex-col">
+          <div className="w-[70%] max-lg:w-full flex gap-3 max-md:flex-col max-md:w-full">
+            <div className="w-[50%] flex flex-col gap-10 max-md:w-full">
+              {firstColumnBlogs.map((item, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col cursor-pointer gap-3"
+                  >
+                    <div className="w-full">
+                      <figure className="h-[300px] max-md:w-full max-md:h-[200px]">
+                        <img
+                          src={item.coverImage}
+                          alt={item.title}
+                          className="rounded-xl w-full h-[inherit] object-cover"
+                        />
+                      </figure>
                     </div>
-                    <h5 className="text-2xl font-medium ">
-                      <Link
-                        to={`/blog-post/${item._id}`}
-                        className="hover:text-orange-400 transition-all ease-in-out duration-200"
-                      >
-                        {item.title.length > 50
-                          ? `${item.title.slice(0, 50)}...`
-                          : item.title}
-                      </Link>
-                    </h5>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="w-[30%] grid grid-cols-1 grid-rows-3 gap-3">
-            {secondColumnBlogs.map((item, index) => {
-              return (
-                <div key={index} className="flex flex-col cursor-pointer gap-3">
-                  <div className="w-full">
-                    <figure>
-                      <img
-                        src={item.coverImage}
-                        alt={item.title}
-                        className="rounded-xl object-cover h-40 w-full"
-                      />
-                    </figure>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center gap-3">
-                      <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                        {item.category.name}
-                      </span>
-                      <span className="flex gap-1 items-center">
-                        <LuCalendarDays />
-                        {new Date(item.publishedDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          }
-                        )}
-                      </span>
-                      <div className="text-xl flex gap-2 items-center">
-                        <button onClick={() => handleSaveClick(item?._id)}>
-                          {savedPosts.includes(item?._id) ? (
-                            <BsBookmarkCheckFill />
-                          ) : (
-                            <BsBookmarkDash />
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center gap-3">
+                        <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                          {item.category.name}
+                        </span>
+                        <span className="flex gap-1 items-center">
+                          <LuCalendarDays />
+                          {new Date(item.publishedDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
                           )}
-                        </button>
-                        <button onClick={() => handleLikeClick(item?._id)}>
-                          {likedBlogs.includes(item._id) ? (
-                            <FaHeart className="text-red-500" />
-                          ) : (
-                            <FaRegHeart />
-                          )}
-                        </button>
-                        <span>{item.likes.length}</span>
+                        </span>
+                        <div className="text-xl flex gap-2 items-center">
+                          <button onClick={() => handleSaveClick(item?._id)}>
+                            {savedPosts.includes(item?._id) ? (
+                              <BsBookmarkCheckFill />
+                            ) : (
+                              <BsBookmarkDash />
+                            )}
+                          </button>
+                          <button onClick={() => handleLikeClick(item?._id)}>
+                            {likedBlogs.includes(item._id) ? (
+                              <FaHeart className="text-red-500" />
+                            ) : (
+                              <FaRegHeart />
+                            )}
+                          </button>
+                          <span>{item.likes.length}</span>
+                        </div>
                       </div>
+                      <h5 className="text-2xl font-medium ">
+                        <Link
+                          to={`/blog-post/${item._id}`}
+                          className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                        >
+                          {item.title.length > 50
+                            ? `${item.title.slice(0, 50)}...`
+                            : item.title}
+                        </Link>
+                      </h5>
                     </div>
-                    <h5 className="text-lg font-medium ">
-                      <Link
-                        to={`/blog-post/${item._id}`}
-                        className="hover:text-orange-400 transition-all ease-in-out duration-200"
-                      >
-                        {item.title.length > 50
-                          ? `${item.title.slice(0, 50)}...`
-                          : item.title}
-                      </Link>
-                    </h5>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
+            <div className="w-[50%] grid grid-cols-1 grid-rows-3 gap-3 max-md:w-full">
+              {secondColumnBlogs.map((item, index) => {
+                return (
+                  <div
+                    key={index}
+                    className="flex flex-col cursor-pointer gap-3"
+                  >
+                    <div className="w-full">
+                      <figure>
+                        <img
+                          src={item.coverImage}
+                          alt={item.title}
+                          className="rounded-xl object-cover h-40 w-full"
+                        />
+                      </figure>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex justify-between items-center gap-3">
+                        <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                          {item.category.name}
+                        </span>
+                        <span className="flex gap-1 items-center">
+                          <LuCalendarDays />
+                          {new Date(item.publishedDate).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )}
+                        </span>
+                        <div className="text-xl flex gap-2 items-center">
+                          <button onClick={() => handleSaveClick(item?._id)}>
+                            {savedPosts.includes(item?._id) ? (
+                              <BsBookmarkCheckFill />
+                            ) : (
+                              <BsBookmarkDash />
+                            )}
+                          </button>
+                          <button onClick={() => handleLikeClick(item?._id)}>
+                            {likedBlogs.includes(item._id) ? (
+                              <FaHeart className="text-red-500" />
+                            ) : (
+                              <FaRegHeart />
+                            )}
+                          </button>
+                          <span>{item.likes.length}</span>
+                        </div>
+                      </div>
+                      <h5 className="text-lg font-medium ">
+                        <Link
+                          to={`/blog-post/${item._id}`}
+                          className="hover:text-orange-400 transition-all ease-in-out duration-200"
+                        >
+                          {item.title.length > 50
+                            ? `${item.title.slice(0, 50)}...`
+                            : item.title}
+                        </Link>
+                      </h5>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-          <div className="w-[30%] flex flex-col gap-8">
+          <div className="w-[30%] flex flex-col gap-8 max-lg:w-full">
             <LatestPostSection />
             <div className="bg-[#FAFAFA] rounded-xl px-5 py-4">
               <h4 className="text-2xl text-center font-semibold text-neutral-800">

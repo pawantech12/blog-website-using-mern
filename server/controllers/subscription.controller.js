@@ -3,26 +3,31 @@ const Subscription = require("../models/subscription.model");
 const userSubscriptionData = async (req, res) => {
   const { name, email } = req.body;
 
-  if (!email) {
-    return res
-      .status(400)
-      .json({ message: "Email is required", success: false });
-  }
-  if (!name) {
+  try {
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Email is required", success: false });
+    }
     const emailExists = await Subscription.findOne({ email });
-    if (emailExists) {
+
+    if (!name && emailExists) {
       return res
         .status(400)
         .json({ message: "You have already subscribed", success: false });
     }
-  }
 
-  try {
-    const existingSubscription = await Subscription.findOne({ email });
-    if (existingSubscription) {
+    if (emailExists) {
+      // if user had already filled name and email then we will return a message indicating that user had already subscribed
+      if (emailExists.name !== "" && emailExists.email !== "") {
+        return res
+          .status(400)
+          .json({ message: "You have already subscribed", success: false });
+      }
+
       // Update the subscription with the new name if provided
-      existingSubscription.name = name || existingSubscription.name;
-      await existingSubscription.save();
+      emailExists.name = name || emailExists.name;
+      await emailExists.save();
       return res
         .status(200)
         .json({ message: "Subscription updated successfully!", success: true });

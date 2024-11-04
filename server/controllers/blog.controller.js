@@ -8,6 +8,7 @@ const {
   sendRealTimeNotification,
   deleteRealTimeNotification,
 } = require("../socket");
+const mongoose = require("mongoose");
 // Helper function to compute hash of image buffer
 const computeImageHash = (buffer) => {
   return crypto.createHash("md5").update(buffer).digest("hex");
@@ -399,88 +400,6 @@ const getBlogById = async (req, res) => {
   }
 };
 
-// // Save a blog post to user's saved posts
-// const saveBlogPost = async (req, res) => {
-//   try {
-//     const userId = req.user.userId;
-//     const blogId = req.params.id;
-//     // console.log("userId", userId);
-//     // console.log("blogId", blogId);
-
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     // Check if blog is already saved
-//     if (user.savedPosts.includes(blogId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Blog post already saved",
-//       });
-//     }
-
-//     user.savedPosts.push(blogId);
-//     await user.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Blog post saved successfully",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to save blog post",
-//       error: error.message,
-//     });
-//   }
-// };
-
-// // Remove a blog post from user's saved posts
-// const unsaveBlogPost = async (req, res) => {
-//   try {
-//     const userId = req.user.userId;
-//     const blogId = req.params.id;
-
-//     const user = await User.findById(userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "User not found",
-//       });
-//     }
-
-//     // Check if blog is not in saved posts
-//     if (!user.savedPosts.includes(blogId)) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Blog post not in saved posts",
-//       });
-//     }
-
-//     user.savedPosts = user.savedPosts.filter(
-//       (postId) => postId.toString() !== blogId
-//     );
-//     await user.save();
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Blog post removed from saved posts",
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: "Failed to unsave blog post",
-//       error: error.message,
-//     });
-//   }
-// };
-
 // Controller for liking a blog post
 const likeBlog = async (req, res) => {
   try {
@@ -494,6 +413,12 @@ const likeBlog = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Blog not found" });
+    }
+
+    if (userId === blog.author.toString()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "You cannot like your own blog" });
     }
 
     // Check if the user has already liked the blog
@@ -599,6 +524,122 @@ const unlikeBlog = async (req, res) => {
   }
 };
 
+const VIEW_THRESHOLD = 60 * 60 * 1000; // 1 hour in milliseconds
+
+const incrementBlogViews = async (req, res, next) => {
+  const blogId = req.params.id;
+  const userId = req.user ? req.user.userId : null; // Check if user is authenticated
+
+  try {
+    const currentTime = new Date();
+
+    if (userId) {
+      // Authenticated user logic
+      const user = await User.findById(userId);
+      const recentlyViewed = user.recentlyViewed.find(
+        (view) => view.blogId.toString() === blogId
+      );
+
+      if (
+        !recentlyViewed ||
+        currentTime - recentlyViewed.lastViewedAt > VIEW_THRESHOLD
+      ) {
+        // Update recently viewed for the user
+        if (recentlyViewed) {
+          recentlyViewed.lastViewedAt = currentTime;
+        } else {
+          user.recentlyViewed.push({ blogId, lastViewedAt: currentTime });
+        }
+        await user.save();
+        await Blog.findByIdAndUpdate(blogId, { $inc: { views: 1 } });
+      }
+    } else {
+      // Unauthenticated user logic
+      if (!req.session.views) {
+        req.session.views = {};
+      }
+
+      const lastViewed = req.session.views[blogId];
+      if (!lastViewed || currentTime - lastViewed > VIEW_THRESHOLD) {
+        // Update session and increment view count
+        req.session.views[blogId] = currentTime;
+        await Blog.findByIdAndUpdate(blogId, { $inc: { views: 1 } });
+      }
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error incrementing blog views:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+const getUserBlogsSummary = async (req, res) => {
+  const userId = req.user.userId; // Assuming user ID is stored in req.user after authentication
+
+  try {
+    const summary = await Blog.aggregate([
+      // Match blogs by the logged-in user
+      { $match: { author: new mongoose.Types.ObjectId(userId) } },
+
+      // Populate the category with only its name
+      {
+        $lookup: {
+          from: "categories", // Collection name in MongoDB
+          localField: "category",
+          foreignField: "_id",
+          as: "category",
+          pipeline: [
+            { $project: { _id: 1, name: 1 } }, // Include only name field
+          ],
+        },
+      },
+      { $unwind: "$category" }, // Unwind to get category object
+
+      // Populate the author with only their name
+      {
+        $lookup: {
+          from: "users", // Collection name in MongoDB
+          localField: "author",
+          foreignField: "_id",
+          as: "author",
+          pipeline: [
+            { $project: { _id: 1, name: 1 } }, // Include only name field
+          ],
+        },
+      },
+      { $unwind: "$author" }, // Unwind to get author object
+
+      // Group to calculate total views and total likes
+      {
+        $group: {
+          _id: null, // Group all documents together
+          totalViews: { $sum: "$views" },
+          totalLikes: { $sum: { $size: "$likes" } }, // Count the length of the likes array
+          blogs: { $push: "$$ROOT" }, // Collect all blogs in an array
+        },
+      },
+
+      // Project the desired fields
+      {
+        $project: {
+          _id: 1,
+          totalViews: 1,
+          totalLikes: 1,
+          blogs: 1, // Include the blogs array in the final output
+        },
+      },
+    ]);
+
+    res
+      .status(200)
+      .json(summary[0] || { totalViews: 0, totalLikes: 0, blogs: [] });
+  } catch (error) {
+    console.error("Error fetching user blogs summary:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 module.exports = {
   createBlogPost,
   getAllBlogs,
@@ -608,8 +649,8 @@ module.exports = {
   getBlogById,
   updateBlogPost,
   deleteBlogPost,
-  // saveBlogPost,
-  // unsaveBlogPost,
+  incrementBlogViews,
   likeBlog,
   unlikeBlog,
+  getUserBlogsSummary,
 };

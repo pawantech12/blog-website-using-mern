@@ -8,6 +8,7 @@ const authenticateToken = (req, res, next) => {
     return res
       .status(401)
       .json({ message: "Access denied. No token provided." });
+    next();
   }
 
   try {
@@ -16,6 +17,7 @@ const authenticateToken = (req, res, next) => {
     next(); // Proceed to the next middleware or route handler
   } catch (error) {
     res.status(401).json({ message: "Invalid token." });
+    next();
   }
 };
 

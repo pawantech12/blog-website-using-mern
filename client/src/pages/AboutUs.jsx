@@ -91,8 +91,8 @@ const AboutUs = () => {
         )}
       </section>
       <section>
-        <div className="mt-[5rem] px-24 flex gap-5">
-          <div className="bg-custom-exlight-orange p-10 w-[35%] flex flex-col gap-2 rounded-xl">
+        <div className="mt-[5rem] px-24 flex gap-5 max-lg:flex-col">
+          <div className="bg-custom-exlight-orange p-10 w-[35%] flex flex-col max-lg:w-full gap-2 rounded-xl">
             <figure className="bg-custom-orange w-fit p-3 rounded-md">
               <img src={feature1} alt="Feature image" />
             </figure>
@@ -110,8 +110,8 @@ const AboutUs = () => {
               industry has been the industry&apos;s standard.
             </p>
           </div>
-          <div className="bg-custom-exlight-orange p-10 w-[63%] flex gap-3 rounded-xl">
-            <div className="w-1/2 flex flex-col gap-2">
+          <div className="bg-custom-exlight-orange p-10 w-[63%] max-lg:w-full flex gap-3 rounded-xl max-xl:flex-col">
+            <div className="w-1/2 flex flex-col gap-2 max-xl:w-full">
               <figure className="bg-custom-orange w-fit p-3 rounded-md">
                 <img src={feature2} alt="Feature image" />
               </figure>
@@ -129,9 +129,13 @@ const AboutUs = () => {
                 industry has been the industry&apos;s standard.
               </p>
             </div>
-            <div className="w-1/2">
+            <div className="w-1/2 max-xl:w-full">
               <figure className="relative">
-                <img src={aboutShare} alt="about share" />
+                <img
+                  src={aboutShare}
+                  alt="about share"
+                  className="max-xl:w-full max-xl:h-full max-lg:h-[300px] object-cover max-lg:rounded-xl"
+                />
                 <button className="bg-orange-300 hover:bg-orange-400 text-custom-black hover:text-white flex items-center gap-2 text-[15px] transition-all ease-in-out duration-200 py-3 font-medium px-3 rounded-lg absolute bottom-[8%] left-[18%]">
                   Share your thinking <BsArrowRight />
                 </button>
@@ -140,16 +144,16 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
-      <section className="px-24 mt-[5rem] ">
-        <div className="flex gap-5 border-y border-gray-200">
-          <div className="w-1/2 flex items-center justify-center text-center">
+      <section className="px-24 mt-[5rem]">
+        <div className="flex gap-5 border-y border-gray-200 max-lg:flex-col py-10">
+          <div className="w-1/2 flex items-center justify-center text-center max-lg:w-full">
             <h2 className="text-5xl leading-[4rem]">
               You Can <span className="font-semibold">Read</span> And{" "}
               <span className="font-semibold">Write</span> With Bunzo.
             </h2>
           </div>
-          <div className="w-1/2 flex flex-col">
-            <div className="flex flex-col gap-3 border-x border-gray-200 p-8 border-b">
+          <div className="w-1/2 flex flex-col max-lg:w-full max-lg:flex-row">
+            <div className="flex flex-col gap-3 border-x max-lg:border border-gray-200 p-8 border-b">
               <h4 className="text-2xl font-semibold">Mission & Vission</h4>
               <p>
                 Lorem Ipsum is simply dummy text of the printing and typesetting
@@ -160,7 +164,7 @@ const AboutUs = () => {
                 typesetting.
               </p>
             </div>
-            <div className="flex flex-col gap-3 border-x border-gray-200 p-8">
+            <div className="flex flex-col gap-3 border-x max-lg:border border-gray-200 p-8">
               <h4 className="text-2xl font-semibold">Bunzo History</h4>
               <p>
                 Lorem Ipsum is simply dummy text of the printing and typesetting
@@ -183,16 +187,16 @@ const AboutUs = () => {
             Leadership & Experienced Team
           </h4>
         </div>
-        <div className="grid grid-cols-4 gap-y-8 mt-8">
+        <div className="grid grid-cols-4 max-xl:grid-cols-3 max-lg:grid-cols-2 max-md:grid-cols-1 gap-8 mt-8">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
             <div
-              className="relative group w-64 h-64 overflow-hidden rounded-lg"
+              className="relative group w-full h-full overflow-hidden rounded-lg"
               key={i}
             >
               <img
                 src={team2}
                 alt="team image"
-                className="object-cover w-full h-64 rounded-lg"
+                className="object-cover w-full h-full rounded-lg"
               />
               {/* Overlay */}
               <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-between items-center opacity-0 group-hover:opacity-100 transition-opacity duration-500 ease-in-out">

@@ -9,12 +9,24 @@ const app = express();
 const server = http.createServer(app);
 
 app.use(express.json());
+
 const corsOptions = {
   origin: "http://localhost:5173",
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
   credentials: true,
 };
 app.use(cors(corsOptions));
+
+const session = require("express-session");
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET_KEY,
+    resave: false,
+    saveUninitialized: true,
+    cookie: { maxAge: 24 * 60 * 60 * 1000 }, // Optional: 1-day expiration
+  })
+);
 
 const PORT = process.env.PORT || 5000;
 

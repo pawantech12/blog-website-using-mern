@@ -8,13 +8,37 @@ import {
 import LogoWhite from "../img/logo-white.webp";
 import { Link } from "react-router-dom";
 import { BsArrowRight } from "react-icons/bs";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import axios from "axios";
+import { toast } from "react-toastify";
 
 const Footer = () => {
+  const { register, handleSubmit, reset } = useForm();
+  const [loading, setLoading] = useState(false);
+
+  const onSubmit = async (data) => {
+    setLoading(true);
+
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/subscribe",
+        data
+      );
+
+      toast.success(response.data.message);
+      reset(); // Reset form on successful submission
+    } catch (error) {
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <footer className="">
-      <div className="flex justify-evenly bg-custom-black p-20">
+      <div className="flex justify-evenly max-lg:flex-col max-lg:items-center max-lg:gap-12 bg-custom-black p-20">
         {/* top content  */}
-        <div className="w-1/4 flex flex-col gap-5">
+        <div className="w-1/2 max-sm:w-11/12 flex flex-col max-lg:items-center max-lg:text-center gap-5">
           <figure>
             <img src={LogoWhite} alt="Bunzo blog logo" />
           </figure>
@@ -40,31 +64,37 @@ const Footer = () => {
 
         <div>
           {/* subscription form  */}
-          <h4 className="text-xl font-medium text-white">Subscribe</h4>
-          <form action="" className="flex flex-col gap-3 w-fit mt-5">
+          <h4 className="text-xl font-medium text-white max-lg:text-center">
+            Subscribe
+          </h4>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-3 w-fit mt-5"
+          >
             <input
               type="text"
               name="name"
-              id="name"
+              {...register("name", { required: true })}
               className="bg-custom-light-black text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
               placeholder="Your Name"
             />
             <input
               type="email"
               name="email"
-              id="email"
+              {...register("email", { required: true })}
               className="bg-custom-light-black text-white h-14 px-5 rounded-lg outline-none placeholder:text-white"
               placeholder="Your Email Address"
             />
             <button
+              disabled={loading}
               type="submit"
               className="bg-orange-300 hover:bg-orange-400 hover:text-white transition-all ease-in-out duration-200 py-3 text-lg font-medium px-3 rounded-lg"
             >
-              Subscribe Now
+              {loading ? "Subscribing" : "Subscribe Now"}
             </button>
           </form>
         </div>
-        <div className="flex justify-evenly gap-10">
+        <div className="flex justify-evenly gap-10 max-[561px]:flex-col text-center">
           {/* links list */}
           <div>
             <h4 className="text-xl font-medium text-white">Company</h4>
@@ -128,12 +158,12 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <div className="bg-custom-light-black text-white text-center py-5 flex justify-between px-5">
-        <p className="flex items-center text-[15px] font-medium">
+      <div className="bg-custom-light-black text-white text-center py-5 flex justify-between max-sm:flex-col max-sm:items-center max-sm:gap-3 px-5">
+        <p className="flex items-center flex-wrap justify-center text-[15px] font-medium">
           © 2024 <Link className="mx-2 text-orange-400">Bunzo</Link> . Made with{" "}
           <FaHeart className="mx-2 text-red-500" /> by Pawan Kumavat
         </p>
-        <button className="bg-orange-300 hover:bg-orange-400 text-custom-black hover:text-white flex items-center gap-2 text-[15px] transition-all ease-in-out duration-200 py-3 font-medium px-3 rounded-lg">
+        <button className="bg-orange-300 hover:bg-orange-400 text-custom-black hover:text-white flex items-center gap-2 text-[15px] transition-all ease-in-out duration-200 py-3 font-medium px-3 rounded-lg w-fit">
           Share your thinking <BsArrowRight />
         </button>
       </div>

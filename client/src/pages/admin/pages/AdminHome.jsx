@@ -16,9 +16,9 @@ const AdminHome = () => {
   const [blogs, setBlogs] = useState([]);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [sortBy, setSortBy] = useState(""); // Changed from category to sortBy
-
+  const [totalViews, setTotalViews] = useState(0);
+  const [totalLikes, setTotalLikes] = useState(0);
   const { token, user } = useAuth();
   const [apiError, setApiError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -33,29 +33,50 @@ const AdminHome = () => {
 
   useEffect(() => {
     setLoading(true);
-    const fetchBlogs = async () => {
+    // const fetchBlogs = async () => {
+    //   try {
+    //     const response = await axios.get(
+    //       "http://localhost:3000/blog/get-blogs",
+    //       {
+    //         headers: {
+    //           Authorization: `Bearer ${token}`,
+    //         },
+    //       }
+    //     );
+    //     if (response.data.success === false) {
+    //       console.log("Failed to fetch blogs", response);
+    //     }
+
+    //     setBlogs(response.data.blogs);
+    //     setLoading(false);
+    //   } catch (err) {
+    //     setError("Failed to fetch blogs");
+    //   } finally {
+    //     setLoading(false);
+    //   }
+    // };
+
+    const fetchAllBlogsWithSummary = async () => {
+      setLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-blogs",
+          "http://localhost:3000/blog/get-blog-summary",
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        if (response.data.success === false) {
-          console.log("Failed to fetch blogs", response);
-        }
-
+        console.log("response: ", response);
         setBlogs(response.data.blogs);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch blogs");
+        setTotalViews(response.data.totalViews);
+        setTotalLikes(response.data.totalLikes);
+      } catch (error) {
+        console.log("error occurred while fetching blog summary: ", error);
       } finally {
         setLoading(false);
       }
     };
-
     const fetchAllCommentsOfCurrentUser = async () => {
       try {
         const response = await axios.get(
@@ -73,7 +94,8 @@ const AdminHome = () => {
       }
     };
 
-    fetchBlogs();
+    // fetchBlogs();
+    fetchAllBlogsWithSummary();
     fetchAllCommentsOfCurrentUser();
     setFollowers(user?.user?.followers);
     setFollowings(user?.user?.following);
@@ -193,9 +215,9 @@ const AdminHome = () => {
             <FaUserGroup className="w-10 h-10 text-emerald-500" />
           </figure>
           <div>
-            <h3 className="text-2xl font-semibold">134k</h3>
+            <h3 className="text-2xl font-semibold">{followers.length}</h3>
             <span className="text-sm font-semibold text-gray-600">
-              Pageviews
+              Followers
             </span>
           </div>
         </div>
@@ -204,7 +226,7 @@ const AdminHome = () => {
             <FaFileAlt className="w-10 h-10 text-blue-600" />
           </figure>
           <div>
-            <h3 className="text-2xl font-semibold">134k</h3>
+            <h3 className="text-2xl font-semibold">{blogs.length}</h3>
             <span className="text-sm font-semibold text-gray-600">Posts</span>
           </div>
         </div>
@@ -213,7 +235,7 @@ const AdminHome = () => {
             <FaHeart className="w-10 h-10 text-red-500" />
           </figure>
           <div>
-            <h3 className="text-2xl font-semibold">134k</h3>
+            <h3 className="text-2xl font-semibold">{totalLikes}</h3>
             <span className="text-sm font-semibold text-gray-600">Likes</span>
           </div>
         </div>
@@ -222,10 +244,8 @@ const AdminHome = () => {
             <BsBarChartLineFill className="w-10 h-10 text-blue-500" />
           </figure>
           <div>
-            <h3 className="text-2xl font-semibold">134k</h3>
-            <span className="text-sm font-semibold text-gray-600">
-              Visitors
-            </span>
+            <h3 className="text-2xl font-semibold">{totalViews}</h3>
+            <span className="text-sm font-semibold text-gray-600">Views</span>
           </div>
         </div>
       </section>

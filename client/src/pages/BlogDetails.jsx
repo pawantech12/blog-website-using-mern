@@ -35,6 +35,7 @@ import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
 import CommentSection from "../components/CommentSection";
+import { toast } from "react-toastify";
 
 const BlogDetails = () => {
   const { blogId } = useParams(); // Get the blog ID from the URL
@@ -49,7 +50,10 @@ const BlogDetails = () => {
     const fetchBlogDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blog/${blogId}`
+          `http://localhost:3000/blog/get-blog/${blogId}`,
+          {
+            withCredentials: true, // Ensure credentials are sent with the request
+          }
         );
         setBlog(response.data.blog);
       } catch (error) {
@@ -200,9 +204,8 @@ const BlogDetails = () => {
         }
       );
       console.log("response while saving post: ", response);
-      if (response.data.success) {
-        setSavedPosts(response.data.savedPosts); // Toggle the save state on success
-      }
+      setSavedPosts(response.data.savedPosts); // Toggle the save state on success
+      toast.success(response.data.message);
     } catch (error) {
       console.error("Error saving post:", error);
     }

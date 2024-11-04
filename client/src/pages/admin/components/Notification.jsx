@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../store/Authentication";
 import axios from "axios";
 import Loader from "../../../components/Loader";
-import { BsCheck2All } from "react-icons/bs";
 import defaultUserProfile from "../../../img/default-user.jpg";
 import { formatDistanceToNow } from "date-fns";
 
