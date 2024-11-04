@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import blog1 from "../img/blog1.webp";
 import feature1 from "../img/feature-1.webp";
@@ -16,24 +16,10 @@ import {
 } from "react-icons/fa";
 import ReactPlayer from "react-player";
 import { BsArrowRight } from "react-icons/bs";
-
-const testimonials = [1, 2, 3, 4, 5];
+import Slider from "react-slick";
 
 const AboutUs = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === testimonials.length - 3 ? 0 : prevIndex + 1
-    );
-  };
-
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex === 0 ? testimonials.length - 3 : prevIndex - 1
-    );
-  };
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -41,6 +27,36 @@ const AboutUs = () => {
 
   const closeModal = () => {
     setIsModalOpen(false);
+  };
+
+  const settings = {
+    dots: false,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 792,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
+
+  let sliderRef = useRef(null);
+  const next = () => {
+    sliderRef.slickNext();
+  };
+  const previous = () => {
+    sliderRef.slickPrev();
   };
   return (
     <>
@@ -55,8 +71,8 @@ const AboutUs = () => {
         </div>
       </section>
       <section>
-        <div className="w-full relative px-24 mt-16">
-          <figure className="h-[500px]">
+        <div className="w-full relative px-24 mt-16 max-sm:px-5">
+          <figure className="h-[500px] max-sm:h-[250px]">
             <img
               src={blog1}
               alt=""
@@ -65,7 +81,7 @@ const AboutUs = () => {
           </figure>
           <button
             onClick={openModal}
-            className="absolute top-[45%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[48%] text-white bg-orange-300 p-5 rounded-full text-2xl border-2 border-white"
+            className="absolute top-[45%] max-sm:top-[35%] max-sm:left-[40%] hover:bg-orange-400 transition-all ease-in-out duration-200 left-[48%] text-white bg-orange-300 p-5 rounded-full text-2xl border-2 border-white"
           >
             <FaPlay />
           </button>
@@ -80,7 +96,7 @@ const AboutUs = () => {
                 &times;
               </button>
               <ReactPlayer
-                url="https://youtu.be/va0XcdDBGhI?si=eiymom8Fj68ti9Jf" // Replace with your video URL
+                url="https://youtu.be/dYakdOrjnZc" // Replace with your video URL
                 controls
                 playing
                 width="100%"
@@ -91,7 +107,7 @@ const AboutUs = () => {
         )}
       </section>
       <section>
-        <div className="mt-[5rem] px-24 flex gap-5 max-lg:flex-col">
+        <div className="mt-[5rem] px-24 flex gap-5 max-lg:flex-col max-sm:px-5">
           <div className="bg-custom-exlight-orange p-10 w-[35%] flex flex-col max-lg:w-full gap-2 rounded-xl">
             <figure className="bg-custom-orange w-fit p-3 rounded-md">
               <img src={feature1} alt="Feature image" />
@@ -144,7 +160,7 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
-      <section className="px-24 mt-[5rem]">
+      <section className="px-24 mt-[5rem] max-sm:px-5">
         <div className="flex gap-5 border-y border-gray-200 max-lg:flex-col py-10">
           <div className="w-1/2 flex items-center justify-center text-center max-lg:w-full">
             <h2 className="text-5xl leading-[4rem]">
@@ -152,7 +168,7 @@ const AboutUs = () => {
               <span className="font-semibold">Write</span> With Bunzo.
             </h2>
           </div>
-          <div className="w-1/2 flex flex-col max-lg:w-full max-lg:flex-row">
+          <div className="w-1/2 flex flex-col max-lg:w-full max-lg:flex-row max-md:flex-col">
             <div className="flex flex-col gap-3 border-x max-lg:border border-gray-200 p-8 border-b">
               <h4 className="text-2xl font-semibold">Mission & Vission</h4>
               <p>
@@ -178,7 +194,7 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
-      <section className="px-24 py-20">
+      <section className="px-24 py-20 max-sm:px-5">
         <div className="flex flex-col gap-1 items-center text-center">
           <small className="font-semibold text-base">
             Meet Our Team Members
@@ -233,25 +249,24 @@ const AboutUs = () => {
           ))}
         </div>
       </section>
-      <section className="px-24 py-20 bg-custom-light-blue">
+      <section className="px-24 py-20 bg-custom-light-blue max-sm:px-5">
         <div className="flex flex-col gap-1 items-center text-center">
           <small className="font-semibold text-base">Some Testimonial</small>
           <h4 className="font-semibold text-4xl">What People Say About Us</h4>
         </div>
         <div className="mt-[3rem]">
-          <div className="relative w-full mx-auto">
-            {/* Carousel container */}
-            <div className="flex overflow-hidden">
-              <div
-                className="flex gap-8 transition-transform duration-500 ease-in-out h-full px-5"
-                style={{
-                  transform: `translateX(-${currentIndex * (100 / 3)}%)`,
+          <div className="relative w-full">
+            <div className="">
+              <Slider
+                ref={(slider) => {
+                  sliderRef = slider;
                 }}
+                {...settings}
               >
-                {testimonials.map((testimonial) => (
+                {[1, 2, 3, 4, 5, 6].map((testimonial, index) => (
                   <div
-                    key={testimonial}
-                    className="w-[32%] p-7 flex-shrink-0 bg-white flex flex-col gap-8 rounded-xl"
+                    key={index}
+                    className="p-7 w-full bg-white space-y-3 rounded-xl "
                   >
                     <div className="flex gap-2 items-center">
                       <figure>
@@ -271,25 +286,22 @@ const AboutUs = () => {
                       Printer took a galley of type and scrambled to make book.
                     </h4>
                     <p className="text-sm leading-[1.5rem]">
-                      Lorem has been them indust standard unknown printer took
-                      galley text printing and typesetting industry been
-                      industry standard dummy ever.
+                      Lorem has been the industry standard dummy text.
                     </p>
                   </div>
                 ))}
-              </div>
+              </Slider>
             </div>
 
-            {/* Left and right arrow buttons */}
             <div className="mt-[2rem] flex justify-center gap-3">
               <button
-                onClick={handlePrev}
+                onClick={previous}
                 className="bg-custom-orange outline-none text-white p-4 text-base rounded-full"
               >
                 <FaArrowLeft />
               </button>
               <button
-                onClick={handleNext}
+                onClick={next}
                 className="bg-custom-orange outline-none text-white p-4 text-base rounded-full"
               >
                 <FaArrowRight />

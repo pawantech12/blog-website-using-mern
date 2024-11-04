@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import DOMPurify from "dompurify";
 import newsletter1 from "../img/1-newsletter.webp";
 import ReactPlayer from "react-player/youtube";
 import newsletter2 from "../img/2-newsletter.webp";
-
+import Slider from "react-slick";
 import { GoDotFill } from "react-icons/go";
 import { LuCalendarDays } from "react-icons/lu";
 import { BsBookmarkCheckFill } from "react-icons/bs";
@@ -25,7 +25,6 @@ import { CgArrowLongLeft, CgArrowLongRight } from "react-icons/cg";
 import { FiTwitter } from "react-icons/fi";
 import defaultProfileImage from "../img/default-user.jpg";
 import { HiOutlineArrowNarrowRight } from "react-icons/hi";
-import CategoryData from "../data/CategoryData";
 import axios from "axios";
 import { useAuth } from "../store/Authentication";
 import { useForm } from "react-hook-form";
@@ -33,9 +32,10 @@ import { likeBlog, unLikeBlog } from "../helper/like.handler";
 import LatestPostSection from "../components/LatestPostSection";
 import Loader from "../components/Loader";
 import { toast } from "react-toastify";
+
 export const Home = () => {
   const [current, setCurrent] = useState(0);
-  const [catcurrent, setCatCurrent] = useState(0);
+
   const [categories, setCategories] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [followingBlogs, setFollowingBlogs] = useState([]);
@@ -46,11 +46,33 @@ export const Home = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
-  const [liked, setLiked] = useState(false);
   const [likedBlogs, setLikedBlogs] = useState([]); // Array to track liked blogs
   const [savedPosts, setSavedPosts] = useState([]);
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 1;
+
+  const settings = {
+    dots: false,
+    // infinite: true,
+    speed: 500,
+    slidesToShow: 4, // Adjust based on your preference
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 556,
+        settings: {
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 450,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+    ],
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true); // Start loader before fetching data
@@ -65,7 +87,9 @@ export const Home = () => {
         // Handle blogs
         if (blogsResponse.data && blogsResponse.data.blogs) {
           console.log("Blogs fetched:", blogsResponse.data.blogs);
-          setBlogs(blogsResponse.data.blogs);
+          setBlogs(
+            blogsResponse.data.blogs.filter((blog) => blog.isDraft === false)
+          );
         } else {
           console.warn("No blogs found");
           setBlogs([]); // Set to an empty array if no blogs
@@ -112,11 +136,12 @@ export const Home = () => {
             followingBlogsResponse.data.success &&
             followingBlogsResponse.data.blogs
           ) {
-            console.log(
-              "Following blogs fetched:",
-              followingBlogsResponse.data.blogs
+            console.log("Following blogs fetched:", followingBlogsResponse);
+            setFollowingBlogs(
+              followingBlogsResponse.data.blogs.filter(
+                (blog) => blog.isDraft === false
+              )
             );
-            setFollowingBlogs(followingBlogsResponse.data.blogs);
             setFollowingUsers(followingBlogsResponse.data.followingUsers || []);
           } else {
             console.warn("No following blogs found");
@@ -175,11 +200,6 @@ export const Home = () => {
         : prev + 1
     );
   };
-  const nextCatSlide = () => {
-    setCatCurrent((prev) =>
-      prev === Math.ceil(CategoryData.length / itemsPerPage) - 1 ? 0 : prev + 1
-    );
-  };
 
   const prevSlide = () => {
     setCurrent((prev) =>
@@ -188,18 +208,11 @@ export const Home = () => {
         : prev - 1
     );
   };
-  const prevCatSlide = () => {
-    setCatCurrent((prev) =>
-      prev === 0 ? Math.ceil(CategoryData.length / itemsPerPage) - 1 : prev - 1
-    );
-  };
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log("user id:", user?.user._id);
 
-  console.log("liked blogs", likedBlogs);
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  // console.log("user id:", user?.user._id);
+
+  // console.log("liked blogs", likedBlogs);
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -291,7 +304,7 @@ export const Home = () => {
           },
         }
       );
-      console.log("response while saving post: ", response);
+      // console.log("response while saving post: ", response);
       if (response.data.success) {
         setSavedPosts(response.data.savedPosts); // Toggle the save state on success
         toast.success(response.data.message);
@@ -303,12 +316,21 @@ export const Home = () => {
       setLocalLoading(false);
     }
   };
-  console.log("setsavedposts: ", savedPosts);
-  console.log("blogs", blogs);
+  // console.log("setsavedposts: ", savedPosts);
+  // console.log("blogs", blogs);
 
-  console.log("user details", user);
-  console.log("liked", liked);
+  // console.log("user details", user);
+  // console.log("liked", liked);
   // console.log("token: ", token);
+
+  let sliderRef = useRef(null);
+  const next = () => {
+    sliderRef.slickNext();
+  };
+  const previous = () => {
+    sliderRef.slickPrev();
+  };
+
   if (loading) {
     return <Loader />;
   }
@@ -518,82 +540,90 @@ export const Home = () => {
                     style={{ width: "98.33%" }}
                   >
                     <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-7 w-[70%] max-lg:w-full">
-                      {followingBlogs
-                        ?.filter((blog) => blog.author._id === user._id)
-                        .map((blog, index) => (
-                          <div
-                            key={index}
-                            className="flex flex-col cursor-pointer gap-3"
-                          >
-                            <div className="w-full h-48">
-                              <figure className="w-full h-full">
-                                <img
-                                  src={blog.coverImage}
-                                  alt={blog.title}
-                                  className="rounded-xl w-full h-full object-cover"
-                                />
-                              </figure>
-                            </div>
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center gap-3">
-                                <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
-                                  {blog.category.name}
-                                </span>
-                                <span className="text-zinc-500">
-                                  {blog.author.name}
-                                </span>
+                      {followingBlogs.filter(
+                        (blog) => blog.author._id === user._id
+                      ).length > 0 ? (
+                        followingBlogs
+                          ?.filter((blog) => blog.author._id === user._id)
+                          .map((blog, index) => (
+                            <div
+                              key={index}
+                              className="flex flex-col cursor-pointer gap-3"
+                            >
+                              <div className="w-full h-48">
+                                <figure className="w-full h-full">
+                                  <img
+                                    src={blog.coverImage}
+                                    alt={blog.title}
+                                    className="rounded-xl w-full h-full object-cover"
+                                  />
+                                </figure>
                               </div>
-                              <h5 className="text-xl font-medium">
-                                <Link
-                                  to={`/blog-post/${blog._id}`}
-                                  className="hover:text-orange-400 transition-all ease-in-out duration-200"
-                                >
-                                  {blog?.title?.length > 60
-                                    ? blog?.title?.slice(0, 50) + "..."
-                                    : blog?.title}
-                                </Link>
-                              </h5>
-                              <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2 text-sm">
-                                  <span className="flex gap-1 items-center">
-                                    <LuCalendarDays />
-                                    {new Date(
-                                      blog.publishedDate
-                                    ).toLocaleDateString()}
+                              <div className="flex flex-col gap-2">
+                                <div className="flex items-center gap-3">
+                                  <span className="bg-yellow-200 px-4 py-2 text-sm font-medium text-neutral-600 rounded-xl">
+                                    {blog.category.name}
                                   </span>
-                                  <GoDotFill className="w-2 h-2" />
-                                  <span>
-                                    {Math.ceil(
-                                      blog.content.split(" ").length / 200
-                                    )}{" "}
-                                    min read
+                                  <span className="text-zinc-500">
+                                    {blog.author.name}
                                   </span>
                                 </div>
-                                <div className="text-xl flex gap-2 items-center">
-                                  <button
-                                    onClick={() => handleSaveClick(blog?._id)}
+                                <h5 className="text-xl font-medium">
+                                  <Link
+                                    to={`/blog-post/${blog._id}`}
+                                    className="hover:text-orange-400 transition-all ease-in-out duration-200"
                                   >
-                                    {savedPosts.includes(blog?._id) ? (
-                                      <BsBookmarkCheckFill />
-                                    ) : (
-                                      <BsBookmarkDash />
-                                    )}
-                                  </button>
-                                  <button
-                                    onClick={() => handleLikeClick(blog?._id)}
-                                  >
-                                    {likedBlogs.includes(blog._id) ? (
-                                      <FaHeart className="text-red-500" />
-                                    ) : (
-                                      <FaRegHeart />
-                                    )}
-                                  </button>
-                                  <span>{blog.likes.length}</span>
+                                    {blog?.title?.length > 60
+                                      ? blog?.title?.slice(0, 50) + "..."
+                                      : blog?.title}
+                                  </Link>
+                                </h5>
+                                <div className="flex justify-between items-center">
+                                  <div className="flex items-center gap-2 text-sm">
+                                    <span className="flex gap-1 items-center">
+                                      <LuCalendarDays />
+                                      {new Date(
+                                        blog.publishedDate
+                                      ).toLocaleDateString()}
+                                    </span>
+                                    <GoDotFill className="w-2 h-2" />
+                                    <span>
+                                      {Math.ceil(
+                                        blog.content.split(" ").length / 200
+                                      )}{" "}
+                                      min read
+                                    </span>
+                                  </div>
+                                  <div className="text-xl flex gap-2 items-center">
+                                    <button
+                                      onClick={() => handleSaveClick(blog?._id)}
+                                    >
+                                      {savedPosts.includes(blog?._id) ? (
+                                        <BsBookmarkCheckFill />
+                                      ) : (
+                                        <BsBookmarkDash />
+                                      )}
+                                    </button>
+                                    <button
+                                      onClick={() => handleLikeClick(blog?._id)}
+                                    >
+                                      {likedBlogs.includes(blog._id) ? (
+                                        <FaHeart className="text-red-500" />
+                                      ) : (
+                                        <FaRegHeart />
+                                      )}
+                                    </button>
+                                    <span>{blog.likes.length}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))
+                      ) : (
+                        <p className="text-gray-800 text-center">
+                          No blogs found
+                        </p>
+                      )}
                     </div>
 
                     <div className="lg:w-[28%] flex flex-col justify-between gap-6">
@@ -673,14 +703,14 @@ export const Home = () => {
           </h4>
           <div className="flex items-center gap-3 mt-5">
             <button
-              onClick={prevCatSlide}
               className="bg-neutral-800 hover:bg-orange-300 transition-all ease-in-out duration-200 text-white p-2 rounded-md"
+              onClick={previous}
             >
               <CgArrowLongLeft className="w-5 h-5" />
             </button>
             <button
-              onClick={nextCatSlide}
               className="bg-neutral-800 hover:bg-orange-300 transition-all ease-in-out duration-200 text-white p-2 rounded-md"
+              onClick={next}
             >
               <CgArrowLongRight className="w-5 h-5" />
             </button>
@@ -689,16 +719,14 @@ export const Home = () => {
 
         {/* Carousel Grid */}
         <div className="overflow-hidden w-full lg:w-[75%]">
-          <div
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 transition-transform duration-500 ease-in-out"
-            style={{
-              transform: `translateX(-${
-                (catcurrent * 95) / categories.length
-              }%)`,
+          <Slider
+            ref={(slider) => {
+              sliderRef = slider;
             }}
+            {...settings}
           >
             {categories.map((item, index) => (
-              <div key={index} className="relative flex-shrink-0">
+              <div key={index} className="relative flex-shrink-0 px-2">
                 <Link
                   to={`/category/${item._id}`}
                   state={{ categoryName: item.name }}
@@ -719,7 +747,7 @@ export const Home = () => {
                 </Link>
               </div>
             ))}
-          </div>
+          </Slider>
         </div>
       </section>
 

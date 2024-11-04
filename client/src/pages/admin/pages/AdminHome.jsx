@@ -215,7 +215,7 @@ const AdminHome = () => {
             <FaUserGroup className="w-10 h-10 text-emerald-500" />
           </figure>
           <div>
-            <h3 className="text-2xl font-semibold">{followers.length}</h3>
+            <h3 className="text-2xl font-semibold">{followers?.length}</h3>
             <span className="text-sm font-semibold text-gray-600">
               Followers
             </span>

@@ -397,8 +397,8 @@ export const Navbar = () => {
         </div>
 
         {/* Second Row: Social Media Icons and Navigation */}
-        <div className="py-4 px-4 md:px-20 flex flex-col md:flex-row items-center justify-between">
-          <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1">
+        <div className="py-4 px-4 md:px-20 flex flex-col md:flex-row items-center justify-between ">
+          <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 max-md:mt-4">
             <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
               <FaFacebookF />
             </li>
@@ -458,7 +458,7 @@ export const Navbar = () => {
             isSearchOpen ? "opacity-100" : "opacity-0"
           }`}
         >
-          <div className="w-1/2">
+          <div className="w-1/2 max-sm:w-full max-sm:px-4">
             <div className="relative w-full px-6">
               <input
                 type="text"
@@ -483,14 +483,14 @@ export const Navbar = () => {
                     key={index}
                     className="flex gap-5 border border-gray-200 p-3 rounded-lg ease-in-out duration-300"
                   >
-                    <figure className="w-24 h-14 overflow-hidden rounded-lg">
+                    <figure className="w-[30%] h-20 overflow-hidden rounded-lg">
                       <img
                         src={blog.coverImage}
                         alt={blog.title}
                         className="w-full h-full object-cover"
                       />
                     </figure>
-                    <div className="flex flex-col justify-between">
+                    <div className="flex flex-col justify-between w-[70%]">
                       <h5 className="text-base font-semibold text-gray-800 hover:text-orange-500 transition-colors ease-in-out duration-200">
                         <Link
                           to={`/blog-post/${blog._id}`}
@@ -501,7 +501,12 @@ export const Navbar = () => {
                             : blog.title}
                         </Link>
                       </h5>
-                      <span className="flex gap-2 text-xs text-gray-800 font-medium items-center">
+                      <p className="text-sm text-gray-700">
+                        {blog.content.length > 60
+                          ? blog.content.slice(0, 60) + "..."
+                          : blog.content}
+                      </p>
+                      <span className="flex gap-2 text-xs text-gray-800 font-medium items-center mt-2">
                         <LuCalendarDays className="w-4 h-4 text-orange-500" />
                         {new Date(blog.publishedDate).toLocaleDateString()}
                       </span>

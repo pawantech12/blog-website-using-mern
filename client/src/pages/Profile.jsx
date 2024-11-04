@@ -53,7 +53,9 @@ const Profile = () => {
           `http://localhost:3000/blog/user/${userId}/blogs`
         ); // Adjust the URL based on your API
         if (response.data.success) {
-          setBlogs(response.data.blogs);
+          setBlogs(
+            response.data.blogs.filter((blog) => blog.isDraft === false)
+          );
         }
       } catch (error) {
         console.error("Error fetching user's blogs:", error);

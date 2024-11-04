@@ -44,7 +44,7 @@ const Contact = () => {
   return (
     <>
       <section className="">
-        <div className="flex justify-center items-center bg-custom-exlight-orange py-24">
+        <div className="flex justify-center items-center bg-custom-exlight-orange py-24 max-sm:py-8">
           <span className="bg-custom-light-orange rounded-md px-4 py-2 text-base font-medium">
             <Link to="/">Home</Link> /{" "}
             <Link to="/contact-us" className="text-orange-400">
@@ -53,9 +53,9 @@ const Contact = () => {
           </span>
         </div>
       </section>
-      <section className="flex gap-4 justify-evenly mt-[5rem] px-24">
+      <section className="flex flex-wrap gap-4 justify-evenly mt-[5rem] px-24 max-sm:px-5">
         {[1, 2, 3].map((item) => (
-          <div key={item} className="flex flex-col gap-8 group">
+          <div key={item} className="flex flex-col gap-8 group max-lg:w-full">
             <div className="bg-custom-exlight-orange flex flex-col items-center justify-center p-6 rounded-xl">
               <figure className="relative">
                 <img src={office1} alt="office image" />
@@ -108,14 +108,14 @@ const Contact = () => {
           </div>
         ))}
       </section>
-      <section className="my-[5rem] flex justify-around gap-5 items-center px-24">
-        <div className="w-2/5">
+      <section className="my-[5rem] flex justify-around gap-5 items-center px-24 max-lg:flex-col max-lg:gap-8 max-sm:px-5">
+        <div className="w-2/5 max-lg:w-full">
           <h4 className="text-4xl text-custom-black font-semibold">
             Get In Touch
           </h4>
           <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4 mt-[2rem]"
+            className="flex flex-col gap-4 mt-[2rem] "
           >
             {/* Name Input */}
             <input
@@ -171,7 +171,7 @@ const Contact = () => {
             </button>
           </form>
         </div>
-        <div className="w-1/2 h-full">
+        <div className="w-1/2 max-lg:w-full h-full">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3151.8660780195846!2d144.96623407530205!3d-37.816605734199506!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6ad65d4c2b349649%3A0xb6899234e561db11!2sEnvato%20Pty%20Ltd!5e0!3m2!1sen!2sin!4v1726669131965!5m2!1sen!2sin"
             allowfullscreen=""

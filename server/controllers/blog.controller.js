@@ -139,6 +139,8 @@ const updateBlogPost = async (req, res) => {
       isFeatured,
     } = req.body;
 
+    console.log("category name", categoryName);
+
     // Find the existing blog post
     const existingBlog = await Blog.findById(blogId);
     if (!existingBlog) {

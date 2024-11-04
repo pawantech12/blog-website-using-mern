@@ -30,7 +30,7 @@ const Category = () => {
   return (
     <>
       <section className="">
-        <div className="flex justify-center items-center bg-custom-exlight-orange py-24">
+        <div className="flex justify-center items-center bg-custom-exlight-orange py-24 max-sm:py-8">
           <span className="bg-custom-light-orange rounded-md px-4 py-2 text-base font-medium">
             <Link to="/">Home</Link> /{" "}
             <Link to="/category" className="text-orange-400">
@@ -39,13 +39,13 @@ const Category = () => {
           </span>
         </div>
       </section>
-      <section className="my-[5rem] px-24">
+      <section className="my-[5rem] px-24 max-sm:px-5">
         <div className="flex gap-8 items-center justify-center flex-wrap">
           {categories.map((item, index) => {
             return (
               <div
                 key={index}
-                className="w-[250px] border border-gray-200 rounded-xl p-4 flex flex-col items-center"
+                className="w-[250px] max-sm:w-full border border-gray-200 rounded-xl p-4 flex flex-col items-center"
               >
                 <figure>
                   <img

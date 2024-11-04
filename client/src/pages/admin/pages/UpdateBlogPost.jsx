@@ -64,7 +64,7 @@ const UpdateBlogPost = () => {
         }
         // Set default category name based on catId from blog data
         const dCategory = categories.find(
-          (category) => category._id === blogData.category
+          (category) => category._id === blogData.category._id
         );
         if (dCategory) {
           setSelectedCategory(dCategory.name); // Set the default category name
@@ -95,10 +95,11 @@ const UpdateBlogPost = () => {
     data.content = postBody; // Add post body from TinyMCE editor
     setIsSubmitting(true);
 
+    console.log("data: ", data);
     const formData = new FormData();
     formData.append("title", data.title);
     formData.append("content", data.content);
-    formData.append("category", data.category);
+    formData.append("category", data.category || blogData.category.name);
     formData.append("isDraft", data.isDraft);
     formData.append("isFeatured", data.isFeatured);
     if (data.coverImage && data.coverImage[0]) {
