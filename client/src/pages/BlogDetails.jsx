@@ -251,17 +251,17 @@ const BlogDetails = () => {
   return (
     <>
       <section className="">
-        <div className="flex justify-center items-center bg-custom-exlight-orange py-24">
+        <div className="flex justify-center items-center bg-custom-exlight-orange py-24 max-lg:py-8">
           <span className="bg-custom-light-orange rounded-md px-4 py-2 text-base font-medium">
-            <Link to="/">Home</Link> / <Link to="/blog">Blog</Link> /{" "}
+            <Link to="/">Home</Link> / <Link to="/">Blog</Link> /{" "}
             <Link to={`/blog-post/${blogId}`} className="text-orange-400">
               {blog?.title}
             </Link>
           </span>
         </div>
       </section>
-      <section className="px-24 my-[5rem] flex gap-7">
-        <div className="w-[68%]">
+      <section className="px-24 my-[5rem] flex gap-7 max-lg:flex-col max-md:px-5">
+        <div className="w-[68%] max-lg:w-full">
           <div>
             <figure className="w-full">
               <img
@@ -270,8 +270,8 @@ const BlogDetails = () => {
                 alt="Blog Image"
               />
             </figure>
-            <div className="flex items-center justify-between mt-6">
-              <div className="flex items-center gap-3">
+            <div className="flex items-center justify-between mt-6 max-sm:flex-col max-sm:gap-3">
+              <div className="flex items-center gap-3 max-sm:justify-between max-sm:w-full">
                 <span className="bg-yellow-200 px-5 py-2 font-medium text-neutral-600 rounded-xl">
                   {blog?.category?.name}{" "}
                   {/* Assuming category has a name field */}
@@ -279,34 +279,37 @@ const BlogDetails = () => {
                 <span className="text-zinc-500">By {blog?.author?.name}</span>{" "}
                 {/* Author name */}
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="flex gap-1 items-center">
-                  <LuCalendarDays />
-                  {new Date(blog?.publishedDate).toLocaleDateString()}{" "}
-                  {/* Format date */}
-                </span>
-                <GoDotFill className="w-2 h-2" />
-                <span>
-                  {Math.ceil(blog?.content.split(" ").length / 200)} min read
-                </span>{" "}
-                {/* Assuming readTime is a property */}
-              </div>
-              <div className="text-xl flex gap-2 items-center">
-                <button onClick={() => handleSaveClick(blog?._id)}>
-                  {savedPosts.includes(blog?._id) ? (
-                    <BsBookmarkCheckFill />
-                  ) : (
-                    <BsBookmarkDash />
-                  )}
-                </button>
-                <button onClick={() => handleLikeClick(blog?._id)}>
-                  {likedBlogs.includes(blog?._id) ? (
-                    <FaHeart className="text-red-500" />
-                  ) : (
-                    <FaRegHeart />
-                  )}
-                </button>
-                <span>{blog?.likes?.length}</span>
+              <div className="flex items-center gap-3 justify-between max-sm:w-full">
+                <div className="flex items-center gap-2 text-sm ">
+                  <span className="flex gap-1 items-center">
+                    <LuCalendarDays />
+                    {new Date(blog?.publishedDate).toLocaleDateString()}{" "}
+                    {/* Format date */}
+                  </span>
+                  <GoDotFill className="w-2 h-2" />
+                  <span>
+                    {Math.ceil(blog?.content.split(" ").length / 200)} min read
+                  </span>{" "}
+                </div>
+                <div className="text-xl flex gap-2 items-center ">
+                  <button onClick={() => handleSaveClick(blog?._id)}>
+                    {savedPosts.includes(blog?._id) ? (
+                      <BsBookmarkCheckFill />
+                    ) : (
+                      <BsBookmarkDash />
+                    )}
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => handleLikeClick(blog?._id)}>
+                      {likedBlogs.includes(blog?._id) ? (
+                        <FaHeart className="text-red-500" />
+                      ) : (
+                        <FaRegHeart />
+                      )}
+                    </button>
+                    <span>{blog?.likes?.length}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div className="flex flex-col gap-3 mt-4">
@@ -321,7 +324,7 @@ const BlogDetails = () => {
                   className="prose"
                 ></div>
               )}
-              <div className="flex items-center gap-3 mt-3 self-end">
+              <div className="flex items-center  gap-3 mt-3 self-end">
                 <h4 className="font-semibold text-custom-black">Share on </h4>
                 <ul className="flex items-center gap-3 text-sm ">
                   {/* Facebook */}
@@ -354,20 +357,22 @@ const BlogDetails = () => {
                   >
                     <FaLinkedinIn />
                   </li>
+                  <li>
+                    {/* Web Share API Button (for native sharing on mobile) */}
+                    <button
+                      className=" bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
+                      onClick={handleWebShare}
+                    >
+                      Share
+                    </button>
+                  </li>
                 </ul>
-                {/* Web Share API Button (for native sharing on mobile) */}
-                <button
-                  className="ml-3 bg-zinc-200 p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200"
-                  onClick={handleWebShare}
-                >
-                  Share
-                </button>
               </div>
             </div>
           </div>
           <CommentSection blogId={blogId} user={user} />
         </div>
-        <div className="w-[30%] flex flex-col gap-10">
+        <div className="w-[30%] max-lg:w-full flex flex-col gap-10">
           <div className="border border-gray-200 rounded-xl px-8 py-8 flex flex-col items-center text-center">
             <figure className="border border-gray-200 rounded-full p-2">
               <img

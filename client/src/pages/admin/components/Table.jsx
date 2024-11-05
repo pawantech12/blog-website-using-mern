@@ -96,7 +96,7 @@ const Table = ({ blogs, handleDelete, handleEdit, isDeleting, loading }) => {
                           {blog.isDraft === false ? "Published" : "Draft"}
                         </span>
                       </td>
-                      <td className="p-4 border-b flex space-x-4">
+                      <td className="p-4 flex gap-2 items-center">
                         <button
                           disabled={isDeleting}
                           onClick={() => handleDelete(blog._id)}

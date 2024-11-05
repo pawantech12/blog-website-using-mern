@@ -20,8 +20,6 @@ const AdminHome = () => {
   const [totalViews, setTotalViews] = useState(0);
   const [totalLikes, setTotalLikes] = useState(0);
   const { token, user } = useAuth();
-  const [apiError, setApiError] = useState("");
-  const [successMessage, setSuccessMessage] = useState("");
   const [followers, setFollowers] = useState([]);
   const [followings, setFollowings] = useState([]);
   const navigate = useNavigate();
@@ -33,28 +31,6 @@ const AdminHome = () => {
 
   useEffect(() => {
     setLoading(true);
-    // const fetchBlogs = async () => {
-    //   try {
-    //     const response = await axios.get(
-    //       "http://localhost:3000/blog/get-blogs",
-    //       {
-    //         headers: {
-    //           Authorization: `Bearer ${token}`,
-    //         },
-    //       }
-    //     );
-    //     if (response.data.success === false) {
-    //       console.log("Failed to fetch blogs", response);
-    //     }
-
-    //     setBlogs(response.data.blogs);
-    //     setLoading(false);
-    //   } catch (err) {
-    //     setError("Failed to fetch blogs");
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
 
     const fetchAllBlogsWithSummary = async () => {
       setLoading(true);
@@ -94,7 +70,6 @@ const AdminHome = () => {
       }
     };
 
-    // fetchBlogs();
     fetchAllBlogsWithSummary();
     fetchAllCommentsOfCurrentUser();
     setFollowers(user?.user?.followers);
@@ -130,10 +105,7 @@ const AdminHome = () => {
 
       if (response.data.success === true) {
         setBlogs(blogs.filter((blog) => blog._id !== blogToDelete)); // Update state to remove the blog
-        setSuccessMessage(response.data.message);
-        setTimeout(() => {
-          setSuccessMessage("");
-        }, 3000);
+        toast.success(response.data.message);
       }
       setIsDeleting(false);
 
@@ -141,10 +113,7 @@ const AdminHome = () => {
     } catch (error) {
       console.error("Failed to delete the blog post:", error);
       setIsDeleting(false);
-      setApiError(error.response.data.message);
-      setTimeout(() => {
-        setApiError("");
-      }, 3000);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -209,7 +178,7 @@ const AdminHome = () => {
   console.log("followers: ", followers);
   return (
     <>
-      <section className="grid grid-cols-4 gap-8 my-[3rem] px-24">
+      <section className="grid grid-cols-4 gap-8 my-[3rem] px-24 max-lg:grid-cols-2 max-lg:px-5 max-[500px]:grid-cols-1">
         <div className="flex gap-4 items-center border border-gray-200 rounded-xl p-4">
           <figure className="bg-emerald-100 rounded-md p-4">
             <FaUserGroup className="w-10 h-10 text-emerald-500" />
@@ -249,26 +218,15 @@ const AdminHome = () => {
           </div>
         </div>
       </section>
-      <section className="px-24">
-        <div className="max-w-7xl mx-auto bg-white p-6 border border-gray-200 rounded-lg my-[3rem]">
-          {successMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4">
-              <p className="text-sm">{successMessage}</p>
-            </div>
-          )}
-          {apiError && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4">
-              <p className="text-sm">{apiError}</p>
-            </div>
-          )}
-          <div className="flex justify-between items-center">
-            <h4 className="text-xl font-semibold">Blog List</h4>
+      <section className="px-24 max-lg:px-5">
+        <div className="max-w-7xl mx-auto bg-white p-4 md:p-6 border border-gray-200 rounded-lg my-6">
+          <div className="flex  justify-between items-center">
+            <h4 className="text-xl font-semibold mb-4 md:mb-0">Blog List</h4>
             <button className="bg-orange-400 text-white text-sm font-semibold px-3 py-2 rounded-md">
               <Link
                 className="flex items-center gap-1"
                 to={"/dashboard/create-post"}
               >
-                {" "}
                 <FaPlus />
                 Add a Post
               </Link>
@@ -290,8 +248,9 @@ const AdminHome = () => {
           />
         </div>
       </section>
-      <section className="my-[3rem] flex gap-5 justify-between px-24">
-        <div className="p-6 bg-white border border-gray-200 rounded-lg w-1/2">
+
+      <section className="my-[3rem] flex gap-5 justify-between px-24 max-lg:px-5 max-md:flex-col">
+        <div className="p-6 bg-white border border-gray-200 rounded-lg w-1/2 max-md:w-full">
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Recent Comments
           </h2>
@@ -345,7 +304,7 @@ const AdminHome = () => {
             )}
           </div>
         </div>
-        <div className="p-6 bg-white rounded-lg  border border-gray-200 w-1/2 flex flex-col ">
+        <div className="p-6 bg-white rounded-lg  border border-gray-200 w-1/2 flex flex-col max-md:w-full">
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Latest Posts
           </h2>
@@ -357,15 +316,15 @@ const AdminHome = () => {
                     className="flex items-center justify-between bg-gray-50 p-4 rounded-lg shadow-sm hover:bg-gray-100"
                     key={index}
                   >
-                    <div className="flex items-center gap-3">
-                      <figure className="w-[30%] h-full">
+                    <div className="flex items-center gap-3 max-[460px]:flex-col">
+                      <figure className="w-[30%] h-full max-[460px]:w-full">
                         <img
                           src={blog.coverImage} // Replace with actual image URLs
                           alt={blog.title}
                           className="w-full h-full object-cover rounded-lg"
                         />
                       </figure>
-                      <div className="w-[70%]">
+                      <div className="w-[70%] max-[460px]:w-full">
                         <h3 className="font-semibold">{blog.title}</h3>
                         <p className="text-sm text-gray-600">
                           {blog?.content?.length > 60
@@ -391,8 +350,8 @@ const AdminHome = () => {
           )}
         </div>
       </section>
-      <section className="my-[3rem] flex gap-5 justify-between px-24">
-        <div className="p-6 bg-white border border-gray-200 rounded-lg w-1/2">
+      <section className="my-[3rem] flex max-md:flex-col gap-5 justify-between px-24 max-lg:px-5">
+        <div className="p-6 bg-white border border-gray-200 rounded-lg w-1/2 max-md:w-full">
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Followers
           </h2>
@@ -455,7 +414,7 @@ const AdminHome = () => {
             )}
           </div>
         </div>
-        <div className="p-6 bg-white rounded-lg  border border-gray-200 w-1/2 flex flex-col ">
+        <div className="p-6 bg-white rounded-lg  border border-gray-200 w-1/2 flex flex-col max-md:w-full">
           <h2 className="text-xl font-semibold mb-6 border-b pb-2">
             Following
           </h2>

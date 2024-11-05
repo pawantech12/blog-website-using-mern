@@ -1,4 +1,3 @@
-import { ToastContainer } from "react-toastify";
 import Footer from "./components/Footer";
 import { Navbar } from "./components/Navbar";
 
@@ -8,7 +7,7 @@ function App({ element }) {
       <Navbar />
       <main className="">
         {element}
-        <ToastContainer
+        {/* <ToastContainer
           position="bottom-right" // Set position to bottom-right
           autoClose={5000} // Automatically close after 5 seconds
           hideProgressBar={false} // Show progress bar
@@ -18,9 +17,8 @@ function App({ element }) {
           pauseOnFocusLoss
           draggable
           pauseOnHover
-        />
+        /> */}
       </main>
-
       <Footer />
     </>
   );

@@ -5,6 +5,7 @@ const express = require("express");
 const http = require("http");
 const connectDB = require("./utils/db_connect");
 const cors = require("cors");
+const cron = require("node-cron");
 const app = express();
 const server = http.createServer(app);
 
@@ -40,6 +41,7 @@ const commentRouter = require("./routers/comment.router.js");
 const passwordRecoveryRouter = require("./routers/password.recovery.router.js");
 const signAuthRouter = require("./routers/signauth.router.js");
 const { initializeSocket } = require("./socket.js");
+const Notification = require("./models/notification.model.js");
 
 app.use("/auth", signAuthRouter);
 app.use("/api", authenticationRouter);
@@ -52,6 +54,23 @@ app.use("/password", passwordRecoveryRouter);
 
 // Initialize Socket.IO
 initializeSocket(server);
+
+// Schedule a cron job to delete notifications older than 3 days
+cron.schedule("0 0 * * *", async () => {
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 3); // 3 days ago
+
+  try {
+    const result = await Notification.deleteMany({
+      createdAt: { $lt: cutoffDate },
+    });
+    console.log(
+      `${result.deletedCount} notifications older than 10 minutes deleted`
+    );
+  } catch (error) {
+    console.error("Error deleting old notifications:", error);
+  }
+});
 
 connectDB().then(() => {
   server.listen(PORT, () => {

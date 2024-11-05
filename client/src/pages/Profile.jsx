@@ -101,7 +101,7 @@ const Profile = () => {
     return <Loader />;
   }
   return (
-    <section className="my-[5rem] px-24">
+    <section className="my-[5rem] px-24 max-md:px-5">
       <div className="relative">
         <img
           src={
@@ -109,12 +109,12 @@ const Profile = () => {
             "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
           } // Use userDetails's banner image
           alt="banner img"
-          className="w-full h-56 object-cover rounded-lg shadow-lg"
+          className="w-full h-56 max-[500px]:h-40 object-cover rounded-lg shadow-lg"
         />
         <img
           src={userDetails.profileImg || "https://via.placeholder.com/150"} // Use userDetails's profile image
           alt="profile image"
-          className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
+          className="w-32 h-32 max-[500px]:w-28 max-[500px]:h-28 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
         />
       </div>
       <div className="text-center mt-[5rem]">
@@ -127,20 +127,54 @@ const Profile = () => {
         <p className="w-[70%] mx-auto text-custom-light-black font-medium mt-2">
           {userDetails.headline || "No Bio available."}
         </p>
-        <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-4">
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaFacebookF />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaTwitter />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaInstagram />
-          </li>
-          <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
-            <FaLinkedinIn />
-          </li>
-        </ul>
+        {userDetails.socialMedia && (
+          <ul className="flex items-center gap-2 md:gap-3 text-sm order-2 md:order-1 mx-auto w-fit mt-6">
+            {userDetails.socialMedia.facebook && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={userDetails.socialMedia.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaFacebookF />
+                </Link>
+              </li>
+            )}
+            {userDetails.socialMedia.twitter && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={userDetails.socialMedia.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaTwitter />
+                </Link>
+              </li>
+            )}
+            {userDetails.socialMedia.instagram && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={userDetails.socialMedia.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaInstagram />
+                </Link>
+              </li>
+            )}
+            {userDetails.socialMedia.linkedin && (
+              <li className="bg-zinc-200 p-2 md:p-3 rounded-md cursor-pointer hover:bg-orange-200 transition-all ease-in-out duration-200">
+                <Link
+                  to={userDetails.socialMedia.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaLinkedinIn />
+                </Link>
+              </li>
+            )}
+          </ul>
+        )}
         <button
           disabled={loading}
           className={`bg-custom-orange text-base font-medium px-6 py-2 rounded-lg mt-4 ${
@@ -185,7 +219,7 @@ const Profile = () => {
         <div className="mt-6">
           {activeTab === "allPosts" ? (
             // All Posts Section
-            <div className="grid grid-cols-3 gap-10 mt-8">
+            <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-10 mt-8">
               {blogs.map((blog, index) => (
                 <div key={index} className="flex flex-col cursor-pointer gap-3">
                   <div className="w-full">
@@ -224,7 +258,8 @@ const Profile = () => {
                         </span>{" "}
                         <GoDotFill className="w-2 h-2" />
                         <span>
-                          {Math.ceil(blog.content.length / 200)} min read
+                          {Math.ceil(blog?.content.split(" ").length / 200)} min
+                          read
                         </span>{" "}
                         {/* Approximate reading time */}
                       </div>
@@ -243,7 +278,7 @@ const Profile = () => {
             </div>
           ) : (
             // Saved Posts Section
-            <div className="grid grid-cols-3 gap-10 mt-8">
+            <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-10 mt-8">
               {/* Implement Saved Posts Display Here */}
               {savedBlogs && savedBlogs.length > 0 ? (
                 savedBlogs.map((blog, index) => {
@@ -289,7 +324,8 @@ const Profile = () => {
                             </span>{" "}
                             <GoDotFill className="w-2 h-2" />
                             <span>
-                              {Math.ceil(blog?.content.length / 200)} min read
+                              {Math.ceil(blog?.content.split(" ").length / 200)}{" "}
+                              min read
                             </span>{" "}
                             {/* Approximate reading time */}
                           </div>

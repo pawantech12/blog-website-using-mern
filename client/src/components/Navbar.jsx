@@ -37,6 +37,7 @@ export const Navbar = () => {
     useState(false);
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+
   useEffect(() => {
     // Establish a connection to the server
     const socket = io("http://localhost:3000");
@@ -167,6 +168,7 @@ export const Navbar = () => {
     logout();
     navigate("/");
   };
+
   console.log("notifications", notifications);
   console.log("setBlogs", blogs);
 
@@ -202,7 +204,7 @@ export const Navbar = () => {
                     </span>
                   )}
                   {notificationDropdownVisible && (
-                    <div className="absolute top-full right-0 py-4 z-10 text-sm mt-2 w-[340px] bg-white border border-gray-200 rounded-md">
+                    <div className="absolute top-full right-0 max-[450px]:-right-16 max-[450px]:top-12 py-4 z-10 text-sm mt-2 w-[340px] bg-white border border-gray-200 rounded-md">
                       <div className="flex justify-between items-center  px-3">
                         <h3 className="text-base font-semibold text-gray-700">
                           Notifications

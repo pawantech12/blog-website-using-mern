@@ -240,19 +240,21 @@ const getUserData = async (req, res) => {
 const getUserDataById = async (req, res) => {
   try {
     const userId = req.params.id;
-    const user = await User.findById(userId).populate({
-      path: "savedPosts", // Populate saved posts
-      populate: [
-        {
-          path: "author",
-          select: "name",
-        },
-        {
-          path: "category",
-          select: "name",
-        },
-      ],
-    });
+    const user = await User.findById(userId)
+      .populate({
+        path: "savedPosts", // Populate saved posts
+        populate: [
+          {
+            path: "author",
+            select: "name",
+          },
+          {
+            path: "category",
+            select: "name",
+          },
+        ],
+      })
+      .populate("socialMedia");
 
     if (!user) {
       return res.status(404).json({

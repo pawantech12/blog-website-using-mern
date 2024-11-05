@@ -22,7 +22,7 @@ const LatestPostSection = ({ width }) => {
     <div
       className={`bg-[#FAFAFA] rounded-xl px-5 py-4 ${
         width ? `w-[${width}%]` : "w-full"
-      } h-fit`}
+      } h-fit max-lg:w-full`}
     >
       <h4 className="text-2xl font-semibold text-neutral-800">Latest Post</h4>
       <div className="flex flex-col gap-4 mt-5">

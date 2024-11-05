@@ -24,6 +24,7 @@ import CategoryPage from "./pages/admin/pages/CategoryPage.jsx";
 import UserProfile from "./pages/admin/pages/UserProfile.jsx";
 import EditProfile from "./pages/admin/pages/EditProfile.jsx";
 import { ToastContainer } from "react-toastify";
+// import { Toaster } from "react-hot-toast";
 import "react-toastify/dist/ReactToastify.css"; // Import CSS for toast
 import VerifyCode from "./components/VerifyCode.jsx";
 import Setting from "./pages/admin/pages/Setting.jsx";
@@ -134,6 +135,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         draggable
         pauseOnHover
       />
+      {/* <Toaster /> */}
     </AuthProvider>
   </React.StrictMode>
 );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -15,9 +15,9 @@ const VerifyCode = () => {
   const { state } = useLocation();
   const { user } = useAuth();
   const userId = state?.userId;
-  console.log("userId from state: ", userId);
   const [loading, setLoading] = useState(false);
-  const [otpResent, setOtpResent] = useState(false); // Track if OTP is resent
+  const [resentOtpLoading, setResentOtpLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(30); // Initial cooldown in seconds
 
   // Verify OTP on form submission
   const onSubmit = async (data) => {
@@ -45,17 +45,29 @@ const VerifyCode = () => {
 
   // Handle Resend OTP request
   const handleResendOtp = async () => {
+    setResentOtpLoading(true);
     try {
       const response = await axios.post(
         "http://localhost:3000/api/resend-otp",
         { userId }
       );
-      setOtpResent(true); // Track that OTP was resent
       toast.success(response.data.message);
+      setResendCooldown(30); // Reset cooldown
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to resend OTP");
+    } finally {
+      setResentOtpLoading(false);
     }
   };
+
+  // Countdown for Resend OTP button
+  useEffect(() => {
+    let timer;
+    if (resendCooldown > 0) {
+      timer = setTimeout(() => setResendCooldown(resendCooldown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center">
@@ -73,7 +85,7 @@ const VerifyCode = () => {
             maxLength="6"
             placeholder="Enter OTP"
             className={`w-full px-4 py-2 h-12 border rounded-md ${
-              errors.otp ? "border-red-500" : ""
+              errors.otp ? "border-neutral-800" : ""
             } outline-none`}
             {...register("otp", {
               required: "OTP is required",
@@ -84,32 +96,35 @@ const VerifyCode = () => {
             })}
           />
           {errors.otp && (
-            <p className="text-red-500 text-sm mt-1">{errors.otp.message}</p>
+            <span className="text-[13px] mt-1 font-medium text-gray-500">
+              {errors.otp.message}
+            </span>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-orange-400 font-medium hover:bg-orange-500 text-white py-3 rounded-md"
+            className="w-full bg-custom-light-black/90 text-white py-3 rounded-md text-lg font-medium hover:bg-custom-black transition-all ease-in-out duration-200"
           >
             {loading ? "Verifying..." : "Verify OTP"}
           </button>
         </form>
 
         <div className="text-center mt-4">
-          <p>
+          <p className="text-center mt-5 font-medium">
             Didn&apos;t receive an OTP?
             <button
               onClick={handleResendOtp}
-              className="text-blue-500 underline ml-1"
-              disabled={otpResent}
+              disabled={resentOtpLoading || resendCooldown > 0}
+              className="underline ms-1 underline-offset-4 hover:text-orange-400 transition-all ease-in-out duration-200"
             >
-              Resend OTP
+              {resentOtpLoading
+                ? "Resending..."
+                : resendCooldown > 0
+                ? `Resend OTP in ${resendCooldown}s`
+                : "Resend OTP"}
             </button>
           </p>
-          {otpResent && (
-            <p className="text-green-500 text-sm">OTP resent successfully!</p>
-          )}
         </div>
       </div>
     </div>

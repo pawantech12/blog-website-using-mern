@@ -38,7 +38,7 @@ const CategoryPosts = () => {
   return (
     <>
       <section className="">
-        <div className="flex justify-center items-center bg-custom-exlight-orange py-24">
+        <div className="flex justify-center items-center bg-custom-exlight-orange py-24 max-lg:py-8">
           <span className="bg-custom-light-orange rounded-md px-4 py-2 text-base font-medium">
             <Link to="/">Home</Link> / <Link to="/category">Category</Link> /{" "}
             <Link to={`/category/${categoryId}`} className="text-orange-400">
@@ -47,8 +47,8 @@ const CategoryPosts = () => {
           </span>
         </div>
       </section>
-      <section className="flex justify-between px-24 my-[5rem]">
-        <div className="grid grid-cols-2 gap-7 w-[65%]">
+      <section className="flex justify-between px-24 my-[5rem] max-lg:flex-col max-lg:gap-12">
+        <div className="grid grid-cols-2 gap-7 w-[65%] max-lg:w-full">
           {blogs.map((item, index) => {
             return (
               <div key={index} className="flex flex-col cursor-pointer gap-3">
