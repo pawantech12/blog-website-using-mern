@@ -148,6 +148,11 @@ const BlogDetails = () => {
 
   // Like/Unlike handler
   const handleLikeClick = async (blogId) => {
+    if (user === null) {
+      toast.error("Please login to like a blog");
+      return;
+    }
+
     try {
       if (!user?.user?._id || !blog) {
         return; // Exit early if user or blogs data isn't available
@@ -193,6 +198,11 @@ const BlogDetails = () => {
   };
 
   const handleSaveClick = async (postId) => {
+    if (user === null) {
+      toast.error("Please login to Save a blog");
+      return;
+    }
+
     try {
       const response = await axios.put(
         `http://localhost:3000/api/toggle-save/${postId}`,

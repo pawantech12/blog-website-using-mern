@@ -3,7 +3,7 @@ import { useAuth } from "../../../store/Authentication";
 import axios from "axios";
 import Loader from "../../../components/Loader";
 import defaultUserProfile from "../../../img/default-user.jpg";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 
 const Notification = () => {
   const { token } = useAuth();
@@ -56,7 +56,7 @@ const Notification = () => {
   }
 
   return (
-    <section className="px-24">
+    <section className="px-24 max-lg:px-5">
       <div className="py-4 z-10 text-sm my-8 w-full bg-white border border-gray-200 rounded-md">
         <div className="flex justify-between items-center  px-3">
           <h3 className="text-xl font-semibold text-gray-700">Notifications</h3>
@@ -76,9 +76,9 @@ const Notification = () => {
                     className="w-full h-full object-cover rounded-full"
                   />
                 </figure>
-                <div className="w-full flex justify-between">
+                <div className="w-full flex justify-between gap-2 max-sm:flex-col">
                   {notification.type === "comment" ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-fit">
                       <p className="text-[13px]">
                         <span className="font-semibold">
                           {notification?.userId?.name}
@@ -200,10 +200,19 @@ const Notification = () => {
                       </span>
                     </div>
                   ) : null}
-                  <span className="text-xs">
-                    {formatDistanceToNow(new Date(notification?.createdAt), {
-                      addSuffix: true,
-                    })}
+                  <span className="text-xs max-sm:self-end">
+                    {formatDistanceToNowStrict(
+                      new Date(notification?.createdAt),
+                      {
+                        addSuffix: true,
+                      }
+                    )
+                      .replace(" seconds", " sec")
+                      .replace(" second", " sec")
+                      .replace(" minutes", " min")
+                      .replace(" minute", " min")
+                      .replace(" hours", " hr")
+                      .replace(" hour", " hr")}
                   </span>
                 </div>
               </li>

@@ -73,6 +73,11 @@ const Profile = () => {
 
   // Function to handle follow/unfollow
   const handleFollow = async () => {
+    if (user === null) {
+      toast.error("Please login to follow a user");
+      return;
+    }
+
     setLocalLoading(true); // Set loading to true while the request is in progress
     try {
       const endpoint = isFollowing
@@ -243,7 +248,7 @@ const Profile = () => {
                     </div>
                     <h5 className="text-xl font-medium ">
                       <Link
-                        to={`/blog/${blog._id}`}
+                        to={`/blog-post/${blog._id}`}
                         className="hover:text-orange-400 transition-all ease-in-out duration-200"
                       >
                         {blog.title}

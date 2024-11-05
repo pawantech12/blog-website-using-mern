@@ -122,7 +122,7 @@ const UserProfile = () => {
   console.log("saved blogs user profile: ", savedBlogs);
 
   return (
-    <section className="my-[5rem] px-24">
+    <section className="my-[5rem] px-24 max-lg:px-5">
       <div className="relative">
         <img
           src={
@@ -130,12 +130,12 @@ const UserProfile = () => {
             "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
           } // Use userDetails's banner image
           alt="banner img"
-          className="w-full h-56 object-cover rounded-lg shadow-lg"
+          className="w-full h-56 max-[500px]:h-40 object-cover rounded-lg shadow-lg"
         />
         <img
           src={userDetails.profileImg || defaultProfileImg} // Use userDetails's profile image
           alt="profile image"
-          className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
+          className="w-32 h-32 max-[500px]:w-28 max-[500px]:h-28 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
         />
       </div>
       <div className="text-center mt-[5rem]">
@@ -148,7 +148,7 @@ const UserProfile = () => {
         <p className="w-[70%] mx-auto text-custom-light-black font-medium mt-2">
           {userDetails.headline || "No Bio available."}
         </p>
-        <div className="mx-auto flex items-center justify-center gap-8 my-4">
+        <div className="mx-auto flex items-center justify-center gap-8 my-4 max-[420px]:gap-4">
           <div className="flex flex-col items-center">
             <h4 className="text-xl font-semibold text-zinc-600">
               {blogs?.length}
@@ -274,7 +274,7 @@ const UserProfile = () => {
         <div className="mt-6">
           {activeTab === "allPosts" ? (
             // All Posts Section
-            <div className="grid grid-cols-3 gap-10 mt-8">
+            <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-10 mt-8">
               {blogs.map((blog, index) => (
                 <div key={index} className="flex flex-col cursor-pointer gap-3">
                   <div className="w-full">
@@ -333,7 +333,7 @@ const UserProfile = () => {
             </div>
           ) : (
             // Saved Posts Section
-            <div className="grid grid-cols-3 gap-10 mt-8">
+            <div className="grid grid-cols-3 max-lg:grid-cols-2 max-sm:grid-cols-1 gap-10 mt-8">
               {/* Implement Saved Posts Display Here */}
               {savedBlogs && savedBlogs?.length > 0 ? (
                 savedBlogs.map((blog, index) => {

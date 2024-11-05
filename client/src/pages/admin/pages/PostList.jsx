@@ -103,9 +103,11 @@ const PostList = () => {
     });
   return (
     <>
-      <section className="mt-[2rem] px-24">
+      <section className="mt-[2rem] px-24 max-lg:px-5">
         <div className="flex justify-between items-center">
-          <h4 className="text-2xl font-semibold">Blog Post List</h4>
+          <h4 className="text-2xl max-md:text-xl font-semibold">
+            Blog Post List
+          </h4>
           <button className="bg-orange-400 text-white text-sm font-semibold px-3 py-2 rounded-md ">
             <Link
               className="flex items-center gap-1"

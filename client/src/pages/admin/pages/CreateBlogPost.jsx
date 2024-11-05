@@ -106,65 +106,68 @@ const CreateBlogPost = () => {
   };
 
   return (
-    <div className="mx-auto p-8 bg-white px-24">
-      <h1 className="text-2xl font-semibold text-custom-black mb-6">
+    <div className="mx-auto p-4 sm:p-8 bg-white md:px-16 lg:px-24">
+      <h1 className="text-xl md:text-2xl font-semibold text-custom-black mb-4 sm:mb-6">
         Create Blog Post
       </h1>
 
-      {/* Image Preview */}
       {imagePreview && (
         <div className="mt-2">
           <img
             src={imagePreview}
             alt="Image Preview"
-            className="w-full h-96 object-contain rounded-lg border"
+            className="w-full h-64 sm:h-80 md:h-96 object-contain rounded-lg border"
           />
         </div>
       )}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 rounded-lg border border-gray-200 p-6 px-8 mt-5"
+        className="space-y-4 sm:space-y-6 rounded-lg border border-gray-200 p-4 sm:p-6 md:p-8 mt-5"
       >
-        {/* Post Title */}
         <div>
-          <label className="block text-gray-700 text-sm font-semibold mb-2">
+          <label className="block text-gray-700 text-sm font-semibold mb-1 sm:mb-2">
             Post Title
           </label>
           <input
             type="text"
             {...register("title", { required: true })}
             placeholder="Enter post title"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
+            className="w-full px-3 sm:px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
           />
           {errors.title && (
-            <span className="text-[13px] mt-1 font-medium text-gray-500">
+            <span className="text-xs mt-1 font-medium text-gray-500">
               {errors.title.message}
             </span>
           )}
         </div>
 
         <div>
-          <label className="block text-gray-700 text-sm font-semibold mb-2">
+          <label className="block text-gray-700 text-sm font-semibold mb-1 sm:mb-2">
             Post Body
           </label>
-          {/* here editor will come  */}
-
-          <MDEditor value={postBody} onChange={handleEditorChange} />
+          <div className="w-full">
+            <MDEditor
+              value={postBody}
+              onChange={handleEditorChange}
+              className="w-full"
+            />
+          </div>
           {errors.content && (
-            <span className="text-[13px] mt-1 font-medium text-gray-500">
+            <span className="text-xs mt-1 font-medium text-gray-500">
               {errors.content.message}
             </span>
           )}
         </div>
-        <div className="flex justify-between items-center gap-5">
-          {/* Post Category */}
+
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-5">
           <div className="w-full">
-            <label className="block text-gray-700 text-sm font-semibold mb-2">
+            <label className="block text-gray-700 text-sm font-semibold mb-1 sm:mb-2">
               Post Category
             </label>
             <select
               {...register("category", { required: true })}
-              className="w-full border border-gray-200 rounded-md py-3 px-4 appearance-none text-base outline-none"
+              className="w-full border border-gray-200 rounded-md py-2 px-3 sm:py-3 sm:px-4 appearance-none text-base outline-none"
             >
               <option value="">Select category</option>
               {categories.map((category) => (
@@ -174,33 +177,31 @@ const CreateBlogPost = () => {
               ))}
             </select>
             {errors.category && (
-              <span className="text-[13px] mt-1 font-medium text-gray-500">
+              <span className="text-xs mt-1 font-medium text-gray-500">
                 {errors.category.message}
               </span>
             )}
           </div>
 
-          {/* Post Cover Image */}
           <div className="w-full">
-            <label className="block text-gray-700 text-sm font-semibold mb-2">
+            <label className="block text-gray-700 text-sm font-semibold mb-1 sm:mb-2">
               Cover Image
             </label>
             <input
               type="file"
               {...register("coverImage", { required: true })}
               onChange={handleImageChange}
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             {errors.coverImage && (
-              <span className="text-[13px] mt-1 font-medium text-gray-500">
+              <span className="text-xs mt-1 font-medium text-gray-500">
                 {errors.coverImage.message}
               </span>
             )}
           </div>
         </div>
 
-        {/* Featured Post Checkbox */}
-        <div className="flex items-center">
+        <div className="flex items-center mt-3">
           <input
             type="checkbox"
             {...register("isFeatured")}
@@ -211,6 +212,7 @@ const CreateBlogPost = () => {
             Make this post featured?
           </label>
         </div>
+
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -223,11 +225,10 @@ const CreateBlogPost = () => {
           </label>
         </div>
 
-        {/* Create Post Button */}
         <div className="flex">
           <button
             type="submit"
-            className={`bg-orange-400 text-white px-6 py-2 rounded-lg hover:bg-orange-500 font-medium focus:outline-none transition-all ease-in-out duration-200 ${
+            className={`w-full sm:w-auto bg-orange-400 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-orange-500 font-medium focus:outline-none transition-all ease-in-out duration-200 ${
               isSubmitting ? "opacity-50 cursor-not-allowed" : ""
             }`}
             disabled={isSubmitting}

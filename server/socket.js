@@ -4,7 +4,7 @@ let io;
 const initializeSocket = (server) => {
   io = socketIO(server, {
     cors: {
-      origin: "http://localhost:5173", // Adjust if using a different frontend port
+      origin: ["http://localhost:5173", "http://192.168.0.105:5173"], // Adjust if using a different frontend port
       methods: ["GET", "POST"],
     },
   });

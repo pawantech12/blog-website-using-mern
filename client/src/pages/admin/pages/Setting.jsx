@@ -120,65 +120,44 @@ const Setting = () => {
   };
 
   return (
-    <div className="p-8 bg-gray-100 min-h-screen">
-      <h1 className="text-3xl font-semibold  mb-6 text-center text-gray-700">
+    <div className="p-4 md:p-8 bg-gray-100 min-h-screen">
+      <h1 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-center text-gray-700">
         Settings
       </h1>
-      <div className="flex bg-white rounded-md border border-gray-200">
-        <nav className="flex flex-col w-1/4 border-r border-gray-300 p-4">
-          <button
-            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
-              activeTab === "socialMedia"
-                ? "bg-custom-light-black text-white"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("socialMedia")}
-          >
-            Add Social Media Links
-          </button>
-          <button
-            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
-              activeTab === "theme"
-                ? "bg-custom-light-black text-white"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("theme")}
-          >
-            Theme
-          </button>
-          <button
-            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
-              activeTab === "language"
-                ? "bg-custom-light-black text-white"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("language")}
-          >
-            Language
-          </button>
-          <button
-            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
-              activeTab === "updatePassword"
-                ? "bg-custom-light-black text-white"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("updatePassword")}
-          >
-            Update Password
-          </button>
-          <button
-            className={`p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
-              activeTab === "deleteAccount"
-                ? "bg-custom-light-black text-white"
-                : "hover:bg-gray-200 text-gray-700"
-            }`}
-            onClick={() => setActiveTab("deleteAccount")}
-          >
-            Deactivate Account
-          </button>
-          {/* Add more options as needed */}
+      <div className="flex flex-col md:flex-row bg-white rounded-md border border-gray-200">
+        {/* Sidebar with scrollable navigation */}
+        <nav className="flex flex-col w-full md:w-1/4 border-b md:border-b-0 md:border-r border-gray-300 p-4 max-h-96 overflow-y-auto">
+          {[
+            "socialMedia",
+            "theme",
+            "language",
+            "updatePassword",
+            "deleteAccount",
+          ].map((tab) => (
+            <button
+              key={tab}
+              className={`w-full p-3 text-left rounded-md mb-2 transition-colors duration-300 text-base font-medium ${
+                activeTab === tab
+                  ? "bg-custom-light-black text-white"
+                  : "hover:bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === "socialMedia"
+                ? "Add Social Media Links"
+                : tab === "theme"
+                ? "Theme"
+                : tab === "language"
+                ? "Language"
+                : tab === "updatePassword"
+                ? "Update Password"
+                : "Deactivate Account"}
+            </button>
+          ))}
         </nav>
-        <div className="w-3/4 p-6">{renderContent()}</div>
+
+        {/* Content */}
+        <div className="w-full md:w-3/4 p-4 md:p-6">{renderContent()}</div>
       </div>
     </div>
   );

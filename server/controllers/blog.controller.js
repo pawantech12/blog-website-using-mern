@@ -139,8 +139,6 @@ const updateBlogPost = async (req, res) => {
       isFeatured,
     } = req.body;
 
-    console.log("category name", categoryName);
-
     // Find the existing blog post
     const existingBlog = await Blog.findById(blogId);
     if (!existingBlog) {
@@ -150,40 +148,44 @@ const updateBlogPost = async (req, res) => {
       });
     }
 
-    // Find the category by name
-    const category = await Category.findOne({ name: categoryName });
-    if (!category) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid category" });
+    // Build the update object
+    const updateFields = {};
+
+    if (title !== undefined && title !== "") updateFields.title = title;
+    if (content !== "") updateFields.content = content;
+    if (isDraft !== undefined) updateFields.isDraft = isDraft;
+    if (isFeatured !== undefined) updateFields.isFeatured = isFeatured;
+
+    // Handle category if provided
+    if (categoryName) {
+      const category = await Category.findOne({ name: categoryName });
+      if (!category) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid category" });
+      }
+      updateFields.category = category._id;
     }
 
-    let coverImageUrl = existingBlog.coverImage;
-    let publicId = existingBlog.coverImagePublicId;
-    let imageHash = existingBlog.coverImageHash;
-
-    // Check if a new image is provided
+    // Handle image if provided
     if (req.file) {
-      // Compute hash of the image buffer
       const imageBuffer = req.file.buffer;
       const newImageHash = computeImageHash(imageBuffer);
 
-      // Check for existing blog post with the same image hash
       const duplicateImage = await Blog.findOne({
         coverImageHash: newImageHash,
         author: existingBlog.author,
       });
+
       if (!duplicateImage) {
-        // Delete the existing image from Cloudinary
-        if (publicId) {
-          await deleteImageFromCloudinary(publicId);
+        if (existingBlog.coverImagePublicId) {
+          await deleteImageFromCloudinary(existingBlog.coverImagePublicId);
         }
 
-        // Upload the new image to Cloudinary
         const uploadResult = await uploadImageToCloudinary(req.file);
-        coverImageUrl = uploadResult.secure_url;
-        publicId = uploadResult.public_id;
-        imageHash = newImageHash; // Update the hash
+        updateFields.coverImage = uploadResult.secure_url;
+        updateFields.coverImagePublicId = uploadResult.public_id;
+        updateFields.coverImageHash = newImageHash;
       } else {
         return res.status(400).json({
           success: false,
@@ -193,20 +195,9 @@ const updateBlogPost = async (req, res) => {
     }
 
     // Update the blog post in the database
-    const updatedBlog = await Blog.findByIdAndUpdate(
-      blogId,
-      {
-        title,
-        content,
-        category: category._id,
-        coverImage: coverImageUrl,
-        coverImagePublicId: publicId,
-        coverImageHash: imageHash, // Save the updated image hash
-        isDraft,
-        isFeatured,
-      },
-      { new: true }
-    );
+    const updatedBlog = await Blog.findByIdAndUpdate(blogId, updateFields, {
+      new: true,
+    });
 
     res.status(200).json({
       success: true,

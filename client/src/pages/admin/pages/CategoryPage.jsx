@@ -109,50 +109,33 @@ const CategoryPage = () => {
     }
   };
   return (
-    <div className="container mx-auto px-24 py-6">
+    <div className="container mx-auto px-4 sm:px-6 md:px-12 lg:px-24 py-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-semibold text-gray-800">Categories</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-800 ">
+          Categories
+        </h1>
         <button
           onClick={() => {
             setIsAddModal(true);
-            setShowModal(true); // Open the modal for adding a category
+            setShowModal(true);
           }}
-          className="flex items-center bg-orange-400 text-white px-4 py-2 rounded-lg hover:bg-orange-500"
+          className="flex items-center bg-orange-400 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-orange-500 text-sm md:text-base font-medium"
         >
-          <AiOutlinePlus className="mr-2 w-5 h-5" /> Add Category
+          <AiOutlinePlus className="mr-2 w-4 h-4 sm:w-5 sm:h-5" /> Add Category
         </button>
       </div>
-
-      {/* {successMessage && (
-        <div
-          className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <span className="block sm:inline">{successMessage}</span>
-        </div>
-      )}
-
-      {apiError && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
-          role="alert"
-        >
-          <span className="block sm:inline">{apiError}</span>
-        </div>
-      )} */}
-
       <div className="bg-white shadow rounded-lg p-4">
         {categories.length > 0 ? (
-          <table className="min-w-full bg-white">
-            <thead className="bg-orange-400 text-white rounded-s-md">
+          <table className="min-w-full bg-white text-sm sm:text-base">
+            <thead className="bg-orange-400 text-white">
               <tr>
-                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-sm ">
+                <th className="py-2 px-2 sm:px-4 border-b-2 border-gray-200 text-left">
                   Category Image
                 </th>
-                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-sm">
+                <th className="py-2 px-2 sm:px-4 border-b-2 border-gray-200 text-left">
                   Category Name
                 </th>
-                <th className="py-2 px-4 border-b-2 border-gray-200 text-left text-sm">
+                <th className="py-2 px-2 sm:px-4 border-b-2 border-gray-200 text-left">
                   Actions
                 </th>
               </tr>
@@ -160,24 +143,22 @@ const CategoryPage = () => {
             <tbody>
               {categories.map((category) => (
                 <tr key={category._id} className="hover:bg-gray-100">
-                  <td className="py-4 px-4 border-b border-gray-200">
+                  <td className="py-3 px-2 sm:px-4 border-b border-gray-200">
                     <img
                       src={category.imageUrl}
                       alt={category.name}
-                      className="w-12 h-12 object-cover rounded"
+                      className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded"
                     />
                   </td>
-                  <td className="py-4 px-4 border-b border-gray-200">
-                    <span className="text-lg text-gray-700">
-                      {category.name}
-                    </span>
+                  <td className="py-3 px-2 sm:px-4 border-b border-gray-200">
+                    <span className="text-gray-700">{category.name}</span>
                   </td>
-                  <td className="py-4 px-4 border-b border-gray-200">
+                  <td className="py-3 px-2 sm:px-4 border-b border-gray-200">
                     <button
                       className="flex items-center bg-red-500 hover:bg-red-600 p-2 rounded-md"
                       onClick={() => confirmDelete(category)}
                     >
-                      <AiOutlineDelete className="w-5 h-5 text-white" />
+                      <AiOutlineDelete className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </button>
                   </td>
                 </tr>
@@ -185,30 +166,32 @@ const CategoryPage = () => {
             </tbody>
           </table>
         ) : (
-          <p className="text-gray-500">No categories available.</p>
+          <p className="text-gray-500 text-sm">No categories available.</p>
         )}
       </div>
 
       {/* Confirmation Modal for Deletion */}
       {showModal && !isAddModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-            <h2 className="text-xl font-semibold mb-4">Delete Category</h2>
-            <p className="mb-4 ">
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg text-center w-11/12 sm:w-96">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
+              Delete Category
+            </h2>
+            <p className="mb-4">
               Are you sure you want to delete the category{" "}
               <strong>{selectedCategory?.name}</strong>?
             </p>
-            <div className="flex justify-center items-center gap-3">
+            <div className="flex justify-center items-center gap-2 sm:gap-3">
               <button
-                className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-                onClick={() => setShowModal(false)} // Close the modal without deleting
+                className="bg-gray-300 text-gray-800 px-3 sm:px-4 py-2 rounded hover:bg-gray-400"
+                onClick={() => setShowModal(false)}
               >
                 Cancel
               </button>
               <button
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+                className="bg-red-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-red-600"
                 disabled={loading}
-                onClick={deleteCategory} // Confirm and delete the category
+                onClick={deleteCategory}
               >
                 {loading ? "Deleting..." : "Delete"}
               </button>
@@ -220,8 +203,10 @@ const CategoryPage = () => {
       {/* Add Category Modal */}
       {showModal && isAddModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold mb-4">Add Category</h2>
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-lg w-11/12 sm:w-96">
+            <h2 className="text-lg sm:text-xl font-semibold mb-4">
+              Add Category
+            </h2>
             <form onSubmit={handleSubmit(onSubmit)}>
               <div className="mb-4">
                 <label className="block text-gray-700">Category Name</label>
@@ -242,18 +227,18 @@ const CategoryPage = () => {
                   required
                 />
               </div>
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end gap-2 sm:gap-4">
                 <button
                   type="button"
-                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-                  onClick={() => setShowModal(false)} // Close the modal without creating
+                  className="bg-gray-300 text-gray-800 px-3 sm:px-4 py-2 rounded hover:bg-gray-400"
+                  onClick={() => setShowModal(false)}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600"
+                  className="bg-orange-500 text-white px-3 sm:px-4 py-2 rounded hover:bg-orange-600"
                 >
                   {loading ? "Creating..." : "Create"}
                 </button>

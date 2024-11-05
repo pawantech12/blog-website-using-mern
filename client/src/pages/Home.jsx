@@ -316,12 +316,6 @@ export const Home = () => {
       setLocalLoading(false);
     }
   };
-  // console.log("setsavedposts: ", savedPosts);
-  // console.log("blogs", blogs);
-
-  // console.log("user details", user);
-  // console.log("liked", liked);
-  // console.log("token: ", token);
 
   let sliderRef = useRef(null);
   const next = () => {

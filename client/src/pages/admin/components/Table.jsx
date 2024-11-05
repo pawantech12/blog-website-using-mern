@@ -66,7 +66,7 @@ const Table = ({ blogs, handleDelete, handleEdit, isDeleting, loading }) => {
           {blogs.length > 0 ? (
             <>
               <table className="min-w-full bg-white border border-gray-200">
-                <thead className="bg-orange-400 text-white rounded-s-md">
+                <thead className="bg-orange-400 text-white rounded-s-md max-lg:text-sm">
                   <tr>
                     <th className="text-left p-4 border-b">Blog Title</th>
                     <th className="text-left p-4 border-b">Author</th>
@@ -78,7 +78,7 @@ const Table = ({ blogs, handleDelete, handleEdit, isDeleting, loading }) => {
                 </thead>
                 <tbody>
                   {currentBlogs.map((blog, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
+                    <tr key={index} className="hover:bg-gray-50 max-lg:text-sm">
                       <td className="p-4 border-b">{blog.title}</td>
                       <td className="p-4 border-b">{blog.author.name}</td>
                       <td className="p-4 border-b">
@@ -117,9 +117,9 @@ const Table = ({ blogs, handleDelete, handleEdit, isDeleting, loading }) => {
               </table>
 
               {/* Pagination Section */}
-              <div className="flex justify-between items-center mt-4 px-4">
+              <div className="flex justify-between items-center mt-4 px-4 max-sm:flex-col max-sm:gap-3">
                 {/* Showing Entries Info */}
-                <div className="text-gray-600 text-sm font-medium">
+                <div className="text-gray-600 text-sm font-medium max-sm:w-full max-sm:text-center">
                   Showing{" "}
                   {currentBlogs.length > 0
                     ? (currentPage - 1) * entriesPerPage + 1

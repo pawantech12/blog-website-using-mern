@@ -20,7 +20,7 @@ const SearchFilter = ({ searchTerm, setSearchTerm, sortBy, setSortBy }) => {
       </div>
 
       {/* Custom Select Dropdown for Sorting */}
-      <div className="relative ml-4 w-1/4">
+      <div className="relative ml-4 w-1/4 max-sm:ml-1 max-sm:w-[35%]">
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}

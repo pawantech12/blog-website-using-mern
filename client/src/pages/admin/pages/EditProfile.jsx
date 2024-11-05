@@ -138,7 +138,7 @@ const EditProfile = () => {
   };
 
   return (
-    <section className="my-[5rem] px-24">
+    <section className="my-[5rem] px-24 max-lg:px-5">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="relative">
           <img
@@ -147,7 +147,7 @@ const EditProfile = () => {
               "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png"
             } // Use userDetails's banner image
             alt="banner img"
-            className="w-full h-56 object-cover rounded-lg shadow-lg"
+            className="w-full h-56 max-[500px]:h-40 object-cover rounded-lg shadow-lg"
           />
 
           <label className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
@@ -169,7 +169,7 @@ const EditProfile = () => {
           <img
             src={profileImgPreview || "https://via.placeholder.com/150"} // Use userDetails's profile image
             alt="profile image"
-            className="w-32 h-32 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
+            className="w-32 h-32 max-[500px]:w-28 max-[500px]:h-28 rounded-full absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 border-4 border-white"
           />
           <label className="absolute left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-200 transition duration-300 cursor-pointer">
             <FaEdit className="text-gray-700" />
@@ -188,7 +188,7 @@ const EditProfile = () => {
           </label>
         </div>
         <div className="mt-[5rem] space-y-4">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 max-sm:flex-col">
             <div className="flex flex-col gap-1 w-full">
               <label
                 htmlFor="name"
@@ -279,7 +279,7 @@ const EditProfile = () => {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 max-sm:flex-col">
             <div className="flex flex-col gap-1 w-full">
               <label
                 htmlFor="city"
@@ -322,7 +322,7 @@ const EditProfile = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 max-sm:flex-col">
             <div className="flex flex-col gap-1 w-full">
               <label
                 htmlFor="country"
@@ -365,7 +365,7 @@ const EditProfile = () => {
               )}
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 max-sm:flex-col">
             <div className="flex flex-col gap-1 w-full">
               <label
                 htmlFor="gender"

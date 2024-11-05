@@ -5,6 +5,7 @@ import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import MDEditor from "@uiw/react-md-editor";
 
 const UpdateBlogPost = () => {
   const { blogId } = useParams(); // Get blog post ID from URL params
@@ -23,6 +24,7 @@ const UpdateBlogPost = () => {
   const [blogData, setBlogData] = useState({});
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [isDraft, setIsDraft] = useState(false);
   // Fetch categories from the backend
   useEffect(() => {
     const fetchCategories = async () => {
@@ -57,6 +59,7 @@ const UpdateBlogPost = () => {
         setImagePreview(blogData.coverImage); // Set image preview if there was an existing image
         setBlogData(blogData);
         setPostBody(blogData.content); // Set the blog post content
+        setIsDraft(blogData.isDraft);
 
         // Dynamically set TinyMCE content once the blog data is loaded
         if (editorRef.current) {
@@ -93,6 +96,7 @@ const UpdateBlogPost = () => {
 
   const onSubmit = async (data) => {
     data.content = postBody; // Add post body from TinyMCE editor
+    data.isDraft = isDraft;
     setIsSubmitting(true);
 
     console.log("data: ", data);
@@ -142,8 +146,8 @@ const UpdateBlogPost = () => {
   };
 
   return (
-    <div className="mx-auto p-8 bg-white px-24">
-      <h1 className="text-2xl font-semibold text-custom-black mb-6">
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8 bg-white md:px-12 lg:px-24">
+      <h1 className="text-xl md:text-2xl font-semibold text-custom-black mb-4 md:mb-6">
         Update Blog Post
       </h1>
 
@@ -153,13 +157,13 @@ const UpdateBlogPost = () => {
           <img
             src={imagePreview}
             alt="Image Preview"
-            className="w-full h-96 object-contain rounded-lg border"
+            className="w-full h-48 sm:h-64 md:h-96 object-contain rounded-lg border"
           />
         </div>
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-6 rounded-lg border border-gray-200 p-6 px-8 mt-5"
+        className="space-y-4 sm:space-y-6 rounded-lg border border-gray-200 p-4 sm:p-6 md:p-8 mt-5"
       >
         {/* Post Title */}
         <div>
@@ -171,7 +175,7 @@ const UpdateBlogPost = () => {
             {...register("title")}
             placeholder="Enter post title"
             defaultValue={blogData.title}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
+            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-orange-400"
           />
         </div>
 
@@ -180,36 +184,18 @@ const UpdateBlogPost = () => {
           <label className="block text-gray-700 text-sm font-semibold mb-2">
             Post Body
           </label>
-          <Editor
-            apiKey="niogdjwfejq20ihmep2n3quecbaqvke4kmkolr9sn3x2ubcm"
-            initialValue={postBody}
-            onEditorChange={handleEditorChange}
-            init={{
-              plugins: [
-                "anchor",
-                "autolink",
-                "charmap",
-                "codesample",
-                "emoticons",
-                "image",
-                "link",
-                "lists",
-                "media",
-                "searchreplace",
-                "table",
-                "visualblocks",
-                "wordcount",
-              ],
-              toolbar:
-                "undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table mergetags | addcomment showcomments | spellcheckdialog a11ycheck typography | align lineheight | checklist numlist bullist indent outdent | emoticons charmap | removeformat",
-            }}
-            onInit={(evt, editor) => (editorRef.current = editor)}
-          />
+          <div className="w-full">
+            <MDEditor
+              value={postBody}
+              onChange={handleEditorChange}
+              className="w-full"
+            />
+          </div>
         </div>
 
-        <div className="flex justify-between items-center gap-5">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-5">
           {/* Post Category */}
-          <div className="w-full">
+          <div className="w-full md:w-1/2">
             <label className="block text-gray-700 text-sm font-semibold mb-2">
               Post Category
             </label>
@@ -229,7 +215,7 @@ const UpdateBlogPost = () => {
           </div>
 
           {/* Post Cover Image */}
-          <div className="w-full">
+          <div className="w-full md:w-1/2">
             <label className="block text-gray-700 text-sm font-semibold mb-2">
               Cover Image
             </label>
@@ -258,10 +244,10 @@ const UpdateBlogPost = () => {
         <div className="flex items-center">
           <input
             type="checkbox"
-            {...register("isDraft")}
             id="isDraft"
             className="mr-2"
-            defaultChecked={blogData.isDraft}
+            checked={isDraft} // Use the state variable here
+            onChange={(e) => setIsDraft(e.target.checked)}
           />
           <label htmlFor="isDraft" className="text-gray-700">
             Save this post as Draft?
