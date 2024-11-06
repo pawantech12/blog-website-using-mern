@@ -1,6 +1,5 @@
 import axios from "axios";
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
 import { useAuth } from "../../../store/Authentication";
 import { toast } from "react-toastify";
 import SocialMediaSettings from "../components/SocialMediaSettings";
@@ -10,37 +9,10 @@ import UpdatePassword from "../components/UpdatePassword";
 import DeactivateAccount from "../components/DeactivateAccount";
 
 const Setting = () => {
-  const {
-    reset,
-    formState: { errors },
-    setError,
-  } = useForm();
   const [activeTab, setActiveTab] = useState("socialMedia");
   const [loading, setLoading] = useState(false);
   const { token } = useAuth();
-  const [apiError, setApiError] = useState("");
-  const onSocialMediaSubmit = async (data) => {
-    console.log("social data: ", data);
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        "http://localhost:3000/api/social-media",
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      toast.success(response.data.message);
-      reset(); // Reset the form after submission
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response.data.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+
   const onThemeSubmit = async (data) => {
     console.log("theme data: ", data);
     setLoading(true);
@@ -88,12 +60,7 @@ const Setting = () => {
   const renderContent = () => {
     switch (activeTab) {
       case "socialMedia":
-        return (
-          <SocialMediaSettings
-            onSocialMediaSubmit={onSocialMediaSubmit}
-            loading={loading}
-          />
-        );
+        return <SocialMediaSettings />;
       case "theme":
         return <ThemeSetting loading={loading} onThemeSubmit={onThemeSubmit} />;
       case "language":
@@ -104,13 +71,7 @@ const Setting = () => {
           />
         );
       case "updatePassword":
-        return (
-          <UpdatePassword
-            errors={errors}
-            loading={loading}
-            apiError={apiError}
-          />
-        );
+        return <UpdatePassword />;
       case "deleteAccount":
         return <DeactivateAccount />;
 

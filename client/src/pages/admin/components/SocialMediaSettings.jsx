@@ -1,15 +1,12 @@
 import { useForm } from "react-hook-form";
 import { useAuth } from "../../../store/Authentication";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
 
-const SocialMediaSettings = ({ onSocialMediaSubmit, loading }) => {
-  const { user } = useAuth();
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm();
+const SocialMediaSettings = () => {
+  const { user, token } = useAuth();
+  const { register, handleSubmit, setValue } = useForm();
 
   useEffect(() => {
     if (user && user.user && user.user.socialMedia) {
@@ -19,6 +16,30 @@ const SocialMediaSettings = ({ onSocialMediaSubmit, loading }) => {
       setValue("linkedin", user.user.socialMedia.linkedin || "");
     }
   }, [user, setValue]);
+
+  const [loading, setLoading] = useState(false);
+
+  const onSocialMediaSubmit = async (data) => {
+    console.log("social data: ", data);
+    setLoading(true);
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/api/social-media",
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      toast.success(response.data.message);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">Add Social Media Links</h2>

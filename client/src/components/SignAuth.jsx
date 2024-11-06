@@ -100,6 +100,7 @@ const SignAuth = () => {
           token,
         }
       );
+      console.log("response: ", response);
 
       // Redirect or perform additional actions
       toast.success(response.data.message);
@@ -118,12 +119,7 @@ const SignAuth = () => {
       }
     } catch (error) {
       console.error("Facebook login error:", error);
-
-      // Get error message from Firebase
-      const errorMessage = error.message;
-
-      // Show detailed error message
-      toast.error(`Facebook login failed: ${errorMessage}`);
+      toast.error("Facebook login failed");
     }
   };
 

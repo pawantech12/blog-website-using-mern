@@ -1,13 +1,19 @@
 const admin = require("firebase-admin"); // Import Firebase Admin SDK
 
 // Initialize Firebase Admin
-const serviceAccount = require("../config/firebaseAdmin/bunzo-blog-website-firebase-admin.json");
+// const serviceAccount = require("../config/firebaseAdmin/bunzo-blog-website-firebase-admin.json");
 const User = require("../models/user.model");
 const generateOTP = require("../utils/generate_otp");
 const sendEmail = require("../utils/send_email");
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert({
+    project_id: process.env.FIREBASE_PROJECT_ID,
+    private_key_id: process.env.FIREBASE_PRIVATE_KEY_ID,
+    private_key: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"), // Replace escaped newline characters
+    client_email: process.env.FIREBASE_CLIENT_EMAIL,
+    client_id: process.env.FIREBASE_CLIENT_ID,
+  }),
 });
 
 const socialLogin = async (req, res) => {

@@ -10,6 +10,7 @@ const LanguageSetting = ({ loading, onLanguageSubmit }) => {
   useEffect(() => {
     setValue("language", user?.user?.language || "");
   }, [user, setValue]);
+
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Select Language</h2>
