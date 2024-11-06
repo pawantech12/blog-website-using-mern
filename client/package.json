@@ -10,9 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-react": "^9.3.1",
     "@rehype-pretty/transformers": "^0.13.2",
-    "@tinymce/tinymce-react": "^5.1.1",
     "@uiw/react-md-editor": "^4.0.4",
     "axios": "^1.7.7",
     "date-fns": "^4.1.0",
