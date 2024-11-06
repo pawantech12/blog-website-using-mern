@@ -30,7 +30,7 @@ const UpdateBlogPost = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-categories"
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-categories`
         );
         console.log("Categories:", response);
         setCategories(response.data.categories);
@@ -47,7 +47,7 @@ const UpdateBlogPost = () => {
     const fetchBlogPost = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blog/${blogId}`,
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-blog/${blogId}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -112,7 +112,7 @@ const UpdateBlogPost = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/blog/update-blog/${blogId}`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/update-blog/${blogId}`,
         formData,
         {
           headers: {

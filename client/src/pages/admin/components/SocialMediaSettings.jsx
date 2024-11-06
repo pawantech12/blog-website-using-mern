@@ -24,7 +24,7 @@ const SocialMediaSettings = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/social-media",
+        `${import.meta.env.VITE_SERVER_URL}/api/social-media`,
         data,
         {
           headers: {

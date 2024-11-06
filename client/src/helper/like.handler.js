@@ -5,7 +5,7 @@ console.log("token", localStorage.getItem("token"));
 export const likeBlog = async (blogId) => {
   try {
     const response = await axios.post(
-      `http://localhost:3000/blog/${blogId}/like`,
+      `${import.meta.env.VITE_SERVER_URL}/blog/${blogId}/like`,
       {}, // Send an empty object as the body
       {
         headers: {
@@ -29,7 +29,7 @@ export const likeBlog = async (blogId) => {
 export const unLikeBlog = async (blogId) => {
   try {
     const response = await axios.post(
-      `http://localhost:3000/blog/${blogId}/unlike`,
+      `${import.meta.env.VITE_SERVER_URL}/blog/${blogId}/unlike`,
       {}, // Send an empty object as the body
       {
         headers: {

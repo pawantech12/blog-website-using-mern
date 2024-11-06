@@ -9,7 +9,6 @@ const ForgotPassword = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setError,
   } = useForm();
 
   const [loading, setLoading] = useState(false);
@@ -18,7 +17,7 @@ const ForgotPassword = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/password/forgot-password",
+        `${import.meta.env.VITE_SERVER_URL}/password/forgot-password`,
         {
           email: data.email,
           host: window.location.origin,

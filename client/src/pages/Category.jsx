@@ -11,7 +11,7 @@ const Category = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-categories"
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-categories`
         );
         console.log("Categories:", response);
         setCategories(response.data.categories);

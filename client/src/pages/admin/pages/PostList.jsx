@@ -25,7 +25,7 @@ const PostList = () => {
     const fetchBlogs = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-blogs",
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-blogs`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ const PostList = () => {
     try {
       // Make the API call to delete the blog post
       const response = await axios.delete(
-        `http://localhost:3000/blog/delete-blog/${blogToDelete}`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/delete-blog/${blogToDelete}`,
         {
           headers: {
             "Content-Type": "application/json",

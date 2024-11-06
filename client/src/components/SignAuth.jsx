@@ -39,7 +39,7 @@ const SignAuth = () => {
       };
       // Send token and user data to your backend
       const response = await axios.post(
-        `http://localhost:3000/auth/social-login`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/social-login`,
         {
           userData,
           token,
@@ -94,7 +94,7 @@ const SignAuth = () => {
       };
       // Send token and user data to your backend
       const response = await axios.post(
-        `http://localhost:3000/auth/social-login`,
+        `${import.meta.env.VITE_SERVER_URL}/auth/social-login`,
         {
           userData,
           token,

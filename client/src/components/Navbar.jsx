@@ -40,7 +40,7 @@ export const Navbar = () => {
 
   useEffect(() => {
     // Establish a connection to the server
-    const socket = io("http://localhost:3000");
+    const socket = io(`${import.meta.env.VITE_SERVER_URL}`);
 
     // Join the room based on the user ID (replace `userId` with actual logged-in user ID)
     const userId = user?.user?._id; // Replace with your actual userId logic
@@ -78,7 +78,7 @@ export const Navbar = () => {
     const fetchAllBlogs = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/all-blogs"
+          `${import.meta.env.VITE_SERVER_URL}/blog/all-blogs`
         );
         console.log("search filtered blogs: ", response);
         if (response.data.success) {
@@ -93,7 +93,7 @@ export const Navbar = () => {
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/get-notifications",
+          `${import.meta.env.VITE_SERVER_URL}/api/get-notifications`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -140,7 +140,7 @@ export const Navbar = () => {
   const handleMarkAllAsRead = async () => {
     try {
       await axios.put(
-        "http://localhost:3000/api/mark-all-notifications-as-read",
+        `${import.meta.env.VITE_SERVER_URL}/api/mark-all-notifications-as-read`,
         {},
         {
           headers: {

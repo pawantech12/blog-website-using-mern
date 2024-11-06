@@ -28,7 +28,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/login`,
+        `${import.meta.env.VITE_SERVER_URL}/api/login`,
         data
       );
       console.log(response);

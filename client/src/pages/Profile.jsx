@@ -33,7 +33,7 @@ const Profile = () => {
     const fetchUserDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/api/user/${userId}`
+          `${import.meta.env.VITE_SERVER_URL}/api/user/${userId}`
         ); // Adjust the URL based on your API
         setUserDetails(response.data.user);
 
@@ -50,7 +50,7 @@ const Profile = () => {
     const fetchUserBlogs = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/user/${userId}/blogs`
+          `${import.meta.env.VITE_SERVER_URL}/blog/user/${userId}/blogs`
         ); // Adjust the URL based on your API
         if (response.data.success) {
           setBlogs(
@@ -81,8 +81,8 @@ const Profile = () => {
     setLocalLoading(true); // Set loading to true while the request is in progress
     try {
       const endpoint = isFollowing
-        ? `http://localhost:3000/api/unfollow/${userId}`
-        : `http://localhost:3000/api/follow/${userId}`;
+        ? `${import.meta.env.VITE_SERVER_URL}/api/unfollow/${userId}`
+        : `${import.meta.env.VITE_SERVER_URL}/api/follow/${userId}`;
 
       const response = await axios.put(
         endpoint,

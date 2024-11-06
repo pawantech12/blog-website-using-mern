@@ -31,11 +31,14 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }); // Adjust the URL based on your API
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/user`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ); // Adjust the URL based on your API
         setUserDetails(response.data.user);
 
         console.log("User details:", response);
@@ -49,7 +52,7 @@ const UserProfile = () => {
     const fetchUserBlogs = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blogs`,
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-blogs`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -66,7 +69,7 @@ const UserProfile = () => {
     const initFetchSavedBlogs = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/get-saved-posts",
+          `${import.meta.env.VITE_SERVER_URL}/api/get-saved-posts`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -103,7 +106,7 @@ const UserProfile = () => {
   const handleSaveClick = async (postId) => {
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/toggle-save/${postId}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/toggle-save/${postId}`,
         {},
         {
           headers: {

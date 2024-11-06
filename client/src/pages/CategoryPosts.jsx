@@ -19,7 +19,9 @@ const CategoryPosts = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blogs-by-category/${categoryId}`
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/blog/get-blogs-by-category/${categoryId}`
         );
         setBlogs(response.data.blogs);
         console.log("Blogs:", response);

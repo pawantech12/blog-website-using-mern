@@ -25,7 +25,7 @@ function DeactivateAccount() {
     try {
       // Make the API call with Axios to deactivate the account
       const response = await axios.delete(
-        "http://localhost:3000/api/delete-account",
+        `${import.meta.env.VITE_SERVER_URL}/api/delete-account`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

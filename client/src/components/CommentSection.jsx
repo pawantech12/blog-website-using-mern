@@ -46,7 +46,7 @@ const CommentSection = ({ blogId, user }) => {
   const fetchComments = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/blog/fetch-comments/${blogId}`
+        `${import.meta.env.VITE_SERVER_URL}/blog/fetch-comments/${blogId}`
       );
       const commentsWithReplies = res.data.comments.map((comment) => ({
         ...comment,
@@ -61,7 +61,7 @@ const CommentSection = ({ blogId, user }) => {
   const handleLike = async (commentId) => {
     try {
       const res = await axios.put(
-        `http://localhost:3000/blog/${commentId}/like`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/${commentId}/like`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -89,7 +89,7 @@ const CommentSection = ({ blogId, user }) => {
   const handleDislike = async (commentId) => {
     try {
       const res = await axios.put(
-        `http://localhost:3000/blog/${commentId}/dislike`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/${commentId}/dislike`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -115,7 +115,7 @@ const CommentSection = ({ blogId, user }) => {
   const handleDelete = async (commentId) => {
     try {
       const response = await axios.delete(
-        `http://localhost:3000/blog/delete-comment/${commentId}`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/delete-comment/${commentId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -151,7 +151,7 @@ const CommentSection = ({ blogId, user }) => {
   const onSubmitMainComment = async (data) => {
     try {
       const res = await axios.post(
-        "http://localhost:3000/blog/create-comment",
+        `${import.meta.env.VITE_SERVER_URL}/blog/create-comment`,
         { content: data.comment, blogId },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -169,7 +169,7 @@ const CommentSection = ({ blogId, user }) => {
   const onSubmitReply = async (data, commentId) => {
     try {
       const res = await axios.post(
-        `http://localhost:3000/blog/${commentId}/reply`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/${commentId}/reply`,
         { content: data.reply, blogId },
         {
           headers: { Authorization: `Bearer ${token}` },

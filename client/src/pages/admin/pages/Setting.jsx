@@ -18,7 +18,7 @@ const Setting = () => {
     setLoading(true);
     try {
       const response = await axios.put(
-        "http://localhost:3000/api/theme",
+        `${import.meta.env.VITE_SERVER_URL}/api/theme`,
         data,
         {
           headers: {
@@ -40,7 +40,7 @@ const Setting = () => {
     setLoading(true);
     try {
       const response = await axios.put(
-        "http://localhost:3000/api/language",
+        `${import.meta.env.VITE_SERVER_URL}/api/language`,
         data,
         {
           headers: {

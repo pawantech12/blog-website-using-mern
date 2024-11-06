@@ -24,7 +24,7 @@ const VerifyCode = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/verify-otp",
+        `${import.meta.env.VITE_SERVER_URL}/api/verify-otp`,
         {
           userId,
           otp: data.otp,
@@ -48,7 +48,7 @@ const VerifyCode = () => {
     setResentOtpLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/resend-otp",
+        `${import.meta.env.VITE_SERVER_URL}/api/resend-otp`,
         { userId }
       );
       toast.success(response.data.message);

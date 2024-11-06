@@ -22,7 +22,7 @@ const Footer = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/subscribe",
+        `${import.meta.env.VITE_SERVER_URL}/api/subscribe`,
         data
       );
 

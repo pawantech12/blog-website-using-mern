@@ -50,7 +50,7 @@ const BlogDetails = () => {
     const fetchBlogDetails = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3000/blog/get-blog/${blogId}`,
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-blog/${blogId}`,
           {
             withCredentials: true, // Ensure credentials are sent with the request
           }
@@ -66,12 +66,12 @@ const BlogDetails = () => {
 
       try {
         const [likedResponse, savedResponse] = await Promise.all([
-          axios.get("http://localhost:3000/api/get-liked-posts", {
+          axios.get(`${import.meta.env.VITE_SERVER_URL}/api/get-liked-posts`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }),
-          axios.get("http://localhost:3000/api/get-saved-posts", {
+          axios.get(`${import.meta.env.VITE_SERVER_URL}/api/get-saved-posts`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -205,7 +205,7 @@ const BlogDetails = () => {
 
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/toggle-save/${postId}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/toggle-save/${postId}`,
         {},
         {
           headers: {

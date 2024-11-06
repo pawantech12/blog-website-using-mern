@@ -35,7 +35,7 @@ const Register = () => {
 
     try {
       const response = await axios.post(
-        `http://localhost:3000/api/register`,
+        `${import.meta.env.VITE_SERVER_URL}/api/register`,
         data
       );
       const userId = response.data.userId; // Get userId from the response

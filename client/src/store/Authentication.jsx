@@ -21,11 +21,14 @@ export const AuthProvider = ({ children }) => {
 
   const userData = async (token) => {
     try {
-      const response = await axios.get("http://localhost:3000/api/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await axios.get(
+        `${import.meta.env.VITE_SERVER_URL}/api/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       setUser(response.data);
     } catch (error) {
       console.error("Failed to fetch user data:", error);

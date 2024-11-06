@@ -1,13 +1,13 @@
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBGbuLc7nUfFh9cJw-1AvrWts42zufJXug",
-  authDomain: "bunzo-blog-website.firebaseapp.com",
-  projectId: "bunzo-blog-website",
-  storageBucket: "bunzo-blog-website.appspot.com",
-  messagingSenderId: "795400181397",
-  appId: "1:795400181397:web:5026726426ad916da36d9c",
-  measurementId: "G-NC0D3J8C9C",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase

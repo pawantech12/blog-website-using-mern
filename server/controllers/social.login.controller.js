@@ -1,7 +1,5 @@
 const admin = require("firebase-admin"); // Import Firebase Admin SDK
 
-// Initialize Firebase Admin
-// const serviceAccount = require("../config/firebaseAdmin/bunzo-blog-website-firebase-admin.json");
 const User = require("../models/user.model");
 const generateOTP = require("../utils/generate_otp");
 const sendEmail = require("../utils/send_email");

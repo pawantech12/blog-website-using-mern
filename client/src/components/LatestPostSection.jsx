@@ -9,7 +9,7 @@ const LatestPostSection = ({ width }) => {
     const fetchLatestPost = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/all-blogs"
+          `${import.meta.env.VITE_SERVER_URL}/blog/all-blogs`
         );
         setLatestPost(response.data.blogs.slice(0, 5));
       } catch (error) {

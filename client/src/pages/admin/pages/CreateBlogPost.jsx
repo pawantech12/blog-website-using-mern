@@ -27,7 +27,7 @@ const CreateBlogPost = () => {
     const fetchCategories = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-categories"
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-categories`
         );
         console.log("Categories:", response);
         setCategories(response.data.categories);
@@ -76,7 +76,7 @@ const CreateBlogPost = () => {
     formData.append("coverImage", data.coverImage[0]); // Assuming it's a FileList
     try {
       const response = await axios.post(
-        "http://localhost:3000/blog/create-blog",
+        `${import.meta.env.VITE_SERVER_URL}/blog/create-blog`,
         formData,
         {
           headers: {

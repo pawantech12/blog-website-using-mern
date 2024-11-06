@@ -44,11 +44,14 @@ const EditProfile = () => {
   useEffect(() => {
     const fetchUserDetails = async () => {
       try {
-        const response = await axios.get(`http://localhost:3000/api/user`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }); // Adjust the URL based on your API
+        const response = await axios.get(
+          `${import.meta.env.VITE_SERVER_URL}/api/user`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ); // Adjust the URL based on your API
         setUserDetails(response.data.user);
 
         setBannerImgPreview(response.data.user.bannerImg);
@@ -101,7 +104,7 @@ const EditProfile = () => {
 
       // Send request to update user details
       const response = await axios.put(
-        `http://localhost:3000/api/update-profile`,
+        `${import.meta.env.VITE_SERVER_URL}/api/update-profile`,
         formData,
         {
           headers: {

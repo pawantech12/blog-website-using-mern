@@ -15,7 +15,7 @@ const Notification = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/get-notifications",
+          `${import.meta.env.VITE_SERVER_URL}/api/get-notifications`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -35,7 +35,9 @@ const Notification = () => {
     const handleMarkAllAsRead = async () => {
       try {
         await axios.put(
-          "http://localhost:3000/api/mark-all-notifications-as-read",
+          `${
+            import.meta.env.VITE_SERVER_URL
+          }/api/mark-all-notifications-as-read`,
           {},
           {
             headers: {

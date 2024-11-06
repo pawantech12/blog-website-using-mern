@@ -36,7 +36,7 @@ const AdminHome = () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/get-blog-summary",
+          `${import.meta.env.VITE_SERVER_URL}/blog/get-blog-summary`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -56,7 +56,7 @@ const AdminHome = () => {
     const fetchAllCommentsOfCurrentUser = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/blog/fetch-all-comments",
+          `${import.meta.env.VITE_SERVER_URL}/blog/fetch-all-comments`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -94,7 +94,7 @@ const AdminHome = () => {
     try {
       // Make the API call to delete the blog post
       const response = await axios.delete(
-        `http://localhost:3000/blog/delete-blog/${blogToDelete}`,
+        `${import.meta.env.VITE_SERVER_URL}/blog/delete-blog/${blogToDelete}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -121,7 +121,7 @@ const AdminHome = () => {
     setLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/follow/${userid}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/follow/${userid}`,
         {},
         {
           headers: {
@@ -142,7 +142,7 @@ const AdminHome = () => {
     setLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/unfollow/${userid}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/unfollow/${userid}`,
         {},
         {
           headers: {

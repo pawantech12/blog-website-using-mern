@@ -28,7 +28,7 @@ const Contact = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/contact",
+        `${import.meta.env.VITE_SERVER_URL}/api/contact`,
         data
       );
       console.log(response.data.message); // Handle success response

@@ -80,8 +80,8 @@ export const Home = () => {
       try {
         // Fetch non-authenticated data
         const [blogsResponse, categoriesResponse] = await Promise.all([
-          axios.get("http://localhost:3000/blog/all-blogs"),
-          axios.get("http://localhost:3000/blog/get-categories"),
+          axios.get(`${import.meta.env.VITE_SERVER_URL}/blog/all-blogs`),
+          axios.get(`${import.meta.env.VITE_SERVER_URL}/blog/get-categories`),
         ]);
 
         // Handle blogs
@@ -114,21 +114,30 @@ export const Home = () => {
             likedBlogsResponse,
             savedPostsResponse,
           ] = await Promise.all([
-            axios.get("http://localhost:3000/blog/following-blogs", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-            axios.get("http://localhost:3000/api/get-liked-posts", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
-            axios.get("http://localhost:3000/api/get-saved-posts", {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }),
+            axios.get(
+              `${import.meta.env.VITE_SERVER_URL}/blog/following-blogs`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+            axios.get(
+              `${import.meta.env.VITE_SERVER_URL}/api/get-liked-posts`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
+            axios.get(
+              `${import.meta.env.VITE_SERVER_URL}/api/get-saved-posts`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            ),
           ]);
 
           // Handle following blogs
@@ -223,7 +232,7 @@ export const Home = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/api/subscribe",
+        `${import.meta.env.VITE_SERVER_URL}/api/subscribe`,
         data
       );
 
@@ -296,7 +305,7 @@ export const Home = () => {
     setLocalLoading(true);
     try {
       const response = await axios.put(
-        `http://localhost:3000/api/toggle-save/${postId}`,
+        `${import.meta.env.VITE_SERVER_URL}/api/toggle-save/${postId}`,
         {},
         {
           headers: {
