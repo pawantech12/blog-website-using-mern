@@ -124,7 +124,7 @@ const SignAuth = () => {
   };
 
   return (
-    <div className="flex justify-center gap-4">
+    <div className="flex justify-center gap-4 w-full">
       <button
         className="flex items-center gap-2 bg-gray-100 py-3 px-4 rounded-md w-1/2 transition font-medium justify-center hover:bg-gray-200"
         onClick={handleGoogleLogin}
