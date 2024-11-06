@@ -38,7 +38,7 @@ const Footer = () => {
     <footer className="">
       <div className="flex justify-evenly max-lg:flex-col max-lg:items-center max-lg:gap-12 bg-custom-black p-20">
         {/* top content  */}
-        <div className="w-1/2 max-sm:w-11/12 flex flex-col max-lg:items-center max-lg:text-center gap-5">
+        <div className="w-[25%] max-sm:w-11/12 flex flex-col max-lg:items-center max-lg:text-center gap-5">
           <figure>
             <img src={LogoWhite} alt="Bunzo blog logo" />
           </figure>
