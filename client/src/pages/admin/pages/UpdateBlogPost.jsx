@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { Editor } from "@tinymce/tinymce-react";
 import axios from "axios";
 import { useAuth } from "../../../store/Authentication";
 import { useNavigate, useParams } from "react-router-dom";

@@ -12,7 +12,10 @@ const server = http.createServer(app);
 app.use(express.json());
 
 const corsOptions = {
-  origin: "https://blog-website-using-mern-vw2v.onrender.com",
+  origin: [
+    "https://blog-website-using-mern-vw2v.onrender.com",
+    "http://localhost:5173",
+  ],
   methods: "GET, POST, PUT, DELETE, PATCH, HEAD",
   credentials: true,
 };
