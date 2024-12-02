@@ -402,34 +402,42 @@ const BlogDetails = () => {
               {blog?.author?.summary} {/* Display author bio */}
             </p>
             <ul className="flex items-center gap-2 mt-4">
-              <li>
-                <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog?.author?.facebook}>
-                    <FaFacebookF className="w-3 h-3" />
-                  </Link>
-                </button>
-              </li>
-              <li>
-                <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog?.author?.instagram}>
-                    <FaInstagram />
-                  </Link>
-                </button>
-              </li>
-              <li>
-                <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog?.author?.twitter}>
-                    <FiTwitter />
-                  </Link>
-                </button>
-              </li>
-              <li>
-                <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
-                  <Link to={blog?.author?.linkedin}>
-                    <FaLinkedin />
-                  </Link>
-                </button>
-              </li>
+              {blog?.author?.socialMedia?.facebook && (
+                <li>
+                  <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                    <Link to={blog?.author?.socialMedia?.facebook}>
+                      <FaFacebookF className="w-3 h-3" />
+                    </Link>
+                  </button>
+                </li>
+              )}
+              {blog?.author?.socialMedia?.instagram && (
+                <li>
+                  <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                    <Link to={blog?.author?.socialMedia?.instagram}>
+                      <FaInstagram />
+                    </Link>
+                  </button>
+                </li>
+              )}
+              {blog?.author?.socialMedia?.twitter && (
+                <li>
+                  <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                    <Link to={blog?.author?.socialMedia?.twitter}>
+                      <FiTwitter />
+                    </Link>
+                  </button>
+                </li>
+              )}
+              {blog?.author?.socialMedia?.linkedin && (
+                <li>
+                  <button className="bg-zinc-200 p-3 rounded-md hover:text-white hover:bg-orange-300 transition-all ease-in-out duration-200">
+                    <Link to={blog?.author?.socialMedia?.linkedin}>
+                      <FaLinkedin />
+                    </Link>
+                  </button>
+                </li>
+              )}
             </ul>
             <button className="bg-zinc-100 w-3/4 flex justify-center py-3 rounded-md hover:bg-orange-300 hover:text-white mt-4">
               <Link

@@ -371,6 +371,7 @@ const getBlogById = async (req, res) => {
     const blogId = req.params.id;
     const blog = await Blog.findById(blogId)
       .populate("author")
+      .populate("author.socialMedia")
       .populate("category");
 
     if (!blog) {
